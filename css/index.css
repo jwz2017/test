@@ -1,0 +1,278 @@
+.container {
+  position: relative;
+  min-width: 320px;
+  max-width: 750px;
+  width: 100%;
+  margin: 0 auto;
+}
+main {
+  width: 100%;
+}
+.search {
+  position: fixed;
+  width: 100%;
+  left: 0;
+  top: 0;
+  z-index: 999;
+}
+.search .search_box {
+  min-width: 320px;
+  max-width: 750px;
+  width: 100%;
+  height: 40px;
+  background: #d8505c;
+  margin: 0 auto;
+  position: relative;
+}
+.search .search_box a {
+  position: absolute;
+  top: 0;
+}
+.search .search_box .icon_logo {
+  width: 60px;
+  height: 40px;
+  background: url("../assets/main/h16.png") no-repeat center center;
+  background-size: 40px 40px;
+  left: 0;
+}
+.search .search_box .login {
+  width: 50px;
+  height: 40px;
+  right: 0;
+  text-align: center;
+  line-height: 40px;
+  color: #fff;
+}
+.search .search_box form {
+  box-sizing: border-box;
+  width: 100%;
+  padding-left: 60px;
+  padding-right: 50px;
+}
+.search .search_box form input {
+  width: 100%;
+  height: 30px;
+  border-radius: 20px;
+  margin-top: 5px;
+  padding-left: 33.33333333px;
+}
+.search .search_box form .icon_search {
+  width: 20px;
+  height: 20px;
+  background: url("../assets/main/jd-sprites.png") no-repeat;
+  background-size: 200px 200px;
+  background-position: -81px 2px;
+  position: absolute;
+  top: 10px;
+  left: 70px;
+}
+.banner {
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  z-index: 998;
+}
+.banner ul:first-child {
+  width: 1000%;
+  transform: translateX(-10%);
+  -webkit-transform: translateX(-10%);
+}
+.banner ul:first-child li {
+  width: 10%;
+  float: left;
+}
+.banner ul:first-child li a {
+  width: 100%;
+  display: block;
+}
+.banner ul:first-child li a img {
+  width: 100%;
+  display: block;
+}
+.banner ul:last-child {
+  position: absolute;
+  bottom: 5px;
+  width: 134px;
+  left: 50%;
+  margin-left: -67px;
+}
+.banner ul:last-child li {
+  width: 8px;
+  height: 8px;
+  border-radius: 4px;
+  border: 2px solid #999;
+  float: left;
+  margin-left: 10px;
+}
+.banner ul:last-child li:first-child {
+  margin-left: 0;
+}
+.banner ul:last-child li.now {
+  background: #d8505c;
+}
+nav {
+  width: 100%;
+  background: #f6f4ec;
+}
+nav ul {
+  width: 100%;
+  padding: 10px 0;
+  border-bottom: 1px solid #ccc;
+}
+nav ul li {
+  width: 25%;
+  float: left;
+}
+nav ul li a {
+  display: block;
+  width: 100%;
+}
+nav ul li a img {
+  width: 40px;
+  height: 40px;
+  display: block;
+  margin: 0 auto;
+}
+nav ul li a p {
+  text-align: center;
+  color: #666;
+  padding: 5px 0;
+  font-size: 12px;
+}
+.product {
+  padding: 0 5px;
+}
+.probox {
+  margin-top: 10px;
+  box-shadow: 0 0 1px #d8d8d8;
+  background: #f6f4ec;
+}
+.probox .protitle {
+  height: 34px;
+  line-height: 34px;
+  border-bottom: 1px solid #ccc;
+}
+.sk_ico {
+  width: 20px;
+  height: 20px;
+  float: left;
+  margin-top: 7px;
+  margin-left: 10px;
+  background: url("../assets/main/jd-sprites.png") no-repeat;
+  background-size: 200px 200px;
+  background-position: -60px 0;
+}
+.sk_text {
+  margin-left: 10px;
+  color: #d8505c;
+  float: left;
+}
+.sk_time {
+  float: left;
+  margin-left: 10px;
+}
+.sk_time span {
+  width: 16px;
+  height: 16px;
+  text-align: center;
+  line-height: 16px;
+  color: #fff;
+  background: #333;
+  margin-left: 3px;
+  float: left;
+  margin-top: 9px;
+}
+.sk_time span:nth-child(3n) {
+  background: #fff;
+  color: #333;
+  width: 3px;
+}
+.probox .procontant {
+  width: 100%;
+  max-height: 300px;
+  overflow: auto;
+}
+.sk_product {
+  width: 100%;
+  padding: 10px 0;
+  float: left;
+}
+.sk_product li {
+  width: 20%;
+  float: left;
+}
+.sk_product li a {
+  width: 100%;
+  display: block;
+  border-right: 1px solid #ddd;
+}
+.sk_product li:last-child a {
+  border-right: none;
+}
+.sk_product li a img {
+  width: 64%;
+  margin: 0 auto;
+  display: block;
+  border-radius: 20%;
+}
+.sk_product li p {
+  font-size: 12px;
+  line-height: 12px;
+  text-align: center;
+  padding-top: 5px;
+}
+.sk_product li .pro_name {
+  color: #666;
+  padding-top: 0;
+}
+#dome {
+  width: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 1000;
+  display: none;
+  background: #c6d6bf;
+}
+#dome #game {
+  width: 100%;
+  margin: 0 auto;
+  transform-origin: 0 0;
+}
+#dome #game #inputText {
+  /* display: none; */
+  position: absolute;
+  visibility: hidden;
+  width: 170px;
+  height: 30px;
+  font-size: 20px;
+}
+#dome #game #testTxt {
+  visibility: hidden;
+  position: absolute;
+  width: 200px;
+  height: 300px;
+}
+#dome #game canvas {
+  background-color: #999;
+}
+#dome #close {
+  background: orange;
+  color: red;
+  border-radius: 12px;
+  line-height: 20px;
+  text-align: center;
+  height: 20px;
+  width: 20px;
+  font-size: 18px;
+  padding: 1px;
+  right: 2px;
+  top: 2px;
+  position: absolute;
+  display: none;
+}
+#dome #close::before {
+  content: "\2716";
+}

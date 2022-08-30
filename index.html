@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport"
+    content="width=device-width,initial-scale=1, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="css/normlize.css">
+  <link rel="stylesheet" href="css/index.css">
+  <title>h5Test</title>
+  <script src="classes/createjs.min.js"></script>
+  <script src="classes/gframe.js"></script>
+  <script src="classes/mc.js"></script>
+  <script src="classes/ScaleBitmap.js"></script>
+  <script src="assets/lib.js"></script>
+  <script src="assets/loadsprite/ma.js"></script>
+  <script src="classes/easing.js"></script>
+  <script src="classes/shape.js"></script>
+  <script src="classes/effect.js"></script>
+  
+
+  <!--04-->
+
+  <script src="include/index.js"></script>
+  <script src="include/0LoadBitmap.js"></script>
+  <script src="include/0Graphics.js"></script>
+  <script src="include/0mcTest.js"></script>
+  <script src="include/0utils.js"></script>
+  <script src="include/0tween.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <main id="main">
+      <!-- 搜索栏 -->
+      <header class="search">
+        <div class="search_box">
+          <a href="#" class="icon_logo"></a>
+          <form action="#">
+            <span class="icon_search"></span>
+            <input type="search" placeholder="基础">
+          </form>
+          <a href="#" class="login">登入</a>
+        </div>
+      </header>
+      <!-- banner轮播图 -->
+      <div class="banner">
+        <ul class="clearfix">
+          <li><a href="#"><img src="assets/main/banner.jpg" alt=""></a></li>
+          <li><a href="#"><img src="assets/main/banner.jpg" alt=""></a></li>
+          <li><a href="#"><img src="assets/main/banner.jpg" alt=""></a></li>
+          <li><a href="#"><img src="assets/main/banner.jpg" alt=""></a></li>
+          <li><a href="#"><img src="assets/main/banner.jpg" alt=""></a></li>
+          <li><a href="#"><img src="assets/main/banner.jpg" alt=""></a></li>
+          <li><a href="#"><img src="assets/main/banner.jpg" alt=""></a></li>
+          <li><a href="#"><img src="assets/main/banner.jpg" alt=""></a></li>
+          <li><a href="#"><img src="assets/main/banner.jpg" alt=""></a></li>
+          <li><a href="#"><img src="assets/main/banner.jpg" alt=""></a></li>
+        </ul>
+        <ul>
+          <li class="now"></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+        </ul>
+      </div>
+      <!-- 导航栏 -->
+      <nav>
+        <ul class="clearfix">
+          <li><a href="#"><img src="assets/main/qq13.png" alt="">
+              <p>主页</p>
+            </a></li>
+          <li><a href="#"><img src="assets/main/qq10.png" alt="">
+              <p>分类</p>
+            </a></li>
+          <li><a href="#"><img src="assets/main/qq1.png" alt="">
+              <p>分类</p>
+            </a></li>
+          <li><a href="#"><img src="assets/main/qq7.png" alt="">
+              <p>简介</p>
+            </a></li>
+        </ul>
+      </nav>
+
+      <!-- 商品区域 -->
+      <div class="product">
+        <!-- 第一个 -->
+        <section class="probox">
+          <div class="protitle nb">
+            <div class="f_left">
+              <span class="sk_ico"></span>
+              <span class="sk_text">基础练习</span>
+              <div class="sk_time">
+                <span>0</span>
+                <span>0</span>
+                <span>:</span>
+                <span>0</span>
+                <span>0</span>
+                <span>:</span>
+                <span>0</span>
+                <span>0</span>
+              </div>
+            </div>
+            <div class="f_right"><a href="javascript:void(0)" class="m_r10" id="genduo1">更多></a></div>
+          </div>
+          <div class="procontant clearfix">
+            <ul class="sk_product">
+              <li>
+                <a href="#"><img title="Graphics" src="assets/main/graphicsutils.jpg" onclick="productClick(this)" alt=""></a>
+                <p>图形工具</p>
+                <p class="pro_name">Graphics</p>
+              </li>
+              <li>
+                <a href="#"><img title="LoadBitmap" src="assets/main/loadbitmap.jpg" onclick="productClick(this)" alt=""></a>
+                <p>资源加载 </p>
+                <p class="pro_name">loadbitmap</p>
+              </li>
+              <li>
+                <a href="#"><img title="Tween" src="assets/main/tween.jpg" onclick="productClick(this)" alt=""></a>
+                <p>缓动应用</p>
+                <p class="pro_name">Tween</p>
+              </li>
+              <li>
+                <a href="#"><img title="Mctest" src="assets/main/mc.jpg" onclick="productClick(this)" alt=""></a>
+                <p>矢量组件</p>
+                <p class="pro_name">Mctest</p>
+              </li>
+              <li>
+                <a href="#"><img title="Utils" src="assets/main/utils.jpg" onclick="productClick(this)" alt=""></a>
+                <p>工具类</p>
+                <p class="pro_name">utils</p>
+              </li>
+            </ul>
+            <!-- 扩展 -->
+            <ul id="pro_con1" class="sk_product" style="display: none;">
+              <!-- <li>
+                <a href="#"><img title="Tween" src="assets/main/tween.jpg" onclick="productClick(this)" alt=""></a>
+                <p>缓动应用</p>
+                <p class="pro_name">Tween</p>
+              </li> -->
+            </ul>
+          </div>
+        </section>
+        <!-- 第二个 -->
+        <section class="probox">
+          <div class="protitle nb">
+            <div class="f_left">
+              <span class="sk_ico"></span>
+              <span class="sk_text">游戏学习</span>
+            </div>
+            <div class="f_right"><a href="javascript:void(0)" class="m_r10" id="genduo2">更多></a></div>
+          </div>
+          <div class="procontant clearfix">
+            <ul class="sk_product">
+              <li>
+                <a href="superClick.html"><img src="assets/main/superclick.jpg" alt=""></a>
+                <p >超级点击</p>
+              </li>
+              <li>
+                <a href="colordrop.html"><img src="assets/main/colordrop.jpg" alt=""></a>
+                <p>图像拖拽</p>
+              </li>
+              <li>
+                <a href="bounce.html"><img src="assets/main/bounce.jpg" alt=""></a>
+                <p>弹球游戏</p>
+              </li>
+              <li>
+                <a href="puzzle.html"target="_blank"><img src="assets/main/puzzle.jpg" alt=""></a>
+                <p>拼图游戏</p>
+              </li>
+              <li>
+                <a href="match.html"target="_blank"><img src="assets/main/match.jpg" alt=""></a>
+                <p >记忆游戏</p>
+              </li>
+            </ul>
+            <ul id="pro_con2" class="sk_product" style="display: none;">
+              <li>
+                <a href="jump.html"><img src="assets/main/jump.png" alt=""></a>
+                <p>横板跳跃</p>
+              </li>
+              <li>
+                <a href="2tanke.html"><img src="assets/main/tanke.png" alt=""></a>
+                <p>坦克大战</p>
+              </li>
+              <li>
+                <a href="spaceGame.html"><img src="assets/main/spaceShip.jpg " alt="太空游戏"></a>
+                <p>太空飞机</p>
+              </li>
+              <li>
+                <a href="spaceHero.html"><img src=" " alt="太空英雄"></a>
+                <p>太空英雄</p>
+              </li>
+            </ul>
+          </div>
+        </section>
+        <!-- 第三个 -->
+        <section class="probox">
+          <div class="protitle">
+            <h3>总结</h3>
+          </div>
+          <div class="procontant"></div>
+        </section>
+        <!-- 第四个 -->
+        <section class="probox">
+          <div class="protitle"></div>
+          <div class="procontant"></div>
+        </section>
+        <!-- 第五个 -->
+        <section class="probox">
+          <div class="protitle"></div>
+          <div class="procontant"></div>
+        </section>
+      </div>
+    </main>
+    <!-- 弹窗界面-->
+    <div id="dome">
+      <!-- 游戏界面 -->
+      <div id="game">
+        <!-- 随舞台缩放 dom-->
+        <input type="text" id="inputText" placeholder="请输入姓名">
+        <p id="testTxt">CreateJS是基于HTML5开发的一套模块化的库和工具。
+          基于这些库，<span style="color: #00ff00;font-size: 20px">可以非常快捷地开发出基于HTML5的游戏</span>、动画和交互应用。
+        </p>
+        <canvas id="canvas" width="750" height="1334">
+        </canvas>
+      </div>
+      <!-- 不随舞台缩放 dom -->
+      <!-- 关闭按钮 -->
+      <a href="#" id="close" ></a>
+    </div>
+  </div>
+</body>
+
+</html>
