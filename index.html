@@ -15,19 +15,23 @@
   <script src="classes/ScaleBitmap.js"></script>
   <script src="assets/lib.js"></script>
   <script src="assets/loadsprite/ma.js"></script>
-  <script src="classes/easing.js"></script>
   <script src="classes/shape.js"></script>
   <script src="classes/effect.js"></script>
-  
+  <script src="classes/collision.js"></script>
 
   <!--04-->
 
   <script src="include/index.js"></script>
-  <script src="include/0LoadBitmap.js"></script>
-  <script src="include/0Graphics.js"></script>
-  <script src="include/0mcTest.js"></script>
-  <script src="include/0utils.js"></script>
-  <script src="include/0tween.js"></script>
+  <script src="include/test/0LoadBitmap.js"></script>
+  <script src="include/test/0Graphics.js"></script>
+  <script src="include/test/0mcTest.js"></script>
+  <script src="include/test/0chain.js"></script>
+  <script src="include/test/0billiard.js"></script>
+  <script src="include/test/0billiard2.js"></script>
+  <script src="include/test/0particle.js"></script>
+  <script src="include/test/0nodeGarden.js"></script>
+  <script src="include/test/0rectRotate.js"></script>
+  <script src="include/test/1singleSegment.js"></script>
 </head>
 
 <body>
@@ -121,28 +125,28 @@
                 <p class="pro_name">loadbitmap</p>
               </li>
               <li>
-                <a href="#"><img title="Tween" src="assets/main/tween.jpg" onclick="productClick(this)" alt=""></a>
-                <p>缓动应用</p>
-                <p class="pro_name">Tween</p>
-              </li>
-              <li>
                 <a href="#"><img title="Mctest" src="assets/main/mc.jpg" onclick="productClick(this)" alt=""></a>
                 <p>矢量组件</p>
                 <p class="pro_name">Mctest</p>
               </li>
               <li>
-                <a href="#"><img title="Utils" src="assets/main/utils.jpg" onclick="productClick(this)" alt=""></a>
-                <p>工具类</p>
-                <p class="pro_name">utils</p>
+                <a href="#"><img title="Chain" src="assets/main/chain.jpg" onclick="productClick(this)" alt="链式运动"></a>
+                <p>链式运动</p>
+                <p class="pro_name">chain</p>
+              </li>
+              <li>
+                <a href="#" title="Billiard" onclick="productClick(this)" >单轴动量碰撞Billiard</a>
+                <a href="#" title="Billiard2" onclick="productClick(this)">动量碰撞Billiard2</a>
+                <a href="#" title="Particle" onclick="productClick(this)">粒子运动Particle</a>
+                <a href="#" title="NodeGarden" onclick="productClick(this)">节点花园NodeGarden</a>
+                <a href="#" title="RectRotate" onclick="productClick(this)">矩形碰撞RectRotate</a>
               </li>
             </ul>
             <!-- 扩展 -->
             <ul id="pro_con1" class="sk_product" style="display: none;">
-              <!-- <li>
-                <a href="#"><img title="Tween" src="assets/main/tween.jpg" onclick="productClick(this)" alt=""></a>
-                <p>缓动应用</p>
-                <p class="pro_name">Tween</p>
-              </li> -->
+              <li>
+                <a href="#" title="SingleSegment" onclick="productClick(this)">单关节</a>
+              </li>
             </ul>
           </div>
         </section>
@@ -170,15 +174,13 @@
                 <p>弹球游戏</p>
               </li>
               <li>
-                <a href="puzzle.html"target="_blank"><img src="assets/main/puzzle.jpg" alt=""></a>
+                <a href="puzzle.html"><img src="assets/main/puzzle.jpg" alt=""></a>
                 <p>拼图游戏</p>
               </li>
               <li>
                 <a href="match.html"target="_blank"><img src="assets/main/match.jpg" alt=""></a>
                 <p >记忆游戏</p>
               </li>
-            </ul>
-            <ul id="pro_con2" class="sk_product" style="display: none;">
               <li>
                 <a href="jump.html"><img src="assets/main/jump.png" alt=""></a>
                 <p>横板跳跃</p>
@@ -188,13 +190,16 @@
                 <p>坦克大战</p>
               </li>
               <li>
-                <a href="spaceGame.html"><img src="assets/main/spaceShip.jpg " alt="太空游戏"></a>
+                <a href="spaceGame.html"><img src="assets/main/spacegame.jpg " alt="太空游戏"></a>
                 <p>太空飞机</p>
               </li>
               <li>
-                <a href="spaceHero.html"><img src=" " alt="太空英雄"></a>
+                <a href="spaceHero.html"><img src="assets/main/spacehero.jpg" alt="太空英雄"></a>
                 <p>太空英雄</p>
               </li>
+            </ul>
+            <ul id="pro_con2" class="sk_product" style="display: none;">
+            
             </ul>
           </div>
         </section>

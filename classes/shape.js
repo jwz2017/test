@@ -174,10 +174,9 @@ class BarGraph extends createjs.Container {
     }
 }
 //ship飞机
-class Ship extends Actor {
-    constructor(pos) {
-        super(pos);
-        this.bounds = 15;
+class Ship extends HitActor {
+    constructor(xpos, ypos) {
+        super(xpos, ypos);
         this.MAX_VELOCITY = 3 / stepWidth;
         this.TOGGLE = 60;
         this.MAX_THRUST = 2;
@@ -185,34 +184,22 @@ class Ship extends Actor {
         this.addChild(this.shipFlame);
         this.timeout = 0;
         this.thrust = 0;
-        this.setSize(this.bounds / stepWidth, this.bounds * 2 / stepHeight);
-        this.regX = this.image.x;
-        this.regY = this.image.y;
+        this.setSize(15,30);
     }
-    setPos() {
-        this.x = this.pos.x * stepWidth + this.bounds / 2;
-        this.y = this.pos.y * stepHeight + this.bounds;
-    }
-    drawShape() {
-        let width = this.bounds;
+    drawShape(width,height) {
         var g = this.image.graphics;
         g.clear();
         g.beginStroke("#ffffff");
-        // g.drawCircle(0,0,this.bounds);
         g.moveTo(0, width); //nose
         g.lineTo(width / 2, -width / 1.6); //rfin
         g.lineTo(0, -width / 5); //notch
         g.lineTo(-width / 2, -width / 1.6); //lfin
         g.closePath(); // nose
         //draw ship flame
-        var o = this.shipFlame;
-        o.x = this.bounds / 2;
-        o.y = this.bounds - this.bounds / 1.6;
-
-        g = o.graphics;
+        this.shipFlame.y = - width / 1.6;
+        g = this.shipFlame.graphics;
         g.clear();
         g.beginStroke("#FFFFFF");
-
         g.moveTo(width / 5, 0); //ship
         g.lineTo(width / 2.5, -width / 3.3); //rpoint
         g.lineTo(width / 5, -width / 5); //rnotch
@@ -220,6 +207,8 @@ class Ship extends Actor {
         g.lineTo(-width / 5, -width / 5); //lnotch
         g.lineTo(-width / 2.5, -width / 3.3); //lpoint
         g.lineTo(-width / 5, -0); //ship
+        this.image.setBounds(-width/2,-height/2,width,height)
+        this.hit=(width+height)/4;
     }
     act() {
         var newPos = this.pos.plus(this.speed);
@@ -240,10 +229,10 @@ class Ship extends Actor {
             this.shipFlame.alpha = 0;
             this.thrust = 0;
         }
-        if (this.outOfBounds) {
+        this.setXY();
+        if (this.outOfBounds()) {
             this.placeInBounds();
         }
-        this.setPos();
     }
     accelerate() {
         this.thrust += 0.2;
@@ -259,23 +248,16 @@ class Ship extends Actor {
 }
 //石头
 class SpaceRock extends HitActor {
-    constructor(pos, size = SpaceRock.LRG_ROCK/stepWidth) {
-        super(pos);
+    constructor(xpos, ypos, size = SpaceRock.LRG_ROCK / stepWidth) {
+        super(xpos, ypos);
         this.setSize(size, size);
         this.activate();
     }
-    setPos() {
-        this.x = this.pos.x * stepWidth + this.hit ;
-        this.y = this.pos.y * stepHeight + this.hit;
-    }
-    drawShape() {
-        this.hit = this.size.x/2*stepWidth;
-        this.bounds = this.size.x*stepWidth;
-        this.regX = this.hit;
-        this.regY = this.hit;
+    drawShape(width,height) {
+        this.hit = width / 2;
         let angle = 0,
-            size = this.bounds / 2,
-            radius = this.bounds / 2;
+        size = width / 2,
+        radius = width / 2;
         this.image.graphics.clear();
         this.image.graphics.beginStroke("#ffffff");
         this.image.graphics.moveTo(0, radius);
@@ -284,58 +266,86 @@ class SpaceRock extends HitActor {
             angle += .25 + (Math.random() * 100) / 500;
             radius = size + (size / 2 * Math.random());
             this.image.graphics.lineTo(Math.sin(angle) * radius, Math.cos(angle) * radius);
-            // if (radius > this.bounds) {
-            //     this.bounds = radius;
-            // }
             this.hit = (this.hit + radius) / 2;
         }
         this.image.graphics.closePath();
+        this.setBounds(-width/2,-height/2,width,height);
         this.hit *= 1.1;
-        this.size.x = this.size.y = this.hit*2 / stepWidth;
-        // this.image.graphics.drawRect(-this.hit , -this.hit, this.hit*2, this.hit*2);
     }
     activate() {
         let angle = Math.random() * (Math.PI * 2);
-        this.speed.x = Math.sin(angle) * (4 - this.size.x*stepWidth / 2 / 15) / stepWidth;
-        this.speed.y = Math.cos(angle) * (4 - this.size.x*stepHeight / 2 / 15) / stepHeight;
+        this.speed.x = Math.sin(angle) * (4 + this.rect.x / 15) / stepWidth;
+        this.speed.y = Math.cos(angle) * (4 +this.rect.y / 15) / stepHeight;
         this.spin = (Math.random() + 0.2) * this.speed.x;
-        this.score = Math.floor((5 - this.size.x*stepWidth / 2 / 10) * 100);
+        this.score = Math.floor((5 + this.rect.x / 10) * 100);
         this.active = true;
     }
     floatOnScreen(width, height) {
         if (Math.random() * (width + height) > width) {
             if (this.speed.x > 0) {
-                this.pos.x =-this.size.x;
-            }else{
-                this.pos.x=this.size.x+width;
+                this.pos.x = -this.size.x;
+            } else {
+                this.pos.x = this.size.x + width;
             }
-            if(this.speed.y>0){
-                this.pos.y=Math.random()*height*0.5;
-            }else{
-                this.pos.y=Math.random()*height*0.5+0.5*height;
+            if (this.speed.y > 0) {
+                this.pos.y = Math.random() * height * 0.5;
+            } else {
+                this.pos.y = Math.random() * height * 0.5 + 0.5 * height;
             }
-        }else{
-            if(this.speed.y>0){
-                this.pos.y=-this.size.y;
-            }else{
-                this.pos.y=this.size.y+height;
+        } else {
+            if (this.speed.y > 0) {
+                this.pos.y = -this.size.y;
+            } else {
+                this.pos.y = this.size.y + height;
             }
-            if(this.speed.x>0){
-                this.pos.x=Math.random()*width*0.5;
-            }else{
-                this.pos.x=Math.random()*width*0.5+0.5*width;
+            if (this.speed.x > 0) {
+                this.pos.x = Math.random() * width * 0.5;
+            } else {
+                this.pos.x = Math.random() * width * 0.5 + 0.5 * width;
             }
         }
     }
-    act(){
-        this.rotation+=this.spin;
-        this.pos=this.pos.plus(this.speed);
-        if(this.outOfBounds()){
+    act() {
+        this.rotation += this.spin;
+        this.pos = this.pos.plus(this.speed);
+        this.setXY();
+        if (this.outOfBounds()) {
             this.placeInBounds();
         }
-        this.setPos();
     }
 }
 SpaceRock.LRG_ROCK = 60;
 SpaceRock.MED_ROCK = 40;
 SpaceRock.SML_ROCK = 20;
+
+class OBB {
+    constructor(centerPoint, width, height, rotation) {
+        this.centerPoint = centerPoint;
+        this.extents = [width / 2, height / 2];
+        this.axes = [new Vector(Math.cos(rotation), Math.sin(rotation)), new Vector(-1 * Math.sin(rotation), Math.cos(rotation))];
+
+        this._width = width;
+        this._height = height;
+        this._rotation = rotation;
+
+    }
+    getProjectionRadius(axis){
+        return this.extents[0] * Math.abs(axis.dot(this.axes[0])) + this.extents[1] * Math.abs(axis.dot(this.axes[1]));
+    }
+}
+var CollisionDetector = {
+
+    detectorOBBvsOBB: function (OBB1, OBB2) {
+        var nv = OBB1.centerPoint.sub(OBB2.centerPoint);
+        var axisA1 = OBB1.axes[0];
+        if (OBB1.getProjectionRadius(axisA1) + OBB2.getProjectionRadius(axisA1) <= Math.abs(nv.dot(axisA1))) return false;
+        var axisA2 = OBB1.axes[1];
+        if (OBB1.getProjectionRadius(axisA2) + OBB2.getProjectionRadius(axisA2) <= Math.abs(nv.dot(axisA2))) return false;
+        var axisB1 = OBB2.axes[0];
+        if (OBB1.getProjectionRadius(axisB1) + OBB2.getProjectionRadius(axisB1) <= Math.abs(nv.dot(axisB1))) return false;
+        var axisB2 = OBB2.axes[1];
+        if (OBB1.getProjectionRadius(axisB2) + OBB2.getProjectionRadius(axisB2) <= Math.abs(nv.dot(axisB2))) return false;
+        return true;
+
+    }
+}

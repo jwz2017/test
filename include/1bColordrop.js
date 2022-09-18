@@ -78,7 +78,7 @@ window.onload = function () {
                         shape.removeAllEventListeners("pressmove");
                         shape.removeAllEventListeners("pressup");
                         score += 1;
-                        this.updateScoreBoard(SCORE, score);
+                        this.scoreBoard.update(SCORE, score);
 
                         createjs.Tween.get(shape).to({
                             x: slot.x,

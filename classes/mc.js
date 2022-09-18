@@ -174,7 +174,7 @@ class PushButtonShape extends createjs.Shape {
       this._selected = !this._selected;
     }
     if (this._handler && e.target.hitTest(e.localX, e.localY)) {
-      this._handler(this);
+      this._handler();
     }
     this._down = this._selected;
     this.redraw();

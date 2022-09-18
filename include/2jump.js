@@ -150,7 +150,7 @@ window.onload = function () {
         newLevel() {
             bullets = [];
             this.scoreBoard.update(LEVEL, this.level);
-            this.createGrid(plans, 30, 30, actorChars, map);
+            this.createGrid(plans, 30 ,30, actorChars, map);
             this.container.contentSize = {
                 width: grids[0].length * stepWidth,
                 height: grids.length * stepHeight
@@ -159,9 +159,9 @@ window.onload = function () {
         waitComplete() {
             stage.addChild(this.scoreBoard, this.container);
             this.scrollPlayerIntoView(this.player, this.container);
-
         }
         runGame() {
+            //渲染actors
             for (let i = actors.length - 1; i >= 0; i--) {
                 const actor = actors[i];
                 actor.act();
@@ -169,21 +169,23 @@ window.onload = function () {
                     actor.fire = false;
                     switch (actor.type) {
                         case "player":
-                            let bullet = this.createBullet(actor.angle, Barrage1);
-                            bullets.push(bullet);
-                            // bullet.setPos(actor.pos.x + (actor.size.x - bullet.size.x) / 2, actor.pos.y + (actor.size.y - bullet.size.y) / 2);
-                            bullet.pos.x=actor.pos.x+(actor.size.x-bullet.size.x)/2;
-                            bullet.pos.y=actor.pos.y + (actor.size.y - bullet.size.y) / 2;
-                            bullet.setPos();
-                            break;
-
-                        default:
+                            let bullet=this.getActor(bullets,Barrage1);
+                            bullet.angle=actor.angle;
+                            if (actor.angle==0)bullet.scaleX=1;
+                            else bullet.scaleX=-1;
+                            bullet.x=actor.x;
+                            bullet.y=actor.y;
+                            bullet.pos=bullet.getPos();
                             break;
                     }
                 }
             }
             //检测子弹
-            this.checkBullets(bullets);
+            for (const bullet of bullets) {
+                if (bullet.active) {
+                    bullet.act();
+                }
+            }
             //滚动地图
             this.scrollPlayerIntoView(this.player, this.container);
         }
@@ -237,7 +239,7 @@ window.onload = function () {
             this.runtick = 0;
             this.pos=this.pos.plus(new Vector(0,-0.5));
             this.setSize(0.8, 1.5);
-            this.setSpriteData(spriteSheet, "stand", 0.66);
+            this.setSpriteData(spriteSheet, "stand", 0.6);
         }
         startRoll() {
             this.oldPos = new Vector(this.pos.x, this.pos.y);
@@ -246,12 +248,12 @@ window.onload = function () {
             this.image.gotoAndPlay("roll");
             //重设图片位置
             this.size.y = this.size.y / 2;
-            this.pos=this.pos.plus(new Vector(0,this.size.y/2));
-            this.image.regY = 40;
+            this.pos=this.pos.plus(new Vector(0,this.size.y));
+            this.image.regY =30;
         }
         stopRoll() {
+            this.pos=this.pos.plus(new Vector(0,-this.size.y));
             this.size.y *= 2;
-            this.pos=this.pos.plus(new Vector(0,-this.size.y/2));
             this.image.regY = 0;
         }
         moveY() {
@@ -361,11 +363,11 @@ window.onload = function () {
         act() {
             this.moveX();
             this.moveY();
+            this.setXY();
             var actor = this.hitActors(actors);
             if (actor) {
                 this.hitResult(actor);
             }
-            this.setPos();
         }
         hitResult(actor) {
             if (actor.type == "coin") {
@@ -387,13 +389,14 @@ window.onload = function () {
                     this.status = "walk";
                     this.stopRoll();
                 }
-                this.setSize(this.size.x * 1.2, this.size.y * 1.2);
                 this.pos.y-=this.size.y*0.2;
+                this.pos.x-=this.size.x*0.1;
+                this.setSize(this.size.x * 1.2, this.size.y * 1.2,false);
                 let a = this.act;
                 this.act = function () {};
-                createjs.Tween.get(this.image).to({
-                    scaleX: this.image.scaleX * 1.2,
-                    scaleY: this.image.scaleY * 1.2
+                createjs.Tween.get(this).to({
+                    scaleX: this.scaleX * 1.2,
+                    scaleY: this.scaleY * 1.2
                 }, 800, createjs.Ease.quadOut).call(() => {
                     this.act = a;
                 });
@@ -428,16 +431,9 @@ window.onload = function () {
                 this.recycle();
             }
         }
-        recycle() {
-            super.recycle();
-            bullets.splice(bullets.indexOf(this),1);
-            Barrage1.bullets.push(this);
-        }
-
     }
-    Barrage1.bullets = [];
 
-    class Lava extends HitActor {
+    class Lava extends Actor {
         constructor(xpos,ypos, ch) {
             super(xpos,ypos);
             if (ch == "=") {
@@ -456,13 +452,12 @@ window.onload = function () {
             var newPos = this.pos.plus(this.speed);
             if (!this.hitMap(newPos)) {
                 this.pos = newPos;
-                this.x = this.pos.x * stepWidth;
-                this.y = this.pos.y * stepHeight;
             } else if (this.repeatPos) {
                 this.pos = this.repeatPos;
             } else {
                 this.speed = this.speed.times(-1);
             }
+            this.setXY();
         }
     }
     class Coin extends Actor {
@@ -479,10 +474,11 @@ window.onload = function () {
         }
         act() {
             this.image.rotation++;
+            // this.rotation++;
             this.angle += this.angleSpeed;
             this.speed.y = Math.sin(this.angle) * this.wobbleDist;
             this.pos = this.basePos.plus(new Vector(0, this.speed.y));
-            this.y = this.pos.y * stepHeight;
+            this.setXY();
         }
     }
     class Big extends Coin {

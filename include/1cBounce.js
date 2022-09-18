@@ -7,7 +7,7 @@ window.onload = function () {
         src: ["assets/fonts/regul-book.woff",
             "assets/fonts/regul-bold.woff"
         ],
-        type:"font"
+        type: "font"
     });
     loader.on("complete", () => {
         g.preload(Bounce);
@@ -25,13 +25,13 @@ window.onload = function () {
 
     var brickContainer = new createjs.Container();
     var colorOffse = Math.random() * 360,
-    count = 0;
-    
+        count = 0;
+
     class Bounce extends Game {
         constructor() {
             super();
             this.titleScreen.setText("弹球06");
-            this.container=new createjs.Container();
+            this.container = new createjs.Container();
             this.container.y = GFrame.style.SCOREBOARD_HEIGHT;
             this.actorChars = {
                 "@": Pandle,
@@ -66,8 +66,8 @@ window.onload = function () {
                     " x           xx",
                     "        p      ",
                     "               ",
-                    "  /            ",
                     "               ",
+                    "  /            ",
                     "               ",
                     "               ",
                     "               ",
@@ -81,7 +81,7 @@ window.onload = function () {
             ];
 
             this.maxLevel = this.plans.length;
-            this.map=new createjs.Shape();
+            this.map = new createjs.Shape();
 
 
 
@@ -103,7 +103,7 @@ window.onload = function () {
             bricks = [];
             this.scoreBoard.update(LEVEL, this.level);
 
-            this.createGrid(this.plans, 50, 30, this.actorChars,this.map);
+            this.createGrid(this.plans, 50, 30, this.actorChars, this.map);
             brickContainer.cache(0, 0, grids[0].length * stepWidth, grids.length * stepHeight);
             //加入显示元素
 
@@ -136,7 +136,7 @@ window.onload = function () {
                 fieldType = "wall";
                 color = "#555";
             } else if (ch == "x" || ch == "l") {
-                fieldType = new Brick(new Vector(xpos, ypos), ch);
+                fieldType = new Brick(xpos, ypos, ch);
                 bricks.push(fieldType);
                 brickContainer.addChild(fieldType);
             }
@@ -149,14 +149,13 @@ window.onload = function () {
     window.Bounce = Bounce;
 
     class Pandle extends HitActor {
-        constructor(pos) {
-            super(pos);
-            this.type="player";
+        constructor(xpos, ypos) {
+            super(xpos, ypos);
+            this.type = "player";
             this.color = "#555";
             this.xspeed = 0.15;
-            this.pos.y+=0.5;
+            this.pos.y += 0.5;
             this.setSize(3, 0.5);
-            // this.setPos(this.pos.x,this.pos.y+0.5);
         }
         act() {
             this.moveX();
@@ -169,37 +168,35 @@ window.onload = function () {
                 this.speed.x = this.xspeed;
             }
             var newPos = this.pos.plus(this.speed);
-            if (newPos.x >= 0 && Math.ceil(newPos.x + this.size.x) <= grids[0].length) {
-                // this.setPos(newPos.x,newPos.y);
-                this.pos=newPos;
-                this.setPos();
+            if (!this.hitBounds(this.getX(newPos),this.getY(newPos))) {
+                this.pos = newPos;
+                this.setXY();
             }
         }
     }
     class Puck extends Barrage {
-        constructor(pos) {
-            super(pos);
-            this.av = this.v = 0.22;
-            this.setSize(0.3, 0.3);
+        constructor(xpos, ypos) {
+            super(xpos, ypos);
+            this.av = this.speedRate = 0.15;
+            this.setSize(0.3, 0.3 * stepWidth / stepHeight);
             this.angle = 90;
             this.combo = 0;
-            this.oldPos = new Vector(pos.x, pos.y);
+            this.oldPos = new Vector(xpos, ypos);
         }
         act() {
             this.moveX();
             this.moveY();
-            var actor=this.hitActors(actors);
+            this.setXY();
+            var actor = this.hitActors(actors);
             if (actor) {
                 this.hitResult(actor);
             }
-            this.setPos();
         }
         moveX() {
             var newPos = this.pos.plus(new Vector(this.speed.x, 0));
             var fieldType = this.hitMap(newPos);
             if (!fieldType) {
-                // this.setPos(newPos.x,newPos.y);
-                this.pos=newPos;
+                this.pos = newPos;
             } else if (fieldType == "wall") {
                 this.combo = 0;
                 this.speed.x *= -1;
@@ -212,15 +209,14 @@ window.onload = function () {
             var newPos = this.pos.plus(new Vector(0, this.speed.y));
             var fieldType = this.hitMap(newPos);
             if (!fieldType) {
-                // this.setPos(newPos.x,newPos.y);
-                this.pos=newPos;
+                this.pos = newPos;
             } else if (fieldType == "wall") {
                 this.combo = 0;
                 this.speed.y *= -1;
             } else if (fieldType == "lava") {
                 if (lives > 0) {
                     this.pos = new Vector(this.oldPos.x, this.oldPos.y);
-                    this.v = this.av;
+                    this.speedRate = this.av;
                     this.angle = 90;
                     lives--;
                     model.dispatchEvent(new ScoreUpdate(LIVES, lives));
@@ -230,7 +226,7 @@ window.onload = function () {
             } else if (fieldType.type == "brick" || fieldType.type == "live") {
                 this.speed.y *= -1;
                 this.hitBrickResult(fieldType);
-                if (bricks.length==0) {
+                if (bricks.length == 0) {
                     model.dispatchEvent(GFrame.event.LEVEL_UP);
                 }
             }
@@ -271,16 +267,16 @@ window.onload = function () {
         hitResult(actor) {
             if (actor.type == "player") {
                 this.combo = 0;
-                this.v = this.av + Math.abs(this.pos.x - actor.pos.x - actor.size.x / 2) / actor.size.x / 3;
+                this.speedRate = this.av + Math.abs(this.pos.x - actor.pos.x - actor.size.x / 2) / actor.size.x / 3;
                 this.angle = 220 + (this.pos.x - actor.pos.x) / actor.size.x * 100;
             } else if (actor.type == "angleBounce") {
-                this.angleBounce(actor);
+                this.hitAngleBounce(actor);
             }
         }
     }
     class Brick extends Actor {
-        constructor(pos, ch) {
-            super(pos);
+        constructor(xpos, ypos, ch) {
+            super(xpos, ypos);
             if (ch == "x") {
                 this.color = createjs.Graphics.getHSL(Math.cos((count++) * 0.1) * 30 + colorOffse,
                     80,
@@ -293,29 +289,28 @@ window.onload = function () {
                 var text = new createjs.Text('1Up', "24px Times", '#fff');
                 text.textAlign = "center";
                 text.textBaseline = "middle";
-                text.x = this.size.x * stepWidth / 2;
-                text.y = this.size.y * stepHeight / 2;
                 this.addChild(text);
             }
             this.setSize(1, 1);
         }
-
     }
     class AngleBounce extends Actor {
-        constructor(pos) {
-            super(pos);
+        constructor(xpos, ypos) {
+            super(xpos, ypos);
             this.type = "angleBounce";
-            this.setSize(3, 3);
-            var angle = Math.atan2(-this.size.y, this.size.x);
+            this.drawShape(200);
+        }
+        drawShape(w) {
+            this.image = new createjs.Shape();
+            this.addChild(this.image);
+            this.image.graphics.clear().setStrokeStyle(2).beginStroke(this.color).moveTo(-w/2, 0).lineTo(w/2, 0);
+            this.image.setBounds(-w/2, 0, w, 1);
+            this.image.rotation = 20;
+            
+            this.rect = this.getBounds();
+            let angle = this.image.rotation * Math.PI / 180;
             this.cos = Math.cos(angle);
             this.sin = Math.sin(angle);
-            this.posX=this.pos.x;
-            this.posY=this.pos.y+this.size.y;
-        }
-        drawShape() {
-            var width = this.size.x * stepWidth,
-                height = this.size.y * stepHeight;
-            this.image.graphics.clear().setStrokeStyle(2).beginStroke(this.color).moveTo(-width / 2, height / 2).lineTo(width / 2, -height / 2);
         }
     }
 

@@ -89,7 +89,8 @@ window.onload = function () {
             this.scoreBoard.update(LEVEL, this.level);
             //创建网格
             this.createGrid(plans, 32, 32, actorChars, map);
-            this.container.y = (height - grids.length * stepHeight) / 2;
+            this.container.y = height - grids.length * stepHeight >> 1;
+            this.container.x = width - grids[0].length * stepWidth >> 1;
             tanks = actors.filter(function (actor) {
                 return actor.type == "player" || actor.type == "enemy";
             });
@@ -97,7 +98,7 @@ window.onload = function () {
             enemyBullets = [];
         }
         waitComplete() {
-            stage.addChild(this.container);
+            stage.addChild(this.scoreBoard, this.container);
 
         }
         runGame() {
@@ -109,20 +110,28 @@ window.onload = function () {
                     let bullet;
                     switch (actor.type) {
                         case "player":
-                            bullet = this.createBullet(actor.image.rotation - 90, Barrage1);
-                            bullets.push(bullet);
+                            bullet = this.getActor(bullets, Barrage1);
+                            bullet.angle = actor.image.rotation - 90;
                             break;
                         case "enemy":
-                            bullet = this.createBullet(actor.image.rotation - 90, EnemyBarrage);
-                            enemyBullets.push(bullet);
+                            bullet = this.getActor(enemyBullets, EnemyBarrage);
+                            bullet.angle = actor.image.rotation - 90;
                             break;
                     }
-                    bullet.pos.x=actor.pos.x + (actor.size.x - bullet.size.x) / 2;
-                    bullet.pos.y=actor.pos.y + (actor.size.y - bullet.size.y) / 2;
+                    bullet.pos.x = actor.pos.x + (actor.size.x - bullet.size.x) / 2;
+                    bullet.pos.y = actor.pos.y + (actor.size.y - bullet.size.y) / 2;
                 }
             }
-            this.checkBullets(bullets);
-            this.checkBullets(enemyBullets);
+            for (const bullet of bullets) {
+                if (bullet.active) {
+                    bullet.act();
+                }
+            }
+            for (const enemybullet of enemyBullets) {
+                if (enemybullet.active) {
+                    enemybullet.act();
+                }
+            }
         }
         clear() {
             this.container.removeAllChild();
@@ -190,10 +199,10 @@ window.onload = function () {
     window.Tanke = Tanke;
 
     class SpritePlayer extends HitActor {
-        constructor(pose) {
-            super(pose);
-            this.type="player";
-            this.v = 0.03;
+        constructor(xpos, ypos) {
+            super(xpos, ypos);
+            this.type = "player";
+            this.speedRate = 0.03;
             this.setSize(0.8, 0.8);
             this.setSpriteData(spriteSheet, "player");
             this.image.paused = true;
@@ -204,26 +213,29 @@ window.onload = function () {
             this.move();
         }
         move() {
-            this.speed.x = 0;
-            this.speed.y = 0;
+            this.speed.x = this.speed.y = 0;
             this.image.paused = true;
-            var key = pressed[pressed.length - 1];
-            if (key == "up") {
-                this.speed.y = -this.v;
-                this.image.rotation = 0;
-                this.image.paused = false;
-            } else if (key == "down") {
-                this.speed.y = this.v;
-                this.image.rotation = 180;
-                this.image.paused = false;
-            } else if (key == "right") {
-                this.speed.x = this.v;
-                this.image.rotation = 90;
-                this.image.paused = false;
-            } else if (key == "left") {
-                this.speed.x = -this.v;
-                this.image.rotation = 270;
-                this.image.paused = false;
+            switch (pressed[pressed.length - 1]) {
+                case "up":
+                    this.speed.y = -this.speedRate;
+                    this.image.rotation = 0;
+                    this.image.paused = false;
+                    break;
+                case "down":
+                    this.speed.y = this.speedRate;
+                    this.image.rotation = 180;
+                    this.image.paused = false;
+                    break;
+                case "right":
+                    this.speed.x = this.speedRate;
+                    this.image.rotation = 90;
+                    this.image.paused = false;
+                    break;
+                case "left":
+                    this.speed.x = -this.speedRate;
+                    this.image.rotation = 270;
+                    this.image.paused = false;
+                    break;
             }
             //开火
             if (this.nextBullet <= 0) {
@@ -242,15 +254,15 @@ window.onload = function () {
                     this.status = "lose";
                 }
             } else {
-                var oldPos = new Vector(this.pos.x, this.pos.y);
-                // this.setPos(newPos.x, newPos.y);
-                this.pos=newPos;
-                var actor = this.hitActors(actors)
+                var actor = this.hitActors(actors, this.getX(newPos), this.getY(newPos));
+                if (!actor || actor.type != "enemy") {
+                    this.pos = newPos;
+                    this.setXY();
+                }
                 if (actor) {
                     switch (actor.type) {
                         case "enemy":
-                            // this.setPos(oldPos.x, oldPos.y);
-                            this.pos=oldPos;
+                            console.log("enemy");
                             break;
                         case "tank":
                             console.log("tank");
@@ -262,20 +274,14 @@ window.onload = function () {
                             break;
                     }
                 }
-                this.setPos();
             }
         }
     }
     class Barrage1 extends Barrage {
-        constructor(pos) {
-            super(pos);
+        constructor(xpos, ypos) {
+            super(xpos, ypos);
             this.setSize(0.26, 0.26);
             this.setSpriteData(spriteSheet, "barrage")
-        }
-        recycle() {
-            super.recycle();
-            bullets.splice(bullets.indexOf(this),1);
-            Barrage1.bullets.push(this);
         }
         hitResult(actor) {
             if (actor.type == "enemy") {
@@ -283,17 +289,11 @@ window.onload = function () {
             }
         }
     }
-    Barrage1.bullets = [];
 
     class EnemyBarrage extends Barrage {
-        constructor(pos) {
-            super(pos);
+        constructor(xpos, ypos) {
+            super(xpos, ypos);
             this.setSize(0.2, 0.2);
-        }
-        recycle() {
-            super.recycle();
-            enemyBullets.splice(enemyBullets.indexOf(this),1);
-            EnemyBarrage.bullets.push(this);
         }
         hitResult(actor) {
             if (actor.type == "player") {
@@ -301,19 +301,18 @@ window.onload = function () {
             }
         }
     }
-    EnemyBarrage.bullets = [];
 
     class Live extends Actor {
-        constructor(pos) {
-            super(pos);
+        constructor(xpos, ypos) {
+            super(xpos, ypos);
             this.type = "live";
             this.setSize(1, 1);
             this.setSpriteData(spriteSheet, "live");
         }
     }
     class Bullet extends Actor {
-        constructor(pos) {
-            super(pos);
+        constructor(xpos, ypos) {
+            super(xpos, ypos);
             this.type = "bullet";
             this.setSize(0.3, 0.7);
             this.setSpriteData(spriteSheet, "buttle")
@@ -321,8 +320,8 @@ window.onload = function () {
 
     }
     class Tank extends Actor {
-        constructor(pos) {
-            super(pos);
+        constructor(xpos, ypos) {
+            super(xpos, ypos);
             this.setSize(0.6, 0.6);
             this.setSpriteData(spriteSheet, "tanke");
             this.type = "tank";
@@ -330,9 +329,9 @@ window.onload = function () {
 
     }
     class Enemy extends HitActor {
-        constructor(pos) {
-            super(pos);
-            this.v = 0.02;
+        constructor(xpos, ypos) {
+            super(xpos, ypos);
+            this.speedRate = 0.02;
             this.setSize(0.8, 0.8);
             this.setSpriteData(spriteSheet, "enemy");
             this.tick = 0;
@@ -353,20 +352,20 @@ window.onload = function () {
             }
             if (this.key <= 10) {
                 //上
-                this.speed.y = -this.v;
+                this.speed.y = -this.speedRate;
                 this.image.rotation = 0;
 
             } else if (this.key > 10 && this.key <= 40) {
                 //下
-                this.speed.y = this.v;
+                this.speed.y = this.speedRate;
                 this.image.rotation = 180;
             } else if (this.key > 40 && this.key <= 65) {
                 //右
-                this.speed.x = this.v;
+                this.speed.x = this.speedRate;
                 this.image.rotation = 90;
             } else if (this.key > 65) {
                 //左
-                this.speed.x = -this.v;
+                this.speed.x = -this.speedRate;
                 this.image.rotation = 270;
             }
             if (this.tick1 >= 201) {
@@ -376,14 +375,10 @@ window.onload = function () {
             var newPos = this.pos.plus(this.speed);
             var obstacle = this.hitMap(newPos);
             if (!obstacle) {
-                var oldPos = new Vector(this.pos.x, this.pos.y);
-                // this.setPos(newPos.x, newPos.y);
-                this.pos=newPos;
-                if (this.hitActors(tanks)) {
-                    this.setPos(oldPos.x, oldPos.y);
-                    this.pos=oldPos;
+                if (!this.hitActors(tanks, this.getX(newPos), this.getY(newPos))) {
+                    this.pos = newPos;
+                    this.setXY();
                 }
-                this.setPos();
             } else {
                 this.key = Math.random() * 100;
                 this.tick = 0;

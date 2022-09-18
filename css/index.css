@@ -205,13 +205,17 @@ nav ul li a p {
   width: 100%;
   display: block;
   border-right: 1px solid #ddd;
+  text-align: center;
+  line-height: 16px;
+  text-decoration: underline;
+  color: blue;
 }
 .sk_product li:last-child a {
   border-right: none;
 }
 .sk_product li a img {
   width: 64%;
-  margin: 0 auto;
+  margin: 5px auto;
   display: block;
   border-radius: 20%;
 }
@@ -242,12 +246,10 @@ nav ul li a p {
   transform-origin: 0 0;
 }
 #dome #game #inputText {
-  /* display: none; */
-  position: absolute;
-  visibility: hidden;
+  display: none;
   width: 170px;
-  height: 30px;
-  font-size: 20px;
+  height: 50px;
+  font-size: 30px;
 }
 #dome #game #testTxt {
   visibility: hidden;
@@ -256,7 +258,7 @@ nav ul li a p {
   height: 300px;
 }
 #dome #game canvas {
-  background-color: #999;
+  background-color: #9eb195;
 }
 #dome #close {
   background: orange;

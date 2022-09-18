@@ -52,5 +52,6 @@ class Sparkles extends createjs.Container{
         }
         clear(){
             createjs.Ticker.off("tick",this.tick);
+            stage.autoClear=true;
         }
     }

@@ -34,7 +34,6 @@ window.onload = function () {
             GFrame.style.TITLE_TEXT_COLOR = "#fff";
             super();
             this.titleScreen.setText("飞机游戏");
-            // stepWidth=stepHeight=10;
             ship = new Ship();
         }
         /**建立游戏元素游戏初始化
@@ -79,10 +78,12 @@ window.onload = function () {
                 if (keys.attack) {
                     nextBullet = BULLET_TIME;
                     let angle = ship.rotation + 90;
-                    const bullet = this.createBullet(angle, Bullet);
-                    bullet.x = ship.x + ship.bounds * Math.cos(angle * Math.PI / 180);
-                    bullet.y = ship.y + ship.bounds * Math.sin(angle * Math.PI / 180);
-                    bullets.push(bullet);
+                    const bullet=this.getActor(bullets,Bullet);
+                    bullet.angle=angle;
+                    bullet.rotation=angle;
+                    bullet.x = ship.x + ship.hit * Math.cos(angle * Math.PI / 180);
+                    bullet.y = ship.y + ship.hit * Math.sin(angle * Math.PI / 180);
+                    bullet.pos=bullet.getPos();
                 }
             } else {
                 nextBullet--;
@@ -99,26 +100,26 @@ window.onload = function () {
                 nextRock--;
             }
             //石块移动
-            for (const spaceRock in rockBelt) {
-                const o = rockBelt[spaceRock];
-                if (!o || !o.active) {
+            for (const o of rockBelt) {
+                if (!o.active) {
                     continue;
                 }
                 o.act();
                 //石块与飞船碰撞
-                if (o.hitRadius(ship.x, ship.y, ship.bounds)) {
+                if (o.hitRadius(ship)) {
                     model.dispatchEvent(GFrame.event.GAME_OVER);
                     return;
                 }
                 //与子弹碰撞
                 for (let i=bullets.length-1;i>=0;i--) {
                     const p = bullets[i];
-                    if (o.hitPoint(p.x, p.y)) {
+                    // if (p.active&&o.hitPoint(p.x,p.y)) {
+                    if (p.active&&o.hitRadius(null,p.x,p.y)) {
                         score+=o.score;
                         this.scoreBoard.update(SCORE,score);
                         p.recycle();
                         let newSize;
-                        switch (o.bounds) {
+                        switch (o.size.x) {
                             case SpaceRock.LRG_ROCK:
                                 newSize=SpaceRock.MED_ROCK;
                                 break;
@@ -138,23 +139,29 @@ window.onload = function () {
                                 offset=(Math.random()*o.size.x*2)-o.size.x;
                                 rockBelt[index].pos.x=o.pos.x+offset;
                                 rockBelt[index].pos.y=o.pos.y+offset;
-                                rockBelt[index].setPos();
+                                rockBelt[index].setXY();
                             }
                         }
                         stage.removeChild(o);
                         o.active=false;
+                        break;
                     }
 
                 }
             }
-            this.checkBullets(bullets);
+            //检测子弹
+            for (const bullet of bullets) {
+                if(bullet.active){
+                    bullet.act();
+                }
+            }
         }
         getSpackRock(size) {
             let i = 0,
                 len = rockBelt.length;
             while (i <= len) {
                 if (!rockBelt[i]) {
-                    rockBelt[i] = new SpaceRock(null, size);
+                    rockBelt[i] = new SpaceRock(0,0, size);
                     break;
                 } else if (!rockBelt[i].active) {
                     rockBelt[i].setSize(size,size);
@@ -167,10 +174,6 @@ window.onload = function () {
             stage.addChild(rockBelt[i]);
             return i;
         }
-        clear() {
-            // this.container.removeAllChildren();
-
-        }
 
     }
     SpaceShip.loadItem = null;
@@ -180,24 +183,19 @@ window.onload = function () {
     class Bullet extends Barrage {
         constructor(pos) {
             super(pos);
-            this.v = 5;
+            this.speedRate = 5;
             this.setSize(2 / stepWidth, 1 / stepHeight);
         }
-        drawShape() {
-            this.image.graphics.beginStroke("#ffffff").moveTo(-1, 0).lineTo(1, 0);
+        drawShape(width,height) {
+            this.image.graphics.beginStroke("#ffffff").moveTo(-width/2, 0).lineTo(width/2, 0);
+            this.image.setBounds(-width/2,-height/2,width,height);
         }
         act() {
-            this.x += this.speed.x;
-            this.y += this.speed.y;
+            this.pos=this.pos.plus(this.speed);
+            this.setXY();
             if (this.outOfBounds()) {
                 this.recycle();
             }
         }
-        recycle() {
-            super.recycle();
-            bullets.splice(bullets.indexOf(this),1);
-            Bullet.bullets.push(this);
-        }
     }
-    Bullet.bullets = [];
 })();

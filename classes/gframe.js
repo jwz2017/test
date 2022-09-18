@@ -370,7 +370,7 @@ class GFrame {
     fps.style.position = "absolute";
     fps.style.top = "10px";
     fps.style.left = "10px";
-    fps.style.color=GFrame.style.TITLE_TEXT_COLOR;
+    fps.style.color = GFrame.style.TITLE_TEXT_COLOR;
     createjs.Ticker.addEventListener("tick", () => {
       fps.innerHTML = Math.round(createjs.Ticker.getMeasuredFPS()) + "fps";
     });
@@ -476,15 +476,15 @@ class BasicScreen extends createjs.Container {
     this.title.lineHeight = 40;
     this.addChild(this.title);
   }
-  setTitleSprite(spritesheet,ani){
-    var xpos=this.title.x;
-    var ypos=this.title.y;
+  setTitleSprite(spritesheet, ani) {
+    var xpos = this.title.x;
+    var ypos = this.title.y;
     this.removeChild(this.title);
-    this.title=new createjs.Sprite(spritesheet,ani);
-    this.title.regX=this.title.getBounds().width/2;
-    this.title.regY=this.title.getBounds().height/2;
-    this.title.x=xpos;
-    this.title.y=ypos;
+    this.title = new createjs.Sprite(spritesheet, ani);
+    this.title.regX = this.title.getBounds().width / 2;
+    this.title.regY = this.title.getBounds().height / 2;
+    this.title.x = xpos;
+    this.title.y = ypos;
     this.addChild(this.title);
   }
   /**创建按钮
@@ -496,11 +496,10 @@ class BasicScreen extends createjs.Container {
    * @param {[number]} height 按钮高度 默认20
    */
   createOkButton(xpos, ypos, label, width, height, graphics, id) {
-    var g = graphics || new Star(6, 0.35);
     new PushButton(this, label, function () {
       this.id = id;
       this.dispatchEvent(GFrame.event.OK_BUTTON, true);
-    }, xpos, ypos, width, height, g);
+    }, xpos, ypos, width, height, graphics);
   }
   /**设置文本内容
    * 
@@ -510,7 +509,7 @@ class BasicScreen extends createjs.Container {
   setText(val) {
     this.title.text = val.toString();
   }
-  setPosition(x, y) {
+  setXYition(x, y) {
     this.title.x = x;
     this.title.y = y;
   }
@@ -657,7 +656,6 @@ class Game {
   }
   createTitleScreen() {
     this.titleScreen = new BasicScreen('开始界面5', width / 2, height / 3);
-    // this.titleScreen.createShapeBack();
     this.titleScreen.createOkButton((width - 250) / 2, height * 3 / 5, '开始', 250, 60, new RoundRect(30)); //300,60
     this.titleScreen.createOkButton((width - 250) / 2, height * 3 / 5 + 70, '游戏说明', 250, 60, new RoundRect(30), GFrame.state.STATE_INSTRUCTION); //300,60
     // this.titleScreen=new lib.Title();//协作animate使用-------------------1
@@ -665,18 +663,18 @@ class Game {
   createInstructionScreen() {
     this.instructionScreen = new BasicScreen('介绍界面', width / 2, height / 4);
     this.instructionScreen.setFont("24px " + GFrame.style.fontFamily)
-    this.instructionScreen.createOkButton((width - 150) / 2, height * 3 / 5, '返回', 150, 150);
+    this.instructionScreen.createOkButton((width - 150) / 2, height * 3 / 5, '返回', 150, 150, new Star(6, 0.35));
   }
   createLevelInScreen() {
     this.levelInScreen = new BasicScreen('level:0', width / 2, height / 2);
   }
   createGameOverScreen() {
     this.gameOverScreen = new BasicScreen('game over', width / 2, height / 3);
-    this.gameOverScreen.createOkButton((width - 150) / 2, height * 3 / 5, '结束', 150, 150);
+    this.gameOverScreen.createOkButton((width - 150) / 2, height * 3 / 5, '结束', 150, 150, new Star(6, 0.35));
   }
   createLevelOutScreen() {
     this.levelOutScreen = new BasicScreen('you win', width / 2, height / 3);
-    this.levelOutScreen.createOkButton((width - 150) / 2, height * 3 / 5, '通关', 150, 150);
+    this.levelOutScreen.createOkButton((width - 150) / 2, height * 3 / 5, '通关', 150, 150, new Star(6, 0.35));
   }
   createScoreBoard() {
 
@@ -735,7 +733,6 @@ class Game {
     map.uncache();
     stepWidth = stepW;
     stepHeight = stepH;
-
     var plan = plans[this.level - 1],
       mapWidth = plan[0].length,
       mapHeight = plan.length;
@@ -746,7 +743,7 @@ class Game {
         var ch = line[x];
         var Act = actorChars[ch];
         if (Act) {
-          actors.push(new Act(x,y, ch));
+          actors.push(new Act(x, y, ch));
         }
         gridLine.push(this.setGrid(ch, x, y));
       }
@@ -765,32 +762,98 @@ class Game {
   setGrid(ch, xpos, ypos) {
 
   }
-  //创建子弹
-  createBullet(angle, Bullet) {
-    var length = Bullet.bullets.length;
-    if (length > 0) {
-      var bullet = Bullet.bullets.pop();
-    } else {
-      var bullet = new Bullet(this.pos);
+  //创建元素
+  getActor(array, Actor) {
+    let len = array.length,
+      i = 0;
+    while (i <= len) {
+      if (!array[i]) {
+        array[i] = new Actor();
+        break;
+      } else if (!array[i].active) {
+        array[i].active = true;
+        break;
+      } else {
+        i++;
+      }
     }
-    bullet.angle = angle;
-    this.container.addChild(bullet);
-    return bullet;
+    this.container.addChild(array[i]);
+    return array[i];
   }
-  //检测子弹
-  checkBullets(bullets) {
-    for (let i = bullets.length - 1; i >= 0; i--) {
-      const bullet = bullets[i];
-      bullet.act();
-    }
-  }
-  
-}
+  //动量守恒碰撞
+  billiardCollision(ball0, ball1) {
+    let dx = ball1.x - ball0.x,
+      dy = ball1.y - ball0.y,
+      angle = Math.atan2(dy, dx),
+      sin = Math.sin(angle),
+      cos = Math.cos(angle);
+    //旋转ball0的位置
+    let pos0 = new Vector(0, 0);
+    //旋转ball1的位置
+    let pos1 = this.rotate(dx, dy, sin, cos, true);
+    //旋转ball0的速度
+    let vel0 = this.rotate(ball0.speed.x * stepWidth, ball0.speed.y * stepHeight, sin, cos, true);
+    //旋转ball1的速度
+    let vel1 = this.rotate(ball1.speed.x * stepWidth, ball1.speed.y * stepHeight, sin, cos, true);
+    //碰撞的作用力
+    let vxTotal = vel0.x - vel1.x;
+    vel0.x = ((ball0.mass - ball1.mass) * vel0.x + 2 * ball1.mass * vel1.x) / (ball0.mass + ball1.mass);
+    vel1.x = vxTotal + vel0.x;
+    //更新位置
+    // pos0.x+=vel0.x;
+    // pos1.x+=vel1.x;
+    let absV = Math.abs(vel0.x) + Math.abs(vel1.x);
+    let overlap = (ball0.size.x / 2 + ball1.size.x / 2) * stepWidth - Math.abs(pos0.x - pos1.x);
+    pos0.x += vel0.x / absV * overlap;
+    pos1.x += vel1.x / absV * overlap;
 
+    //将位置旋转回来
+    let pos0f = this.rotate(pos0.x, pos0.y, sin, cos, false);
+    let pos1f = this.rotate(pos1.x, pos1.y, sin, cos, false);
+    //将位置调整为屏幕的实际位置
+    ball1.x = ball0.x + pos1f.x;
+    ball1.y = ball0.y + pos1f.y;
+    ball0.x = ball0.x + pos0f.x;
+    ball0.y = ball0.y + pos0f.y;
+    //将速度旋转回来
+    let vel0f = this.rotate(vel0.x, vel0.y, sin, cos, false);
+    let vel1f = this.rotate(vel1.x, vel1.y, sin, cos, false);
+    ball0.speed.x = vel0f.x / stepWidth;
+    ball0.speed.y = vel0f.y / stepHeight;
+    ball1.speed.x = vel1f.x / stepWidth;
+    ball1.speed.y = vel1f.y / stepHeight;
+  }
+  //坐标旋转
+  rotate(x, y, sin, cos, reverse) {
+    let result = new Vector();
+    if (reverse) {
+      result.x = x * cos + y * sin;
+      result.y = y * cos - x * sin;
+    } else {
+      result.x = x * cos - y * sin;
+      result.y = y * cos + x * sin;
+    }
+    return result;
+  }
+  //相互吸引函数
+  gravitate(partA, partB) {
+    let dx = partB.x - partA.x,
+      dy = partB.y - partA.y,
+      distSQ = dx * dx + dy * dy,
+      dist = Math.sqrt(distSQ),
+      force = partA.mass * partB.mass / distSQ,
+      ax = force * dx / dist,
+      ay = force * dy / dist;
+    partA.speed.x += ax / partA.mass / stepWidth;
+    partA.speed.y += ay / partA.mass / stepHeight;
+    partB.speed.x -= ax / partB.mass / stepWidth;
+    partB.speed.y -= ay / partB.mass / stepHeight;
+  }
+}
 
 //向量
 class Vector {
-  constructor(x, y) {
+  constructor(x = 0, y = 0) {
     this.x = x;
     this.y = y;
   }
@@ -800,80 +863,113 @@ class Vector {
   times(factor) {
     return new Vector(this.x * factor, this.y * factor);
   }
+  sub(v) {
+    return new Vector(this.x - v.x, this.y - v.y)
+  }
+  dot(v) {
+    return this.x * v.x + this.y * v.y;
+  }
 }
-
 
 class Actor extends createjs.Container {
-  constructor(xpos=0,ypos=0) {
+  constructor(xpos = 0, ypos = 0) {
     super();
     this.pos = new Vector(xpos, ypos);
-    this.size = new Vector(1, 1);
+    this.active = true;
+    this.hit = 0;
     this.speed = new Vector(0, 0);
     this.color = "rgb(64,64,64)";
-    this.image = new createjs.Shape();
-    this.addChild(this.image);
+    this._scalesizeX = 1;
+    this._scalesizeY = 1;
   }
-  drawShape() {
-    var width = this.size.x * stepWidth,
-      height = this.size.y * stepHeight;
-    this.image.graphics.clear().beginFill(this.color).drawRect(0, 0, width, height);
+  drawShape(width, height) {
+    this.image.graphics.clear().beginFill(this.color).drawRect(-width / 2, -height / 2, width, height);
+    this.image.setBounds(-width / 2, -height / 2, width, height);
+    this.hit = Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2)) / 2;
   }
-  setSize(width, height) {
-    this.size.x = width;
-    this.size.y = height;
-    if (this.image instanceof(createjs.Shape)) {
-      this.drawShape();
+  setSize(width, height, isreal = true) {
+    if (this.image instanceof(createjs.Sprite)) {
+      this._scalesizeX *= width / this.size.x;
+      this._scalesizeY *= height / this.size.y;
+      this._rect.setValues(this._rect.x * this._scalesizeX, this._rect.y * this._scalesizeY, this._rect.width * this._scalesizeX, this._rect.height * this._scalesizeY);
+      if (this._scalesizeX == this._scalesizeY) {
+        this.hit *= this._scalesizeX;
+      } else {
+        this.hit = Math.sqrt(Math.pow(width * stepWidth, 2) + Math.pow(height * stepHeight, 2)) / 2;
+      }
+      if (isreal) {
+        this.scaleX = this._scalesizeX;
+        this.scaleY = this._scalesizeY;
+      }
     } else {
-      this.image.scaleX *= width / this.size.x;
-      this.image.scaleY *= height / this.size.y;
+      if (!this.image) {
+        this.image = new createjs.Shape();
+        this.addChildAt(this.image,0);
+      }
+      this.drawShape(width * stepWidth, height * stepHeight);
+      this._rect = this.getBounds();
     }
-    this.regX=this.size.x/2*stepWidth;
-    this.regY=this.size.y/2*stepHeight;
-    this.setPos();
+    this.size = new Vector(width, height);
+    this.setXY();
   }
-  setPos() {
-    this.x = (this.pos.x+this.size.x/2) * stepWidth;
-    this.y = (this.pos.y+this.size.y/2) * stepHeight;
-    // this.pos.x = xpos;
-    // this.pos.y = ypos
+  get rect(){
+    return this._rect;
   }
-  setSpriteData(spriteSheet, animation, scale) {
-    // this.removeChild(this.image);
+  set rect(val){
+    this._rect=val;
+    this.size=new Vector(this.rect.width/stepWidth,this.rect.height/stepHeight);
+    this.setXY();
+  }
+  getX(pos){
+    return pos.x * stepWidth - this._rect.x;
+  }
+  getY(pos){
+    return pos.y * stepHeight - this._rect.y;
+  }
+  getPos(x = this.x, y = this.y) {
+    return new Vector((x + this._rect.x) / stepWidth, (y + this._rect.y) / stepHeight);
+  }
+  setXY() {
+    this.x = this.pos.x * stepWidth - this._rect.x;
+    this.y = this.pos.y * stepHeight - this._rect.y;
+  }
+  setReg(regX,regY){
+    this.regX=regX;
+    this.regY=regY;
+    this._rect.x-=regX;
+    this._rect.y-=regY;
+  }
+  getCenterPoint(){
+    let x1=this.rect.width/2+this.rect.x,
+    y1=this.rect.height/2+this.rect.y,
+    cos=Math.cos(this.rotation*Math.PI/180),
+    sin=Math.sin(this.rotation*Math.PI/180),
+    x2 = cos * x1 - sin * y1,
+    y2 = cos * y1 + sin * x1;
+    return new Vector(x2+this.x,y2+this.y);
+  }
+  setSpriteData(spriteSheet, animation, scale = 1) {
+    // if (this.image) this.removeChild(this.image);
     this.image = new createjs.Sprite(spriteSheet, animation);
-    console.log(this.image.x,this.image.y);
-    this.image.scale = scale || 1;
-    this.image.x = (stepWidth * this.size.x) / 2;
-    this.image.y = (stepHeight * this.size.y) / 2;
+    this.image.scale = scale;
     this.addChild(this.image);
-  }
-  //检测是否出屏幕
-  outOfBounds() {
-    return this.x < -this.size.x*stepWidth || this.y < -this.size.y * stepHeight || this.x > width + this.size.x*stepWidth || this.y > height + this.size.y*stepHeight;
-  }
-  //屏幕环绕
-  placeInBounds() {
-    //if its visual bounds are entirely off screen place it off screen on the other side
-    if (this.x > width + this.size.x*stepWidth) {
-      this.pos.x = this.size.x * -1;
-
-    } else if (this.x < -this.size.x*stepWidth) {
-      this.pos.x = width / stepWidth;
-    }
-    //if its visual bounds are entirely off screen place it off screen on the other side
-    if (this.y > height + this.size.y*stepHeight) {
-      this.pos.y = this.size.y * -1;
-    } else if ( this.y < -this.size.y * stepHeight) {
-      this.pos.y = height / stepHeight;
+    if (this._rect) {
+      if (this.image.getBounds().x == 0) {
+        this.image.x = this._rect.x;
+        this.image.y = this._rect.y;
+      } else {
+        this.image.x = this._rect.width / 2 + this._rect.x;
+        this.image.y = this._rect.height / 2 + this._rect.y;
+      }
+      this.image.setBounds(this._rect.x, this._rect.y, this._rect.width, this._rect.height);
+    } else {
+      this.rect=this.getBounds();
+      this.hit = Math.sqrt(Math.pow(this._rect.width, 2) + Math.pow(this._rect.height, 2)) / 2;
     }
   }
-  act() {
-
-  }
-
-}
-class HitActor extends Actor {
-  constructor(xpos,ypos) {
-    super(xpos,ypos);
+  recycle() {
+    this.parent.removeChild(this);
+    this.active = false;
   }
   //检测元素与背景碰撞
   hitMap(pos) {
@@ -895,72 +991,189 @@ class HitActor extends Actor {
       }
     }
   }
-  //检测 元素之间是否碰撞
-  hitActors(actors) {
-    // console.time('jis')
+  act() {
+
+  }
+}
+//————————————————————————————————测试类----------------------
+class HitActor extends Actor {
+  constructor(xpos, ypos) {
+    super(xpos, ypos);
+  }
+  /**检测是否碰撞屏幕
+   * 
+   * @param {*} x this.x
+   * @param {*} y this.y
+   * @returns boolean
+   */
+  hitBounds(x=this.x, y=this.y) {
+    return x + this.rect.x < 0 || x + this.rect.x + this.rect.width > width || y + this.rect.y < 0 || y + this.rect.y + this.rect.height > height;
+  }
+  /**屏幕反弹
+   * 
+   * @param {*} bounce -1
+   */
+  rebounds(bounce = -1) {
+    if (this.x + this.rect.x < 0) {
+      this.x = -this.rect.x;
+      this.speed.x *= bounce;
+    } else if (this.x + this.rect.x + this.rect.width > width) {
+      this.x = width - this.rect.width - this.rect.x;
+      this.speed.x *= bounce;
+    }
+    if (this.y + this.rect.y < 0) {
+      this.y = -this.rect.y;
+      this.speed.y *= bounce;
+    } else if (this.y + this.rect.y + this.rect.height > height) {
+      this.y = height - this.rect.height - this.rect.y;
+      this.speed.y *= bounce;
+    }
+    this.pos=this.getPos();
+  }
+  /**检测是否出屏幕
+   * 
+   * @param {*} x this.x
+   * @param {*} y this.y
+   * @returns boolean
+   */
+  outOfBounds(x=this.x, y=this.y) {
+    return x + this.rect.x < -this.rect.width || x + this.rect.x > width || y + this.rect.y < -this.rect.height || y + this.rect.y > height;
+  }
+  //屏幕环绕
+  placeInBounds() {
+    if (this.x + this.rect.x < -this.rect.width) {
+      this.x = width - this.rect.x;
+    } else if (this.x + this.rect.x > width) {
+      this.x = -this.rect.width - this.rect.x;
+    }
+    if (this.y + this.rect.y < -this.rect.height) {
+      this.y = height - this.rect.y;
+    } else if (this.y + this.rect.y > height) {
+      this.y = -this.rect.height - this.rect.y;;
+    }
+    this.pos=this.getPos();
+  }
+  /**矩形碰撞
+   * 
+   * @param {*} other 
+   * @param {*} x this.x
+   * @param {*} y this.y
+   * @returns boolean
+   */
+  hitRect(other,x=this.x,y=this.y) {
+    let x1=x+this.rect.x,
+    y1=y+this.rect.y,
+    x2=other.x+other.rect.x,
+    y2=other.y+other.rect.y;
+    return (x2 <= x1+this.rect.width && x1 <= x2+other.rect.width && y2 <= y1+this.rect.height && y1 <= y2 + other.rect.height);
+  }
+  /**矩形与点碰撞
+   * 
+   * @param {*} x 
+   * @param {*} y 
+   * @returns boolean
+   */
+  containsPoint(x,y){
+    let x1=this.x+this.rect.x,
+    y1=this.y+this.rect.y;
+    return (x >= x1 && x<= x1+this.rect.width && y >= y1 && y <= y1+this.rect.height);
+  }
+  /**包括其他对象
+   * 
+   * @param {*} other 
+   * @returns boolean
+   */
+  contains(other) {
+    let x1=this.x+this.rect.x,
+    y1=this.y+this.rect.y,
+    x2=other.x+other.rect.x,
+    y2=other.y+other.rect.y;
+    return (x2 >= x1 && x2+other.rect.width <= x1+this.rect.width && y2 >= y1 && y2+other.rect.height <= y1+this.rect.height);
+  }
+  /**两个球体碰撞或球与点的碰撞
+   * 
+   * @param {*} other 设置null为与点的碰撞
+   * @param {*} x this.x
+   * @param {*} y this.y
+   * @returns 
+   */
+  hitRadius(other,otherX=other.x,otherY=other.y,x=this.x,y=this.y) {
+    let otherHit=other?other.hit:0;
+    if (x-this.hit>otherX+otherHit) {
+      return;
+    }
+    if(x+this.hit<otherX-otherHit){
+      return;
+    }
+    if(y-this.hit>otherY+otherHit){
+      return;
+    }
+    if(y+this.hit<otherY-otherHit){
+      return
+    }
+    return this.hit+otherHit>Math.sqrt(Math.pow(Math.abs(x - otherX), 2) + Math.pow(Math.abs(y - otherY), 2));
+  }
+  /**检测 元素之间是否碰撞
+   * 
+   * @param {*} actors 
+   * @param {*} x this.x
+   * @param {*} y this.y
+   * @returns 
+   */
+  hitActors(actors,x=this.x,y=this.y) {
     for (var i = 0; i < actors.length; i++) {
       var other = actors[i];
       if (other == this) {
         continue;
       }
-      if (this.pos.x + this.size.x < other.pos.x) {
-        continue;
+      if (this.hitRect(other,x,y)) {
+        return other;
       }
-      if (this.pos.x > other.pos.x + other.size.x) {
-        continue;
-      }
-      if (this.pos.y + this.size.y < other.pos.y) {
-        continue;
-      }
-      if (this.pos.y > other.pos.y + other.size.y) {
-        continue;
-      }
-      return other;
-      // if (other != this &&
-      //   Math.abs(this.pos.x+this.size.x/2 - (other.pos.x+other.size.x/2)) < (this.size.x + other.size.x)/2 &&
-      //   Math.abs(this.pos.y+this.size.y/2 - (other.pos.y+other.size.y/2)) < (this.size.y + other.size.y)/2) {
-      //     return other;
-      // }
     }
-    // console.timeEnd('jis')
   }
-  hitPoint(tx,ty){
-    return this.hitRadius(tx,ty,0);
+  //斜面反弹
+  hitAngleBounce(actor) {
+    let x1 = this.x - actor.x,
+      y1 = this.y - actor.y,
+      vx1=this.speed.x*stepWidth,
+      vy1=this.speed.y*stepHeight,
+      //反向旋转y,vy
+      y2 = actor.cos * y1 - actor.sin * x1,
+      vy2 = actor.cos * vy1 - actor.sin * vx1;
+    if (y2 > -this.hit && y2 < vy2) {
+      y2 = -this.hit;
+      vy2 *= -1;
+      //反向旋转x,vx
+      let x2 = actor.cos * x1 + actor.sin * y1,
+        vx2 = actor.cos * vx1 + actor.sin * vy1;
+      //将一切旋转回去
+      x1 = actor.cos * x2 - actor.sin * y2;
+      y1 = actor.cos * y2 + actor.sin * x2;
+      this.speed.x = (actor.cos * vx2 - actor.sin * vy2)/stepWidth;
+      this.speed.y = (actor.cos * vy2 + actor.sin * vx2)/stepHeight;
+      this.pos=this.getPos(actor.x+x1,actor.y+y1);
+    }
   }
-  hitRadius(tx,ty,tHit){
-    let hit=this.size.x/2*stepWidth;
-    if(tx-tHit>this.x+hit){
-      return;
-    }
-    if(tx+tHit<this.x-hit){
-      return;
-    }
-    if(ty-tHit>this.y+hit){
-      return;
-    }
-    if(ty+tHit<this.y-hit){
-      return;
-    }
-    return hit+tHit>Math.sqrt(Math.pow(Math.abs(this.x-tx),2)+Math.pow(Math.abs(this.y-ty),2));
-  }
-  
 }
 
 class Barrage extends HitActor {
-  constructor(xpos,ypos) {
-    super(xpos,ypos);
-    this.v = 0.15;
+  constructor(xpos, ypos) {
+    super(xpos, ypos);
+    this.speedRate = 0.15;
   }
-  drawShape() {
-    var radius = this.size.x * stepWidth / 2;
-    this.image.graphics.clear().beginFill(this.color).drawCircle(0, 0, radius);
+  drawShape(width) {
+    var radius = width / 2;
+    this.image.graphics.clear()
+      .beginRadialGradientFill(["#c9c9c9", this.color], [0, 1], radius / 3, -radius / 3, 0, radius / 6, -radius / 6, radius).drawCircle(0, 0, radius);
+    this.hit = radius;
+    this.image.setBounds(-radius, -radius, width, width);
   }
   act() {
     var newPos = this.pos.plus(this.speed);
     var obstacle = this.hitMap(newPos);
     if (!obstacle) {
       this.pos = newPos;
-      this.setPos();
+      this.setXY();
       let actor = this.hitActors(actors);
       if (actor) {
         this.hitResult(actor);
@@ -972,36 +1185,16 @@ class Barrage extends HitActor {
   hitResult(actor) {
 
   }
-  recycle() {
-    this.parent.removeChild(this);
-  }
-  angleBounce(actor) {
-    var x1 = this.pos.x - actor.posX,
-      y1 = this.pos.y - actor.posY,
-      y2 = actor.cos * y1 - actor.sin * x1,
-      vy2 = actor.cos * this.speed.y - actor.sin * this.speed.x;
-    if (y2 > -this.size.y && y2 < vy2) {
-      y2 = -this.size.y;
-      vy2 *= -1;
-      var x2 = actor.cos * x1 + actor.sin * y1,
-        vx2 = actor.cos * this.speed.x + actor.sin * this.speed.y;
-      x1 = actor.cos * x2 - actor.sin * y2;
-      y1 = actor.cos * y2 + actor.sin * x2;
-      this.speed.x = actor.cos * vx2 - actor.sin * vy2;
-      this.speed.y = actor.cos * vy2 + actor.sin * vx2;
-      this.pos.x = actor.posX + x1;
-      this.pos.y = actor.posY + y1;
-    }
-  }
+
   get angle() {
     return this.image.rotation;
   }
   set angle(ang) {
-    this.image.rotation = ang;
+    // this.rotation=ang;
     var cos = Math.cos(ang * Math.PI / 180),
       sin = Math.sin(ang * Math.PI / 180);
-    this.speed.x = cos * this.v;
-    // this.speed.y = sin * this.v * stepWidth / stepHeight;
-    this.speed.y = sin * this.v;
+    this.speed.x = cos * this.speedRate;
+    this.speed.y = sin * this.speedRate * stepWidth / stepHeight;
+    // this.speed.y = sin * this.speedRate;
   }
 }

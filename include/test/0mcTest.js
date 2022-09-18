@@ -14,7 +14,35 @@
 
         }
         waitComplete() {
-            // mc.style.darkStyle();//黑色主题
+             /**
+             * 颜色parseColor
+             */
+              console.log(utils.parseColor(0xffffff,true));//转换为数字
+              console.log(utils.parseColor("#ffffff",true));//转换为数字
+  
+              console.log(utils.parseColor(0xffffff));//转换为string
+              //B:randomColor随机颜色
+              console.log(utils.randomColor());
+  
+              /**
+               * drawPoints绘制图形
+               */
+              this.shape=new createjs.Shape();
+              this.shape.graphics.beginFill("#333");
+              //先平移再旋转
+              var mat = new createjs.Matrix2D().translate(400, 200).rotate(90);
+              var points = [
+                  [0, -25],
+                  [25, 25],
+                  [-25, 25],
+                  [0, -25]
+              ];
+              utils.drawPoints(this.shape.graphics, mat, points);
+              //D:Array随机排序
+              utils.randomArray(points);
+            stage.addChild(this.shape);
+
+            // ----------------mc.style.darkStyle();//黑色主题------------------------
             this.scorecontainer = new ScrollContainer(stage, 0, 0, 600, 750, 1200, 1500);
             //Rect RoundRect Circle Star Arrow
             this.button = new PushButton(this.scorecontainer, "ok", null, 50, 50);
