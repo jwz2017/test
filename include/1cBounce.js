@@ -304,10 +304,11 @@ window.onload = function () {
             this.image = new createjs.Shape();
             this.addChild(this.image);
             this.image.graphics.clear().setStrokeStyle(2).beginStroke(this.color).moveTo(-w/2, 0).lineTo(w/2, 0);
+            
             this.image.setBounds(-w/2, 0, w, 1);
             this.image.rotation = 20;
-            
             this.rect = this.getBounds();
+            
             let angle = this.image.rotation * Math.PI / 180;
             this.cos = Math.cos(angle);
             this.sin = Math.sin(angle);

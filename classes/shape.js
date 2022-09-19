@@ -18,6 +18,7 @@ var DrawShape = {
     },
 
 }
+
 //柱形图标
 class BarGraph extends createjs.Container {
     constructor(barData, height) {
@@ -171,6 +172,28 @@ class BarGraph extends createjs.Container {
             .lineTo(10, -h - 10)
             .lineTo(10, -10)
             .closePath();
+    }
+}
+//关节
+class Segment extends HitActor{
+    constructor(xpos,ypos){
+        super(xpos,ypos);
+        this.color="#ffffff";
+    }
+    drawShape(width,height){
+        this.image.graphics.clear().beginStroke("#000").beginFill(this.color).drawRoundRect(-height/2,-height/2,width,height,height/2).endFill();
+        this.setBounds(-height/2,-height/2,width,height);
+        this.hit = Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2)) / 2;
+        //绘制轴
+        this.image.graphics.drawCircle(0,0,2).endStroke();
+        this.image.graphics.beginStroke("#000").drawCircle(width-height,0,2);
+    }
+    getPin(){
+        let ang=this.rotation*Math.PI/180,
+        dist=this._rect.width-this._rect.height,
+         xpos=this.x+Math.cos(ang)*dist,
+        ypos=this.y+Math.sin(ang)*dist;
+        return new Vector(xpos,ypos);
     }
 }
 //ship飞机

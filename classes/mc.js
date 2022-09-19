@@ -318,7 +318,7 @@ class SliderShape extends PushButtonShape {
       this._press(e);
       this._calculateValue();
       if (this._handler && this._continuous) {
-        this._handler(this);
+        this._handler();
       }
     });
     this.setSize(sliderWidth, sliderHeight);
@@ -616,9 +616,9 @@ class Slider extends Component {
       this._label.x = this.shape.width / 2;
       this._label.y = this.shape.height + 8;
       this._valueLabel.x = this.shape.width / 2;
-      this._valueLabel.y = -8;
+      // this._valueLabel.y = 0;
     } else {
-      this._label.y = this.shape.height / 2 + 3;
+      this._label.y = this.shape.height / 2 ;
       this._label.x = -8;
       this._valueLabel.x = this.shape.width + 8;
       this._valueLabel.y = this.shape.height / 2 + 3;

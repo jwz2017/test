@@ -31,7 +31,8 @@
   <script src="include/test/0particle.js"></script>
   <script src="include/test/0nodeGarden.js"></script>
   <script src="include/test/0rectRotate.js"></script>
-  <script src="include/test/1singleSegment.js"></script>
+  <script src="include/test/1segment.js"></script>
+  <script src="include/test/1segmentWalk.js"></script>
 </head>
 
 <body>
@@ -135,17 +136,25 @@
                 <p class="pro_name">chain</p>
               </li>
               <li>
-                <a href="#" title="Billiard" onclick="productClick(this)" >单轴动量碰撞Billiard</a>
-                <a href="#" title="Billiard2" onclick="productClick(this)">动量碰撞Billiard2</a>
-                <a href="#" title="Particle" onclick="productClick(this)">粒子运动Particle</a>
-                <a href="#" title="NodeGarden" onclick="productClick(this)">节点花园NodeGarden</a>
-                <a href="#" title="RectRotate" onclick="productClick(this)">矩形碰撞RectRotate</a>
+                <a href="#" title="Billiard" onclick="productClick(this)" >Billiard</a>
+                <p>单轴碰撞</p>
+                <a href="#" title="Billiard2" onclick="productClick(this)">Billiard2</a>
+                <p>动量碰撞</p>
+                <a href="#" title="Particle" onclick="productClick(this)">Particle</a>
+                <p>粒子运动</p>
+                <a href="#" title="NodeGarden" onclick="productClick(this)">NodeGarden</a>
+                <p>节点花园</p>
               </li>
             </ul>
             <!-- 扩展 -->
             <ul id="pro_con1" class="sk_product" style="display: none;">
               <li>
-                <a href="#" title="SingleSegment" onclick="productClick(this)">单关节</a>
+                <a href="#" title="RectRotate" onclick="productClick(this)">RectRotate</a>
+                <p>矩形碰撞</p>
+                <a href="#" title="SingleSegment" onclick="productClick(this)">SingleSegment</a>
+                <p>关节运动</p>
+                <a href="#" title="SegmentWalk" onclick="productClick(this)">segmentWalk</a>
+                <p>关节行走</p>
               </li>
             </ul>
           </div>
@@ -223,7 +232,7 @@
       </div>
     </main>
     <!-- 弹窗界面-->
-    <div id="dome">
+    <div id="container">
       <!-- 游戏界面 -->
       <div id="game">
         <!-- 随舞台缩放 dom-->

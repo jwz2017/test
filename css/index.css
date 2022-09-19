@@ -229,7 +229,7 @@ nav ul li a p {
   color: #666;
   padding-top: 0;
 }
-#dome {
+#container {
   width: 100%;
   position: absolute;
   left: 0;
@@ -240,27 +240,27 @@ nav ul li a p {
   display: none;
   background: #c6d6bf;
 }
-#dome #game {
+#container #game {
   width: 100%;
   margin: 0 auto;
   transform-origin: 0 0;
 }
-#dome #game #inputText {
+#container #game #inputText {
   display: none;
   width: 170px;
   height: 50px;
   font-size: 30px;
 }
-#dome #game #testTxt {
+#container #game #testTxt {
   visibility: hidden;
   position: absolute;
   width: 200px;
   height: 300px;
 }
-#dome #game canvas {
+#container #game canvas {
   background-color: #9eb195;
 }
-#dome #close {
+#container #close {
   background: orange;
   color: red;
   border-radius: 12px;
@@ -275,6 +275,6 @@ nav ul li a p {
   position: absolute;
   display: none;
 }
-#dome #close::before {
+#container #close::before {
   content: "\2716";
 }

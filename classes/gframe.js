@@ -363,16 +363,16 @@ class GFrame {
 
   //fps
   startFPS() {
-    var fps = document.createElement('span');
-    document.getElementById('container').appendChild(fps);
+    this.fps = document.createElement('span');
+    document.getElementById('container').appendChild(this.fps);
     // oDiv2.insertBefore(oB2,oSpan2);//将b2插入到div2中的span2前面
-    fps.style.fontSize = "18px";
-    fps.style.position = "absolute";
-    fps.style.top = "10px";
-    fps.style.left = "10px";
-    fps.style.color = GFrame.style.TITLE_TEXT_COLOR;
+    this.fps.style.fontSize = "18px";
+    this.fps.style.position = "absolute";
+    this.fps.style.top = "10px";
+    this.fps.style.left = "10px";
+    this.fps.style.color = GFrame.style.TITLE_TEXT_COLOR;
     createjs.Ticker.addEventListener("tick", () => {
-      fps.innerHTML = Math.round(createjs.Ticker.getMeasuredFPS()) + "fps";
+      this.fps.innerHTML = Math.round(createjs.Ticker.getMeasuredFPS()) + "fps";
     });
   }
 }
@@ -411,7 +411,13 @@ GFrame.state = {
   STATE_LEVEL_OUT: "statelevelout",
   STATE_WAIT: "statewait"
 };
-
+class ScoreUpdate extends createjs.Event {
+  constructor(id, value, bubbles, cancelable) {
+    super(GFrame.event.UPDATE, bubbles, cancelable);
+    this.id = id;
+    this.value = value;
+  }
+}
 //--------------------------------------------------进度条----------------------------------------------------------------------
 class LoaderBar extends createjs.Container {
   /**
@@ -450,14 +456,6 @@ class LoaderBar extends createjs.Container {
   startLoad(e) {
     this.bar.scaleX = e.progress * this.barWidth;
     this.percent.text = Math.floor(e.progress * 100) + "%";
-  }
-}
-
-class ScoreUpdate extends createjs.Event {
-  constructor(id, value, bubbles, cancelable) {
-    super(GFrame.event.UPDATE, bubbles, cancelable);
-    this.id = id;
-    this.value = value;
   }
 }
 
