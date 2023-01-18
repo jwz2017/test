@@ -17,7 +17,7 @@ window.onload = function () {
     // g.preload(Jump);
     // g.startFPS();
 };
-(function () {
+(function () {mapWidth
     "use strict";
     //游戏变量;
     var score;
@@ -64,6 +64,20 @@ window.onload = function () {
         ];
 
     class Jump extends Game {
+        static loadItem = [{
+            id: "woody_0",
+            src: "jump/woody_0.png"
+        }, {
+            id: "woody_1",
+            src: "jump/woody_1.png"
+        }, {
+            id: "woody_2",
+            src: "jump/woody_2.png"
+        }, {
+            id: "guiqizhan",
+            src: "jump/guiqizhan.png"
+        }];
+        // static loaderbar = null;;
         constructor() {
             super();
             this.titleScreen.setText("Jump");
@@ -152,15 +166,18 @@ window.onload = function () {
             this.scoreBoard.update(LEVEL, this.level);
             this.createGrid(plans, 30 ,30, actorChars, map);
             this.container.contentSize = {
-                width: grids[0].length * stepWidth,
-                height: grids.length * stepHeight
+                width: mapWidth,
+                height: mapHeight
             };
         }
         waitComplete() {
             stage.addChild(this.scoreBoard, this.container);
             this.scrollPlayerIntoView(this.player, this.container);
         }
+        
         runGame() {
+            //控制player 
+
             //渲染actors
             for (let i = actors.length - 1; i >= 0; i--) {
                 const actor = actors[i];
@@ -170,12 +187,14 @@ window.onload = function () {
                     switch (actor.type) {
                         case "player":
                             let bullet=this.getActor(bullets,Barrage1);
-                            bullet.angle=actor.angle;
+                            let angle=actor.angle*Math.PI/180;
                             if (actor.angle==0)bullet.scaleX=1;
                             else bullet.scaleX=-1;
+                            bullet.speed.angle=angle;
                             bullet.x=actor.x;
                             bullet.y=actor.y;
-                            bullet.pos=bullet.getPos();
+
+                            bullet.updatePos();
                             break;
                     }
                 }
@@ -192,6 +211,7 @@ window.onload = function () {
 
         clear() {
             this.container.removeAllChildren();
+            map.uncache();
             map.graphics.clear();
         }
         setGrid(ch, xpos, ypos) {
@@ -204,41 +224,29 @@ window.onload = function () {
                 fieldType = "lava";
                 color = "rgb(255,100,100)";
             }
-            map.graphics.beginFill(color).drawRect(xpos * stepWidth, ypos * stepHeight, stepWidth, stepHeight);
+            map.graphics.beginFill(color).drawRect(xpos , ypos , stepWidth, stepHeight);
             return fieldType;
         }
 
     }
-    Jump.loadItem = [{
-        id: "woody_0",
-        src: "jump/woody_0.png"
-    }, {
-        id: "woody_1",
-        src: "jump/woody_1.png"
-    }, {
-        id: "woody_2",
-        src: "jump/woody_2.png"
-    }, {
-        id: "guiqizhan",
-        src: "jump/guiqizhan.png"
-    }];
-    Jump.loaderbar = null;;
+    
     window.Jump = Jump;
 
     class JumpPlayer extends HitActor {
         constructor(xpos,ypos) {
             super(xpos,ypos);
+            this.speed.zero();
             this.status = "walk";
             this.type = "player";
             this.angle = 0;
-            this.xspeed = 0.038;
-            this.yspeed = 0.2;
-            this.gravity = 0.009;
-            this.runXSpeed = 0.06;
+            this.xspeed = 1.2;
+            this.yspeed = 6;
+            this.gravity = 0.27;
+            this.runXSpeed = 1.8;
             this.isrun = false;
             this.runtick = 0;
-            this.pos=this.pos.plus(new Vector(0,-0.5));
-            this.setSize(0.8, 1.5);
+            this.pos.add(new Vector(0,-0.5*stepHeight));
+            this.setSize(0.8*stepWidth, 1.5*stepHeight);
             this.setSpriteData(spriteSheet, "stand", 0.6);
         }
         startRoll() {
@@ -318,8 +326,10 @@ window.onload = function () {
                 this.speed.x = 0;
                 if (this.image.currentAnimation != "stand") this.image.gotoAndPlay("stand");
             }
-            if (pressed[pressed.length - 1] == "right" || pressed[pressed.length - 1] == "left") {
-                if (this.status == "jump" || this.status == "walk") {
+            if(this.status == "roll"){
+                
+            }else if (this.status == "jump" || this.status == "walk") {
+                if (pressed[pressed.length - 1] == "right" || pressed[pressed.length - 1] == "left") {
                     let key = pressed[pressed.length - 1];
                     if (this.image.currentAnimation == "stand") {
                         if (this.runtick < 12) {
@@ -344,11 +354,11 @@ window.onload = function () {
                         this.angle = 0;
                     }
                     this.speed.x = this.isrun ? this.runXSpeed : this.xspeed;
-                } else if (this.status != "roll") {
-                    this.speed.x = 0;
+                }else{
+                    this.speed.x=0;
                 }
-            } else if (this.status != "roll") {
-                this.speed.x = 0;
+            }else{
+                this.speed.x=0;
             }
             var newPos = this.pos.plus(new Vector(this.speed.x, 0));
             var obstacle = this.hitMap(newPos);
@@ -363,7 +373,7 @@ window.onload = function () {
         act() {
             this.moveX();
             this.moveY();
-            this.setXY();
+            this.update();
             var actor = this.hitActors(actors);
             if (actor) {
                 this.hitResult(actor);
@@ -406,10 +416,11 @@ window.onload = function () {
 
         }
     }
-    class Barrage1 extends Barrage {
+    class Barrage1 extends HitActor {
         constructor(xpos,ypos) {
             super(xpos,ypos);
-            this.setSize(0.7, 0.7);
+            this.speed.length=5;
+            this.setSize(0.7*stepWidth, 0.7*stepHeight);
             var skilData = {
                 images: [queue.getResult("guiqizhan")],
                 frames: {
@@ -426,8 +437,16 @@ window.onload = function () {
             };
             this.setSpriteData(new createjs.SpriteSheet(skilData), "run", 0.5);
         }
-        hitResult(actor) {
-            if (actor.type == "lava") {
+        act(){
+            var obstacle=this.hitMap();
+            if (!obstacle) {
+                let actor=this.hitActors(actors);
+                if (actor&&actor.type=="lava") {
+                    this.recycle();
+                }else{
+                    super.act();
+                }
+            }else{
                 this.recycle();
             }
         }
@@ -436,17 +455,18 @@ window.onload = function () {
     class Lava extends Actor {
         constructor(xpos,ypos, ch) {
             super(xpos,ypos);
+            this.speed.length=1.6;
             if (ch == "=") {
-                this.speed.x = 0.04;
+                // this.spe;
             } else if (ch == "|") {
-                this.speed.y = 0.04;
+                this.speed.angle=Math.PI/2;
             } else if (ch == "v") {
-                this.speed.y = 0.05;
+                this.speed.angle=Math.PI/2;
                 this.repeatPos = new Vector(xpos,ypos);
             }
             this.type = "lava";
             this.color = "rgb(255,100,100)";
-            this.setSize(1, 1);
+            this.setSize(stepWidth, stepHeight);
         }
         act() {
             var newPos = this.pos.plus(this.speed);
@@ -457,35 +477,34 @@ window.onload = function () {
             } else {
                 this.speed = this.speed.times(-1);
             }
-            this.setXY();
+            this.update();
         }
     }
     class Coin extends Actor {
         constructor(xpos,ypos) {
             super(xpos,ypos);
-            this.angleSpeed = 0.08;
-            this.wobbleDist = 0.07;
+            this.angleSpeed =0.08;
+            this.wobbleDist = 2.1;
             this.angle = Math.random() * Math.PI * 2;
             this.type = "coin";
             this.color = "rgb(241,229,89)";
-            this.pos.y+=0.2;
-            this.setSize(0.6, 0.6);
-            this.basePos = this.pos;
+            this.pos.y+=0.2*stepHeight;
+            this.setSize(0.6*stepWidth, 0.6*stepHeight);
+            this.basePos = this.pos.clone();
         }
         act() {
-            this.image.rotation++;
-            // this.rotation++;
+            this.rotation++;
             this.angle += this.angleSpeed;
             this.speed.y = Math.sin(this.angle) * this.wobbleDist;
             this.pos = this.basePos.plus(new Vector(0, this.speed.y));
-            this.setXY();
+            this.update();
         }
     }
     class Big extends Coin {
         constructor(xpos,ypos) {
             super(xpos,ypos);
             this.type = "big";
-            this.setSize(0.4, 0.4);
+            this.setSize(0.4*stepWidth, 0.4*stepHeight);
         }
 
     }

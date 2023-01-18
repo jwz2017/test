@@ -59,8 +59,7 @@ window.onload = function () {
         }
         waitComplete() {
             stage.addChild(ship, this.scoreBoard);
-            ship.pos = new Vector(width / stepWidth / 2, height / stepHeight / 2);
-
+            ship.pos = new Vector(width/ 2, height / 2);
         }
         runGame() {
             // 控制飞船
@@ -77,13 +76,13 @@ window.onload = function () {
             if (nextBullet <= 0) {
                 if (keys.attack) {
                     nextBullet = BULLET_TIME;
-                    let angle = ship.rotation + 90;
                     const bullet=this.getActor(bullets,Bullet);
-                    bullet.angle=angle;
-                    bullet.rotation=angle;
-                    bullet.x = ship.x + ship.hit * Math.cos(angle * Math.PI / 180);
-                    bullet.y = ship.y + ship.hit * Math.sin(angle * Math.PI / 180);
-                    bullet.pos=bullet.getPos();
+                    bullet.rotation=ship.rotation + 90;
+                    bullet.speed.angle=bullet.rotation*Math.PI/180;
+                    bullet.x = ship.x + ship.hit * Math.cos(bullet.speed.angle);
+                    bullet.y = ship.y + ship.hit * Math.sin(bullet.speed.angle);
+                    bullet.updatePos();
+                    console.log(bullets.length);
                 }
             } else {
                 nextBullet--;
@@ -92,8 +91,8 @@ window.onload = function () {
             //石块
             if (nextRock <= 0) {
                 timeToRock -= DIFFICULTY;
-                let index = this.getSpackRock(SpaceRock.LRG_ROCK / stepWidth);
-                rockBelt[index].floatOnScreen(width / stepWidth, height / stepHeight);
+                let index = this.getSpackRock(SpaceRock.LRG_ROCK );
+                rockBelt[index].floatOnScreen(width , height);
 
                 nextRock = timeToRock + timeToRock * Math.random();
             } else {
@@ -113,8 +112,7 @@ window.onload = function () {
                 //与子弹碰撞
                 for (let i=bullets.length-1;i>=0;i--) {
                     const p = bullets[i];
-                    // if (p.active&&o.hitPoint(p.x,p.y)) {
-                    if (p.active&&o.hitRadius(null,p.x,p.y)) {
+                    if (p.active&&o.contains(p.x,p.y)) {
                         score+=o.score;
                         this.scoreBoard.update(SCORE,score);
                         p.recycle();
@@ -137,13 +135,11 @@ window.onload = function () {
                             for(i=0;i<SUB_ROCK_COUNT;i++){
                                 index=this.getSpackRock(newSize);
                                 offset=(Math.random()*o.size.x*2)-o.size.x;
-                                rockBelt[index].pos.x=o.pos.x+offset;
-                                rockBelt[index].pos.y=o.pos.y+offset;
-                                rockBelt[index].setXY();
+                                rockBelt[index].pos=new Vector(o.pos.x+offset,o.pos.y+offset)
+                                rockBelt[index].update();
                             }
                         }
-                        stage.removeChild(o);
-                        o.active=false;
+                        o.recycle();
                         break;
                     }
 
@@ -164,7 +160,8 @@ window.onload = function () {
                     rockBelt[i] = new SpaceRock(0,0, size);
                     break;
                 } else if (!rockBelt[i].active) {
-                    rockBelt[i].setSize(size,size);
+                    rockBelt[i].drawShape(size,size);
+                    rockBelt[i].init();
                     rockBelt[i].activate();
                     break;
                 } else {
@@ -180,22 +177,15 @@ window.onload = function () {
     SpaceShip.loaderbar = null;;
     window.SpaceShip = SpaceShip;
 
-    class Bullet extends Barrage {
+    class Bullet extends HitActor {
         constructor(pos) {
             super(pos);
-            this.speedRate = 5;
-            this.setSize(2 / stepWidth, 1 / stepHeight);
+            this.speed.length=5;
+            this.setSize(6 , 1);
         }
         drawShape(width,height) {
             this.image.graphics.beginStroke("#ffffff").moveTo(-width/2, 0).lineTo(width/2, 0);
             this.image.setBounds(-width/2,-height/2,width,height);
-        }
-        act() {
-            this.pos=this.pos.plus(this.speed);
-            this.setXY();
-            if (this.outOfBounds()) {
-                this.recycle();
-            }
         }
     }
 })();

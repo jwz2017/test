@@ -1,10 +1,7 @@
 (function () {
     "use strict";
     //游戏变量;
-    var score;
-    const SCORE = "Score",
-        LEVEL = "level";
-    var segment0,segment1,slider0,slider1,cycle=0;
+    var segment0,segment1,slider0,slider1;
     class SingleSegment extends Game {
         constructor() {
             super();
@@ -26,14 +23,7 @@
             slider1.setMmum(0,-160);
         }
         runGame() {
-            //行走
-            // cycle+=.05;
-            // var angle0=Math.sin(cycle)*45+90;
-            // var angle1=Math.sin(cycle)*45+45;
-            // segment0.rotation=angle0;
-            // segment1.rotation=segment0.rotation+angle1;
-            // segment1.x=segment0.getPin().x;
-            // segment1.y=segment0.getPin().y;
+            
         }
         change(){
             //测试
@@ -44,8 +34,6 @@
         }
 
     }
-    SingleSegment.loadItem = null;
-    SingleSegment.loaderbar=null;;
     window.SingleSegment = SingleSegment;
 })();
 

@@ -1,11 +1,8 @@
 (function () {
     "use strict";
     //游戏变量;
-    var score;
-    const SCORE = "Score",
-        LEVEL = "level";
     var numParticles = 40,
-        particles = [],
+        particles,
         minDist = 100,
         springAmount = 0.012,
         shape;
@@ -16,18 +13,16 @@
         }
         waitComplete() {
             particles=[];
-            let dome = document.getElementById("canvas");
-            dome.style.background = "#000000";
+            stage.canvas.style.background="#000";
             shape = new createjs.Shape();
             stage.addChild(shape);
             for (let i = 0; i < numParticles; i++) {
                 const particle = new Barrage();
+                particle.edgeBehavior=Actor.WRAP;
                 let size = Math.random() * 20 + 4;
-                particle.setSize(size, size, true);
-                particle.x = Math.random() * width;
-                particle.y = Math.random() * height;
-                particle.speed.x = Math.random() * 6 - 3;
-                particle.speed.y = Math.random() * 6 - 3;
+                particle.setSize(size, size);
+                particle.pos.setValues(Math.random()*mapWidth,Math.random()*mapHeight);
+                particle.speed.setValues(Math.random()*6-3,Math.random()*6-3);
                 particle.mass = size;
                 stage.addChild(particle);
                 particles.push(particle);
@@ -36,11 +31,7 @@
         }
         runGame() {
             for (const particle of particles) {
-                particle.x += particle.speed.x;
-                particle.y += particle.speed.y;
-                if (particle.outOfBounds()) {
-                    particle.placeInBounds();
-                }
+                particle.act();
             }
             shape.graphics.clear();
             for (let i = 0; i < numParticles - 1; i++) {
@@ -71,7 +62,5 @@
 
         }
     }
-    NodeGarden.loadItem = null;
-    NodeGarden.loaderbar = null;;
     window.NodeGarden = NodeGarden;
 })();

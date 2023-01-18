@@ -1,11 +1,8 @@
 (function () {
     "use strict";
     //游戏变量;
-    var score;
-    const SCORE = "Score",
-        LEVEL = "level";
-    var particles,
-    numParticles;
+    var particles,gridSize=65,grid,
+    numParticles=100;
     class Particle extends Game {
         constructor() {
             super();
@@ -13,14 +10,16 @@
         }
         
         waitComplete() {
-            numParticles=30;
+            grid=new GridCollision(width,height,gridSize);
+            grid.drawGrid();
             particles=[];
             for (let i = 0; i < numParticles; i++) {
                 const particle = new Barrage();
                 let size=Math.random()*50+10;
                 particle.setSize(size,size);
-                particle.x=Math.random()*width;
-                particle.y=Math.random()*height;
+                particle.speed.zero();
+                particle.edgeBehavior=null;
+                particle.pos.setValues(Math.random()*mapWidth,Math.random()*mapHeight)
                 particle.mass=size;
                 stage.addChild(particle);
                 particles.push(particle);
@@ -28,26 +27,34 @@
         }
         runGame() {
             for (const particale of particles) {
-                particale.x+=particale.speed.x;
-                particale.y+=particale.speed.y;
+                particale.act();
+                
             }
+            //普通检测
             for (let i = 0; i < numParticles-1; i++) {
                 const partA = particles[i];
                 for (let j = i+1; j < numParticles; j++) {
                     const partB = particles[j];
-                    if(partA.hitRadius(partB)){
-                        this.billiardCollision(partA,partB);
-                    }
-                    this.gravitate(partA,partB);
+                    // if(partA.hitRadius(partB)){
+                    //     this.billiardCollision(partA,partB);
+                    // }
+                    // this.gravitate(partA,partB);
+
                 }
             }
+            //网格检测
+            grid.check(particles);
+            let numChecks=grid.checks.length;
+            for (let i = 0; i < numChecks; i+=2) {
+                let partA=grid.checks[i];
+                let partB=grid.checks[i+1];
+                this.gravitate(partA,partB);
+                if(partA.hitRadius(partB)){
+                    this.billiardCollision(partA,partB);
+                }
+                
+            }
         }
-        clear() {
-            
-        }
-
     }
-    Particle.loadItem = null;
-    Particle.loaderbar=null;;
     window.Particle = Particle;
 })();

@@ -104,7 +104,7 @@ window.onload = function () {
             this.scoreBoard.update(LEVEL, this.level);
 
             this.createGrid(this.plans, 50, 30, this.actorChars, this.map);
-            brickContainer.cache(0, 0, grids[0].length * stepWidth, grids.length * stepHeight);
+            brickContainer.cache(0, 0,mapWidth, mapHeight);
             //加入显示元素
 
         }
@@ -124,9 +124,10 @@ window.onload = function () {
             // debugger;
         }
         clear() {
-            this.container.removeAllChildren();
+            super.clear();
             brickContainer.removeAllChildren();
-            brickContainer.updateCache();
+            brickContainer.uncache();
+            this.map.uncache();
             this.map.graphics.clear();
         }
         setGrid(ch, xpos, ypos) {
@@ -140,7 +141,7 @@ window.onload = function () {
                 bricks.push(fieldType);
                 brickContainer.addChild(fieldType);
             }
-            this.map.graphics.beginFill(color).drawRect(xpos * stepWidth, ypos * stepHeight, stepWidth, stepHeight);
+            this.map.graphics.beginFill(color).drawRect(xpos, ypos, stepWidth, stepHeight);
             return fieldType;
         }
     }
@@ -153,9 +154,9 @@ window.onload = function () {
             super(xpos, ypos);
             this.type = "player";
             this.color = "#555";
-            this.xspeed = 0.15;
-            this.pos.y += 0.5;
-            this.setSize(3, 0.5);
+            this.xspeed = 7.5;
+            this.setSize(150, 15);
+            this.pos.y += 15;
         }
         act() {
             this.moveX();
@@ -168,32 +169,33 @@ window.onload = function () {
                 this.speed.x = this.xspeed;
             }
             var newPos = this.pos.plus(this.speed);
-            if (!this.hitBounds(this.getX(newPos),this.getY(newPos))) {
+            if (!this.hitBounds(newPos)) {
                 this.pos = newPos;
-                this.setXY();
+                this.update();
             }
         }
     }
     class Puck extends Barrage {
         constructor(xpos, ypos) {
             super(xpos, ypos);
-            this.av = this.speedRate = 0.15;
-            this.setSize(0.3, 0.3 * stepWidth / stepHeight);
-            this.angle = 90;
+            this.speedlength=7;
+            this.speed.length=this.speedlength;
+            this.setSize(15, 15);
+            this.speed.angle = Math.PI/2;
             this.combo = 0;
-            this.oldPos = new Vector(xpos, ypos);
+            this.homePos = this.pos.clone();
         }
         act() {
             this.moveX();
             this.moveY();
-            this.setXY();
+            this.update();
             var actor = this.hitActors(actors);
             if (actor) {
                 this.hitResult(actor);
             }
         }
         moveX() {
-            var newPos = this.pos.plus(new Vector(this.speed.x, 0));
+            var newPos = this.pos.plus(new Vector(this.speed.x,0));
             var fieldType = this.hitMap(newPos);
             if (!fieldType) {
                 this.pos = newPos;
@@ -206,7 +208,7 @@ window.onload = function () {
             }
         }
         moveY() {
-            var newPos = this.pos.plus(new Vector(0, this.speed.y));
+            var newPos = this.pos.plus(new Vector(0,this.speed.y));
             var fieldType = this.hitMap(newPos);
             if (!fieldType) {
                 this.pos = newPos;
@@ -215,9 +217,11 @@ window.onload = function () {
                 this.speed.y *= -1;
             } else if (fieldType == "lava") {
                 if (lives > 0) {
-                    this.pos = new Vector(this.oldPos.x, this.oldPos.y);
-                    this.speedRate = this.av;
-                    this.angle = 90;
+                    this.pos = this.homePos;
+                    this.speed.length=this.speedlength;
+                    this.speed.angle=Math.PI/2;
+                    // this.speedRate = this.av;
+                    // this.angle = 90;
                     lives--;
                     model.dispatchEvent(new ScoreUpdate(LIVES, lives));
                 } else {
@@ -237,10 +241,10 @@ window.onload = function () {
             if (this.combo > 4) {
                 score += (this.combo * 10);
                 let combotex = new createjs.Text('combo x' + (this.combo * 10), '14px Times', '#ff0000');
-                combotex.regX = combotex.getBounds().width / 2;
-                combotex.regY = combotex.getBounds().height / 2;
-                combotex.x = fieldType.x + fieldType.size.x * stepWidth / 2;
-                combotex.y = fieldType.y + fieldType.size.y * stepHeight / 2;
+                combotex.regX = combotex.getBounds().width/ 2;
+                combotex.regY = combotex.getBounds().height/ 2;
+                combotex.x = fieldType.x + fieldType.size.x/ 2;
+                combotex.y = fieldType.y + fieldType.size.y/ 2;
                 combotex.alpha = 0;
                 this.parent.addChild(combotex);
                 createjs.Tween.get(combotex).to({
@@ -258,7 +262,7 @@ window.onload = function () {
                 model.dispatchEvent(new ScoreUpdate(LIVES, lives));
             }
             bricks.splice(bricks.indexOf(fieldType), 1);
-            grids[fieldType.pos.y][fieldType.pos.x] = null;
+            grids[fieldType.pos.y/stepHeight][fieldType.pos.x/stepWidth] = null;
             fieldType.parent.removeChild(fieldType);
             brickContainer.updateCache();
 
@@ -267,8 +271,8 @@ window.onload = function () {
         hitResult(actor) {
             if (actor.type == "player") {
                 this.combo = 0;
-                this.speedRate = this.av + Math.abs(this.pos.x - actor.pos.x - actor.size.x / 2) / actor.size.x / 3;
-                this.angle = 220 + (this.pos.x - actor.pos.x) / actor.size.x * 100;
+                this.speed.length = this.speedlength + Math.abs(this.pos.x - actor.pos.x - actor.size.x / 2)*0.15;
+                this.speed.angle = 210*Math.PI/180 + (this.pos.x - actor.pos.x) / actor.size.x * 120*Math.PI/180;
             } else if (actor.type == "angleBounce") {
                 this.hitAngleBounce(actor);
             }
@@ -291,7 +295,7 @@ window.onload = function () {
                 text.textBaseline = "middle";
                 this.addChild(text);
             }
-            this.setSize(1, 1);
+            this.setSize(stepWidth, stepHeight);
         }
     }
     class AngleBounce extends Actor {
@@ -299,15 +303,17 @@ window.onload = function () {
             super(xpos, ypos);
             this.type = "angleBounce";
             this.drawShape(200);
+            this.init();
+            this.updatePos();
         }
         drawShape(w) {
             this.image = new createjs.Shape();
             this.addChild(this.image);
+            
             this.image.graphics.clear().setStrokeStyle(2).beginStroke(this.color).moveTo(-w/2, 0).lineTo(w/2, 0);
             
             this.image.setBounds(-w/2, 0, w, 1);
             this.image.rotation = 20;
-            this.rect = this.getBounds();
             
             let angle = this.image.rotation * Math.PI / 180;
             this.cos = Math.cos(angle);

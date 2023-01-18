@@ -10,14 +10,15 @@
   <link rel="stylesheet" href="css/index.css">
   <title>h5Test</title>
   <script src="classes/createjs.min.js"></script>
-  <script src="classes/gframe.js"></script>
   <script src="classes/mc.js"></script>
+  <script src="classes/gframe.js"></script>
   <script src="classes/ScaleBitmap.js"></script>
   <script src="assets/lib.js"></script>
   <script src="assets/loadsprite/ma.js"></script>
   <script src="classes/shape.js"></script>
   <script src="classes/effect.js"></script>
   <script src="classes/collision.js"></script>
+  <script src="classes/3DClass.js"></script>
 
   <!--04-->
 
@@ -33,6 +34,41 @@
   <script src="include/test/0rectRotate.js"></script>
   <script src="include/test/1segment.js"></script>
   <script src="include/test/1segmentWalk.js"></script>
+  <script src="include/test/1segmentDrag.js"></script>
+  <script src="include/test/1segmentReach.js"></script>
+  <script src="include/test/1segmentCosines.js"></script>
+  <script src="include/test/2perspective1.js"></script>
+  <script src="include/test/2Velocity3D.js"></script>
+  <script src="include/test/2MultiBounce3D.js"></script>
+  <script src="include/test/2FireWork.js"></script>
+  <script src="include/test/2Trees.js"></script>
+  <script src="include/test/2Easing3d.js"></script>
+  <script src="include/test/2Spring3D.js"></script>
+  <script src="include/test/2RotateY.js"></script>
+  <script src="include/test/2Collision3D.js"></script>
+  <script src="include/test/3Lines3D.js"></script>
+  <script src="include/test/3Square3D.js"></script>
+  <script src="include/test/3Triangles.js"></script>
+  <script src="include/test/3Cube.js"></script>
+  <script src="include/test/4brownian.js"></script>
+  <script src="include/test/4random.js"></script>
+  <script src="include/test/4random2.js"></script>
+  <script src="include/test2/0SeekTest.js"></script>
+  <script src="include/test2/0FleeTest.js"></script>
+  <script src="include/test2/0FleeTest1.js"></script>
+  <script src="include/test2/0FleeTest2.js"></script>
+  <script src="include/test2/0ArriveTest.js"></script>
+  <script src="include/test2/0PursueTest.js"></script>
+  <script src="include/test2/0PursueEvadeTest.js"></script>
+  <script src="include/test2/0WanderTest.js"></script>
+  <script src="include/test2/0AvoidTest.js"></script>
+  <script src="include/test2/0PathTest.js"></script>
+  <script src="include/test2/0FlockTest.js"></script>
+  <script src="include/test2/1isoTransformTest.js"></script>
+  <script src="include/test2/1TileTest.js"></script>
+  <script src="include/test2/1MotionTest.js"></script>
+  <script src="include/test2/1MotionTest2.js"></script>
+  <script src="include/test2/1Collision.js"></script>
 </head>
 
 <body>
@@ -116,12 +152,14 @@
           <div class="procontant clearfix">
             <ul class="sk_product">
               <li>
-                <a href="#"><img title="Graphics" src="assets/main/graphicsutils.jpg" onclick="productClick(this)" alt=""></a>
+                <a href="#"><img title="Graphics" src="assets/main/graphicsutils.jpg" onclick="productClick(this)"
+                    alt=""></a>
                 <p>图形工具</p>
                 <p class="pro_name">Graphics</p>
               </li>
               <li>
-                <a href="#"><img title="LoadBitmap" src="assets/main/loadbitmap.jpg" onclick="productClick(this)" alt=""></a>
+                <a href="#"><img title="LoadBitmap" src="assets/main/loadbitmap.jpg" onclick="productClick(this)"
+                    alt=""></a>
                 <p>资源加载 </p>
                 <p class="pro_name">loadbitmap</p>
               </li>
@@ -136,25 +174,115 @@
                 <p class="pro_name">chain</p>
               </li>
               <li>
-                <a href="#" title="Billiard" onclick="productClick(this)" >Billiard</a>
                 <p>单轴碰撞</p>
-                <a href="#" title="Billiard2" onclick="productClick(this)">Billiard2</a>
+                <a href="#" title="Billiard" onclick="productClick(this)">Billiard</a>
                 <p>动量碰撞</p>
-                <a href="#" title="Particle" onclick="productClick(this)">Particle</a>
+                <a href="#" title="Billiard2" onclick="productClick(this)">Billiard2</a>
                 <p>粒子运动</p>
-                <a href="#" title="NodeGarden" onclick="productClick(this)">NodeGarden</a>
+                <a href="#" title="Particle" onclick="productClick(this)">Particle</a>
                 <p>节点花园</p>
+                <a href="#" title="NodeGarden" onclick="productClick(this)">NodeGarden</a>
               </li>
             </ul>
             <!-- 扩展 -->
             <ul id="pro_con1" class="sk_product" style="display: none;">
               <li>
-                <a href="#" title="RectRotate" onclick="productClick(this)">RectRotate</a>
+                <hr />
+                <h4>关节</h4>
                 <p>矩形碰撞</p>
-                <a href="#" title="SingleSegment" onclick="productClick(this)">SingleSegment</a>
+                <a href="#" title="RectRotate" onclick="productClick(this)">RectRotate</a>
                 <p>关节运动</p>
-                <a href="#" title="SegmentWalk" onclick="productClick(this)">segmentWalk</a>
+                <a href="#" title="SingleSegment" onclick="productClick(this)">SingleSegment</a>
                 <p>关节行走</p>
+                <a href="#" title="SegmentWalk" onclick="productClick(this)">segmentWalk</a>
+                <p>关节拖拽</p>
+                <a href="#" title="SegmentDrag" onclick="productClick(this)">segmentDrag</a>
+                <p>关节伸展</p>
+                <a href="#" title="SegmentReach" onclick="productClick(this)">SegmentReach</a>
+                <p>余弦定理</p>
+                <a href="#" title="SegmentCosines" onclick="productClick(this)">SegmentCosines</a>
+              </li>
+              <li>
+                <hr />
+                <h4>3D透视</h4>
+                <p>透视</p>
+                <a href="#" title="Perspective1" onclick="productClick(this)">Perspective1</a>
+                <p>3d速度及反弹</p>
+                <a href="#" title="Velocity3D" onclick="productClick(this)">Velocity3D</a>
+                <p>多球反弹</p>
+                <a href="#" title="MultiBounce3D" onclick="productClick(this)">MultiBounce3D</a>
+                <p>3d重力</p>
+                <a href="#" title="FireWork" onclick="productClick(this)">FireWork</a>
+                <p>3d屏幕环绕</p>
+                <a href="#" title="Trees" onclick="productClick(this)">Trees</a>
+                <p>3d缓动</p>
+                <a href="#" title="Easing3d" onclick="productClick(this)">Easing3d</a>
+                <p>3d弹性运动</p>
+                <a href="#" title="Spring3D" onclick="productClick(this)">Spring3D</a>
+                <p>绕Y轴旋转</p>
+                <a href="#" title="RotateY" onclick="productClick(this)">RotateY</a>
+                <p>3D碰撞检测</p>
+                <a href="#" title="Collision3D" onclick="productClick(this)">Collision3D</a>
+              </li>
+              <li>
+                <hr />
+                <h4>3D物体</h4>
+                <p>3D线条</p>
+                <a href="#" title="Lines3D" onclick="productClick(this)">Lines3D</a>
+                <p>3D正方形</p>
+                <a href="#" title="Square3D" onclick="productClick(this)">Square3D</a>
+                <p>3D三角绘制</p>
+                <a href="#" title="Triangles" onclick="productClick(this)">Triangles</a>
+                <p>正方体</p>
+                <a href="#" title="Cube" onclick="productClick(this)">Cube</a>
+                <hr>
+                <h4>分布</h4>
+                <p>布朗运动</p>
+                <a href="#" title="Brownian" onclick="productClick(this)">Brownian</a>
+                <p>平均圆形分布</p>
+                <a href="#" title="Random" onclick="productClick(this)">Random</a>
+                <p>偏向分布</p>
+                <a href="#" title="Random2" onclick="productClick(this)">Random2</a>
+              </li>
+              <li>
+                <hr />
+                <h4>转向行为</h4>
+                <p>机车追寻</p>
+                <a href="#" title="VehiclSeek" onclick="productClick(this)">VehiclSeek</a>
+                <p>机车逃离</p>
+                <a href="#" title="VehiclFlee" onclick="productClick(this)">VehiclFlee</a>
+                <p>机车逃离测试1</p>
+                <a href="#" title="FleeTest1" onclick="productClick(this)">FleeTest1</a>
+                <p>机车逃离测试2</p>
+                <a href="#" title="FleeTest2" onclick="productClick(this)">FleeTest2</a>
+                <p>机车到达</p>
+                <a href="#" title="VehiclArrive" onclick="productClick(this)">VehiclArrive</a>
+                <p>机车追捕</p>
+                <a href="#" title="VehiclPursue" onclick="productClick(this)">VehiclPursue</a>
+                <p>追捕和躲避测试</p>
+                <a href="#" title="PursueEvade" onclick="productClick(this)">PursueEvade</a>
+                <p>漫游测试</p>
+                <a href="#" title="WanderTest" onclick="productClick(this)">WanderTest</a>
+                <p>回避绕路测试</p>
+                <a href="#" title="AvoidTest" onclick="productClick(this)">AvoidTest</a>
+                <p>路径跟随</p>
+                <a href="#" title="PathTest" onclick="productClick(this)">PathTest</a>
+                <p>群落测试</p>
+                <a href="#" title="FlockTest" onclick="productClick(this)">FlockTest</a>
+              </li>
+              <li>
+                <hr />
+                <h4>二等角游戏</h4>
+                <p>坐标转换测试</p>
+                <a href="#" title="isoTransformTest" onclick="productClick(this)">isoTransformTest</a>
+                <p>TileTest</p>
+                <a href="#" title="TileTest" onclick="productClick(this)">TileTest</a>
+                <p>移动测试</p>
+                <a href="#" title="MotionTest" onclick="productClick(this)">MotionTest</a>
+                <p>移动测试2</p>
+                <a href="#" title="MotionTest2" onclick="productClick(this)">MotionTest2</a>
+                <p>碰撞测试</p>
+                <a href="#" title="Collision" onclick="productClick(this)">Collision</a>
               </li>
             </ul>
           </div>
@@ -172,7 +300,7 @@
             <ul class="sk_product">
               <li>
                 <a href="superClick.html"><img src="assets/main/superclick.jpg" alt=""></a>
-                <p >超级点击</p>
+                <p>超级点击</p>
               </li>
               <li>
                 <a href="colordrop.html"><img src="assets/main/colordrop.jpg" alt=""></a>
@@ -187,8 +315,8 @@
                 <p>拼图游戏</p>
               </li>
               <li>
-                <a href="match.html"target="_blank"><img src="assets/main/match.jpg" alt=""></a>
-                <p >记忆游戏</p>
+                <a href="match.html" target="_blank"><img src="assets/main/match.jpg" alt=""></a>
+                <p>记忆游戏</p>
               </li>
               <li>
                 <a href="jump.html"><img src="assets/main/jump.png" alt=""></a>
@@ -208,7 +336,7 @@
               </li>
             </ul>
             <ul id="pro_con2" class="sk_product" style="display: none;">
-            
+
             </ul>
           </div>
         </section>
@@ -245,7 +373,7 @@
       </div>
       <!-- 不随舞台缩放 dom -->
       <!-- 关闭按钮 -->
-      <a href="#" id="close" ></a>
+      <a href="#" id="close"></a>
     </div>
   </div>
 </body>

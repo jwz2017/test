@@ -44,7 +44,6 @@ window.onload = function () {
             this.scoreBoard = new ScoreBoard();
             this.scoreBoard.createTextElement(SCORE, '0', 20, 14);
             this.scoreBoard.createTextElement(LEVEL, '0', 320, 14);
-            this.player = new Ship();
         }
         newGame() {
             score = 0;
@@ -56,11 +55,13 @@ window.onload = function () {
             nextEnemy = nextBullet = 0;
             timeToEnemy = ENEMY_TIME;
             this.scoreBoard.update(LEVEL, this.level);
-
+            
         }
         waitComplete() {
-            this.player.x = width / 2;
-            this.player.y = height - this.player.rect.height;
+            this.player = new Ship();
+            this.player.pos.x=width-this.player.size.x>>1;
+            this.player.pos.y = height - this.player.size.y;
+            this.player.update();
             stage.addChild(this.player, this.scoreBoard);
         }
         runGame() {
@@ -70,10 +71,11 @@ window.onload = function () {
                 if (keys.attack) {
                     nextBullet = BULLET_TIME;
                     let bullet = this.getActor(bullets, Bullet);
-                    bullet.angle = -90;
-                    bullet.rotation = 180;
+                    bullet.speed.angle = -Math.PI/2;
                     bullet.x = this.player.x;
-                    bullet.y = this.player.y + this.player.rect.y;
+                    bullet.y = this.player.y+this.player.offsetY;
+                    bullet.updatePos();
+                    console.log(bullets.length);
                 }
             } else {
                 nextBullet--;
@@ -89,7 +91,9 @@ window.onload = function () {
                 timeToEnemy -= DIFFICULTY;
                 timeToEnemy = Math.max(timeToEnemy, 10);
                 let enemy = this.getActor(enemys, Enemy);
-                enemy.init();
+                enemy.activate();
+                // enemy.pos=new Vector(200,200);
+                enemy.update();
                 enemy.floatOnScreen(width, height);
                 nextEnemy = timeToEnemy + timeToEnemy * Math.random();
             } else {
@@ -121,27 +125,27 @@ window.onload = function () {
     class Ship extends HitActor {
         constructor(xpos, ypos) {
             super(xpos, ypos);
-            this.speedRate = 2.5;
-            this.setSpriteData(queue.getResult("all"), "heroIdle", 1);
-            this.setReg(this.size.x / 2, this.size.y / 2);
+            this.vx= 2.5;
+            this.setSize(50,40);
+            this.setSpriteData(queue.getResult("all"), "heroIdle", 0.7);
+            // this.setReg(this.size.x / 2, this.size.y / 2);
         }
         act() {
             this.speed.x = this.speed.y = 0;
             if (keys.left) {
-                this.speed.x = -this.speedRate;
+                this.speed.x = -this.vx;
             } else if (keys.right) {
-                this.speed.x = this.speedRate;
+                this.speed.x = this.vx;
             }
             if (keys.up) {
-                this.speed.y = -this.speedRate;
+                this.speed.y = -this.vx;
             } else if (keys.down) {
-                this.speed.y = this.speedRate;
+                this.speed.y = this.vx;
             }
-            let nextX = this.x + this.speed.x,
-                nextY = this.y + this.speed.y;
-            if (!this.hitBounds(nextX, nextY)) {
-                this.x = nextX;
-                this.y = nextY;
+            let nextPos=this.pos.plus(this.speed);
+            if (!this.hitBounds(nextPos)) {
+                this.pos=nextPos;
+                this.update();
             }
         }
     }
@@ -151,40 +155,26 @@ window.onload = function () {
             super(xpos, ypos);
             this.setSpriteData(queue.getResult("all"), "enemy1Idle", 1);
         }
-        init() {
-            let angle = Math.random() * (Math.PI * 2);
-            this.speed.x = Math.sin(angle) * 1.5;
-            this.speed.y = Math.random() * 2 + 1;
+        activate() {
+            this.speed.length=Math.random()*2+2;
+            this.speed.angle=Math.random()*Math.PI/2+Math.PI/4;
         }
         floatOnScreen(width, height) {
             //上下进入
-            this.y = -this.rect.height - this.rect.y;
+            this.pos.y=-this.size.y;
             if (this.speed.x > 0) {
-                this.x = Math.random() * width * 0.5 - this.rect.x;
+                this.pos.x = Math.random() * width * 0.5;
             } else {
-                this.x = Math.random() * width * 0.5 + 0.5 * width - this.rect.x;
-            }
-        }
-        act() {
-            this.x += this.speed.x;
-            this.y += this.speed.y;
-            if (this.outOfBounds()) {
-                this.recycle();
+                this.pos.x = Math.random() * width * 0.5 + 0.5 * width;
             }
         }
     }
-    class Bullet extends Barrage {
+    class Bullet extends HitActor {
         constructor(xpos, ypos) {
             super(xpos, ypos);
-            this.speedRate = 5;
+            this.speed.length=5;
             this.setSpriteData(queue.getResult("all"), "bullet");
-            this.setReg(this.size.x / 2, this.size.y / 2);
-        }
-        act() {
-            this.y += this.speed.y;
-            if (this.outOfBounds()) {
-                this.recycle();
-            }
+            this.setReg(this.size.x/2,this.size.y/2);
         }
     }
 })();

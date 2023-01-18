@@ -1,5 +1,5 @@
+//画个笑脸
 var DrawShape = {
-    //画个笑脸
     drawSmile: function (g, x, y, bounds) {
         //Head
         g.setStrokeStyle(Math.round(bounds / 10), 'round', 'round');
@@ -18,7 +18,6 @@ var DrawShape = {
     },
 
 }
-
 //柱形图标
 class BarGraph extends createjs.Container {
     constructor(barData, height) {
@@ -175,41 +174,71 @@ class BarGraph extends createjs.Container {
     }
 }
 //关节
-class Segment extends HitActor{
-    constructor(xpos,ypos){
-        super(xpos,ypos);
-        this.color="#ffffff";
+class Segment extends Actor {
+    constructor(xpos, ypos) {
+        super(xpos, ypos);
+        this.color = "#ffffff";
     }
-    drawShape(width,height){
-        this.image.graphics.clear().beginStroke("#000").beginFill(this.color).drawRoundRect(-height/2,-height/2,width,height,height/2).endFill();
-        this.setBounds(-height/2,-height/2,width,height);
-        this.hit = Math.sqrt(Math.pow(width, 2) + Math.pow(height, 2)) / 2;
+    drawShape(width, height) {
+        this.image.graphics.clear().beginStroke("#000").beginFill(this.color).drawRoundRect(-height / 2, -height / 2, width, height, height / 2).endFill();
+        this.image.setBounds(-height / 2, -height / 2, width, height);
         //绘制轴
-        this.image.graphics.drawCircle(0,0,2).endStroke();
-        this.image.graphics.beginStroke("#000").drawCircle(width-height,0,2);
+        this.image.graphics.drawCircle(0, 0, 2).endStroke();
+        this.image.graphics.beginStroke("#000").drawCircle(width - height, 0, 2);
     }
-    getPin(){
-        let ang=this.rotation*Math.PI/180,
-        dist=this._rect.width-this._rect.height,
-         xpos=this.x+Math.cos(ang)*dist,
-        ypos=this.y+Math.sin(ang)*dist;
-        return new Vector(xpos,ypos);
+    getPin() {
+        let ang = this.rotation * Math.PI / 180,
+            dist = this.size.x - this.size.y,
+            xpos = this.x + Math.cos(ang) * dist,
+            ypos = this.y + Math.sin(ang) * dist;
+        return new Vector(xpos, ypos);
     }
+}
+//树
+class Tree extends Actor {
+    constructor(xpos, ypos) {
+        super(xpos, ypos);
+        this.pos.z = 0;
+        this.drawShape();
+    }
+    drawShape() {
+        this.image = new createjs.Shape();
+        this.addChild(this.image);
+        this.color = "#fff";
+        let g = this.image.graphics,
+            h = 140 + Math.random() * 20,
+            w1 = Math.random() * 80 - 40,
+            w2 = Math.random() * 60 - 30;
+        g.clear().beginStroke(this.color).
+        moveTo(0, 0).
+        lineTo(0, -h).
+        moveTo(0, -30 - Math.random() * 30).
+        lineTo(w1, -100 - Math.random() * 40).
+        moveTo(0, -60 - Math.random() * 40).
+        lineTo(w2, -110 - Math.random() * 20);
+        this.image.setBounds(Math.min(w1, w2), -h, Math.abs(w1) + Math.abs(w2), h);
+        this.rect = this.getBounds();
+        this.hit = Math.sqrt(this.rect.width * this.rect.width + height * height);
+    }
+
 }
 //ship飞机
 class Ship extends HitActor {
     constructor(xpos, ypos) {
         super(xpos, ypos);
-        this.MAX_VELOCITY = 3 / stepWidth;
+        this.edgeBehavior=Actor.WRAP;
+        this.MAX_VELOCITY = 3;
         this.TOGGLE = 60;
         this.MAX_THRUST = 2;
-        this.shipFlame = new createjs.Shape();
-        this.addChild(this.shipFlame);
         this.timeout = 0;
         this.thrust = 0;
-        this.setSize(15,30);
+        this.drawShape(15);
+        this.init();
     }
-    drawShape(width,height) {
+    drawShape(width) {
+        this.image = new createjs.Shape();
+        this.shipFlame = new createjs.Shape();
+        this.addChild(this.shipFlame,this.image);
         var g = this.image.graphics;
         g.clear();
         g.beginStroke("#ffffff");
@@ -219,7 +248,7 @@ class Ship extends HitActor {
         g.lineTo(-width / 2, -width / 1.6); //lfin
         g.closePath(); // nose
         //draw ship flame
-        this.shipFlame.y = - width / 1.6;
+        this.shipFlame.y = -width / 1.6;
         g = this.shipFlame.graphics;
         g.clear();
         g.beginStroke("#FFFFFF");
@@ -230,12 +259,11 @@ class Ship extends HitActor {
         g.lineTo(-width / 5, -width / 5); //lnotch
         g.lineTo(-width / 2.5, -width / 3.3); //lpoint
         g.lineTo(-width / 5, -0); //ship
-        this.image.setBounds(-width/2,-height/2,width,height)
-        this.hit=(width+height)/4;
+        this.image.setBounds(-width / 2, -width, width, width*2);
+        this.hit=width-2;
     }
     act() {
-        var newPos = this.pos.plus(this.speed);
-        this.pos = newPos;
+        super.act();
         if (this.thrust > 0) {
             this.timeout++;
             this.shipFlame.alpha = 1;
@@ -252,18 +280,14 @@ class Ship extends HitActor {
             this.shipFlame.alpha = 0;
             this.thrust = 0;
         }
-        this.setXY();
-        if (this.outOfBounds()) {
-            this.placeInBounds();
-        }
     }
     accelerate() {
         this.thrust += 0.2;
         if (this.thrust >= this.MAX_THRUST) {
             this.thrust = this.MAX_THRUST;
         }
-        this.speed.x += Math.sin(this.rotation * (Math.PI / -180)) * this.thrust / stepWidth;
-        this.speed.y += Math.cos(this.rotation * (Math.PI / -180)) * this.thrust / stepWidth;
+        this.speed.x += Math.sin(this.rotation * (Math.PI / -180)) * this.thrust ;
+        this.speed.y += Math.cos(this.rotation * (Math.PI / -180)) * this.thrust ;
 
         this.speed.x = Math.min(this.MAX_VELOCITY, Math.max(-this.MAX_VELOCITY, this.speed.x));
         this.speed.y = Math.min(this.MAX_VELOCITY, Math.max(-this.MAX_VELOCITY, this.speed.y));
@@ -271,16 +295,20 @@ class Ship extends HitActor {
 }
 //石头
 class SpaceRock extends HitActor {
-    constructor(xpos, ypos, size = SpaceRock.LRG_ROCK / stepWidth) {
+    static LRG_ROCK = 60;
+    static MED_ROCK = 40;
+    static SML_ROCK = 20;
+    constructor(xpos, ypos, size = SpaceRock.LRG_ROCK ) {
         super(xpos, ypos);
+        this.edgeBehavior=Actor.WRAP;
         this.setSize(size, size);
         this.activate();
     }
-    drawShape(width,height) {
+    drawShape(width, height) {
         this.hit = width / 2;
         let angle = 0,
-        size = width / 2,
-        radius = width / 2;
+            size = width / 2,
+            radius = width / 2;
         this.image.graphics.clear();
         this.image.graphics.beginStroke("#ffffff");
         this.image.graphics.moveTo(0, radius);
@@ -292,15 +320,14 @@ class SpaceRock extends HitActor {
             this.hit = (this.hit + radius) / 2;
         }
         this.image.graphics.closePath();
-        this.setBounds(-width/2,-height/2,width,height);
-        this.hit *= 1.1;
+        this.setBounds(-width / 2, -height / 2, width, height);
     }
     activate() {
         let angle = Math.random() * (Math.PI * 2);
-        this.speed.x = Math.sin(angle) * (4 + this.rect.x / 15) / stepWidth;
-        this.speed.y = Math.cos(angle) * (4 +this.rect.y / 15) / stepHeight;
+        this.speed.length =Math.sin(angle)*(2+20/this.hit);
+        this.speed.angle = angle;
         this.spin = (Math.random() + 0.2) * this.speed.x;
-        this.score = Math.floor((5 + this.rect.x / 10) * 100);
+        this.score = Math.floor((5 + this.size.x / 10) * 100);
         this.active = true;
     }
     floatOnScreen(width, height) {
@@ -329,46 +356,7 @@ class SpaceRock extends HitActor {
         }
     }
     act() {
-        this.rotation += this.spin;
-        this.pos = this.pos.plus(this.speed);
-        this.setXY();
-        if (this.outOfBounds()) {
-            this.placeInBounds();
-        }
-    }
-}
-SpaceRock.LRG_ROCK = 60;
-SpaceRock.MED_ROCK = 40;
-SpaceRock.SML_ROCK = 20;
-
-class OBB {
-    constructor(centerPoint, width, height, rotation) {
-        this.centerPoint = centerPoint;
-        this.extents = [width / 2, height / 2];
-        this.axes = [new Vector(Math.cos(rotation), Math.sin(rotation)), new Vector(-1 * Math.sin(rotation), Math.cos(rotation))];
-
-        this._width = width;
-        this._height = height;
-        this._rotation = rotation;
-
-    }
-    getProjectionRadius(axis){
-        return this.extents[0] * Math.abs(axis.dot(this.axes[0])) + this.extents[1] * Math.abs(axis.dot(this.axes[1]));
-    }
-}
-var CollisionDetector = {
-
-    detectorOBBvsOBB: function (OBB1, OBB2) {
-        var nv = OBB1.centerPoint.sub(OBB2.centerPoint);
-        var axisA1 = OBB1.axes[0];
-        if (OBB1.getProjectionRadius(axisA1) + OBB2.getProjectionRadius(axisA1) <= Math.abs(nv.dot(axisA1))) return false;
-        var axisA2 = OBB1.axes[1];
-        if (OBB1.getProjectionRadius(axisA2) + OBB2.getProjectionRadius(axisA2) <= Math.abs(nv.dot(axisA2))) return false;
-        var axisB1 = OBB2.axes[0];
-        if (OBB1.getProjectionRadius(axisB1) + OBB2.getProjectionRadius(axisB1) <= Math.abs(nv.dot(axisB1))) return false;
-        var axisB2 = OBB2.axes[1];
-        if (OBB1.getProjectionRadius(axisB2) + OBB2.getProjectionRadius(axisB2) <= Math.abs(nv.dot(axisB2))) return false;
-        return true;
-
+        super.act();
+        this.rotation+=this.spin;
     }
 }

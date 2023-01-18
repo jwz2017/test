@@ -4,6 +4,21 @@
     var score = 0;
     const SCORE = "Score";
     class LoadBitmap extends Game {
+        static loadItem = [{
+            id: "scorebg",
+            src: "images/scorebg.png"
+        }, {
+            id: "spritesheet_button",
+            src: "images/spritesheet_button.png"
+        }, {
+            id: "loadspritedata",
+            src: "fakezee/fakezee.json",
+            type: "spritesheet"
+        }, {
+            id: "mapic",
+            src: "loadsprite/ma.png"
+        }];
+        static id = 'A81D833FE7C7754FB5395FF7A6EFA6E1';
         constructor() {
             super();
             // this.titleScreen=new lib.Title();
@@ -166,21 +181,7 @@
         }
 
     }
-    LoadBitmap.loadItem = [{
-        id: "scorebg",
-        src: "images/scorebg.png"
-    }, {
-        id: "spritesheet_button",
-        src: "images/spritesheet_button.png"
-    }, {
-        id: "loadspritedata",
-        src: "fakezee/fakezee.json",
-        type: "spritesheet"
-    }, {
-        id: "mapic",
-        src: "loadsprite/ma.png"
-    }];
-    LoadBitmap.id = 'A81D833FE7C7754FB5395FF7A6EFA6E1';
+    
     window.LoadBitmap = LoadBitmap;
     class LoaderBar1 extends LoaderBar {
         constructor(pos) {

@@ -31,8 +31,6 @@ mc.style = {
 class Rect extends createjs.Graphics {
   constructor() {
     super();
-    this.width=0;
-    this.height=0;
   }
   //border
   drawBorderUp() {
@@ -72,9 +70,9 @@ class Circle extends Rect{
   constructor() {
     super();
   }
-  drawFaceDown(color=mc.style.buttonDownColor) {
-    this.beginFill(color).drawShape(1.5, 1.5, this.width - 2);
-  }
+  // drawFaceDown(color=mc.style.buttonDownColor) {
+  //   this.beginFill(color).drawShape(1.5, 1.5, this.width - 2);
+  // }
   drawShape(x,y,width){
     var r=width/2;
     this.drawCircle(r+x,r+y,r);
@@ -121,8 +119,8 @@ class Arrow extends Rect {
     this._arrowRotation = rot;
   }
   drawShape(x,y,width,height){
-    const mat = new createjs.Matrix2D().translate(width / 2+x, height / 2+y).rotate(this._arrowRotation);
-    utils.drawPoints(this, mat, this._getPoints(width+x, height+y));
+    const mat = new createjs.Matrix2D().translate(width / 2, height / 2).rotate(this._arrowRotation);
+    utils.drawPoints(this, mat, this._getPoints(width, height));
   }
   _getPoints(width, height) {
     return [
@@ -491,7 +489,7 @@ class PushButton extends Component {
   }
   _positionLabel() {
     this._label.x = this.shape.width / 2;
-    this._label.y = this.shape.height / 2 + 2;
+    this._label.y = this.shape.height / 2;
   }
   get selected() {
     return this.shape.selected;
@@ -527,7 +525,7 @@ class CheckBox extends Component {
 
   _positionLabel() {
     this._label.x = this.shape.width + 8;
-    this._label.y = this.shape.height / 2 + 1;
+    this._label.y = this.shape.height / 2 ;
   }
   get selected() {
     return this.shape.selected;
