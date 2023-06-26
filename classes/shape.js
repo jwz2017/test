@@ -223,7 +223,7 @@ class Tree extends Actor {
 
 }
 //ship飞机
-class Ship extends HitActor {
+class Ship extends Actor {
     constructor(xpos, ypos) {
         super(xpos, ypos);
         this.edgeBehavior=Actor.WRAP;
@@ -232,13 +232,11 @@ class Ship extends HitActor {
         this.MAX_THRUST = 2;
         this.timeout = 0;
         this.thrust = 0;
-        this.drawShape(15);
-        this.init();
+        this.shipFlame = new createjs.Shape();
+        this.addChild(this.shipFlame);
+        this.init(15);
     }
     drawShape(width) {
-        this.image = new createjs.Shape();
-        this.shipFlame = new createjs.Shape();
-        this.addChild(this.shipFlame,this.image);
         var g = this.image.graphics;
         g.clear();
         g.beginStroke("#ffffff");
@@ -294,14 +292,14 @@ class Ship extends HitActor {
     }
 }
 //石头
-class SpaceRock extends HitActor {
+class SpaceRock extends Actor {
     static LRG_ROCK = 60;
     static MED_ROCK = 40;
     static SML_ROCK = 20;
     constructor(xpos, ypos, size = SpaceRock.LRG_ROCK ) {
         super(xpos, ypos);
         this.edgeBehavior=Actor.WRAP;
-        this.setSize(size, size);
+        this.init(size, size);
         this.activate();
     }
     drawShape(width, height) {

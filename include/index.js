@@ -2,14 +2,6 @@ window.onload = function () {
     "use strict";
     /*************游戏入口*****/
     var g = new GFrame('canvas');
-    g.adapt();
-    var loader = new createjs.FontLoader({
-        src: ["assets/fonts/regul-book.woff",
-            "assets/fonts/regul-bold.woff"
-        ],
-        type: "font"
-    });
-    loader.load();
     var close = document.getElementById("close");
     //关闭按钮点击
     close.onclick = function (e) {

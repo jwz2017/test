@@ -5,8 +5,7 @@
     numPoints=4;
     class Square3D extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("3d正方形");
+            super("3d正方形");
         }
         waitComplete() {
             vpX=width/2;

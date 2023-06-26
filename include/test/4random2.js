@@ -4,13 +4,12 @@
     var numDots=300,iterations=6;
     class Random2 extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("偏向分布");
+            super("偏向分布");
         }
         waitComplete() {
             for (let i = 0; i < numDots; i++) {
-                const dot = new Barrage();
-                dot.setSize(2,2);
+                const dot = new CirActor();
+                dot.init(2,2);
                 stage.addChild(dot);
                 var xpos=0;
                 for (let j = 0; j < iterations; j++) {
@@ -29,10 +28,6 @@
                 // dot.y=height/2+Math.random()*50-25;
             }
         }
-        runGame() {
-
-        }
-
     }
     window.Random2 = Random2;
 })();

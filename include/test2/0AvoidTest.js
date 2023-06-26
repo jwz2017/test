@@ -4,8 +4,7 @@
     var vehicle,circles,numCircles=10;
     class AvoidTest extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("回避绕路测试");
+            super("回避绕路测试");
         }
         waitComplete() {
             circles=[];
@@ -15,9 +14,9 @@
             stage.addChild(vehicle);
 
             for (let i = 0; i < numCircles; i++) {
-                const circle = new Barrage(Math.random()*mapWidth,Math.random()*mapHeight);
+                const circle = new CirActor(Math.random()*width,Math.random()*height);
                 let size=Math.random()*50+50;
-                circle.setSize(size,size);
+                circle.init(size,size);
                 stage.addChild(circle);
                 circles.push(circle);
             }

@@ -11,6 +11,7 @@
   <title>h5Test</title>
   <script src="classes/createjs.min.js"></script>
   <script src="classes/mc.js"></script>
+  <script src="classes/GridCollision.js"></script>
   <script src="classes/gframe.js"></script>
   <script src="classes/ScaleBitmap.js"></script>
   <script src="assets/lib.js"></script>
@@ -26,6 +27,7 @@
   <script src="include/test/0LoadBitmap.js"></script>
   <script src="include/test/0Graphics.js"></script>
   <script src="include/test/0mcTest.js"></script>
+  <script src="include/test/0Actortext.js"></script>
   <script src="include/test/0chain.js"></script>
   <script src="include/test/0billiard.js"></script>
   <script src="include/test/0billiard2.js"></script>
@@ -152,36 +154,31 @@
           <div class="procontant clearfix">
             <ul class="sk_product">
               <li>
-                <a href="#"><img title="Graphics" src="assets/main/graphicsutils.jpg" onclick="productClick(this)"
-                    alt=""></a>
+                <h4>测试</h4>
+                <p>actor测试</p>
+                <a href="#" title="ActorTest" onclick="productClick(this)" >ActorTest</a>
                 <p>图形工具</p>
-                <p class="pro_name">Graphics</p>
-              </li>
-              <li>
-                <a href="#"><img title="LoadBitmap" src="assets/main/loadbitmap.jpg" onclick="productClick(this)"
-                    alt=""></a>
+                <a href="#" title="Graphics"  onclick="productClick(this)">Graphics</a>
                 <p>资源加载 </p>
-                <p class="pro_name">loadbitmap</p>
-              </li>
-              <li>
-                <a href="#"><img title="Mctest" src="assets/main/mc.jpg" onclick="productClick(this)" alt=""></a>
+                <a href="#" title="LoadBitmap" onclick="productClick(this)">LoadBitmap</a>
                 <p>矢量组件</p>
-                <p class="pro_name">Mctest</p>
+                <a href="#" title="Mctest" onclick="productClick(this)" >Mctest</a>
               </li>
               <li>
-                <a href="#"><img title="Chain" src="assets/main/chain.jpg" onclick="productClick(this)" alt="链式运动"></a>
                 <p>链式运动</p>
-                <p class="pro_name">chain</p>
-              </li>
-              <li>
+                <a href="#" title="Chain" onclick="productClick(this)" >Chain</a>
                 <p>单轴碰撞</p>
                 <a href="#" title="Billiard" onclick="productClick(this)">Billiard</a>
                 <p>动量碰撞</p>
                 <a href="#" title="Billiard2" onclick="productClick(this)">Billiard2</a>
-                <p>粒子运动</p>
+                <p>网格检查</p>
                 <a href="#" title="Particle" onclick="productClick(this)">Particle</a>
                 <p>节点花园</p>
                 <a href="#" title="NodeGarden" onclick="productClick(this)">NodeGarden</a>
+              </li>
+              <li>
+                <p>矩形碰撞</p>
+                <a href="#" title="RectRotate" onclick="productClick(this)">RectRotate</a>
               </li>
             </ul>
             <!-- 扩展 -->
@@ -189,8 +186,6 @@
               <li>
                 <hr />
                 <h4>关节</h4>
-                <p>矩形碰撞</p>
-                <a href="#" title="RectRotate" onclick="productClick(this)">RectRotate</a>
                 <p>关节运动</p>
                 <a href="#" title="SingleSegment" onclick="productClick(this)">SingleSegment</a>
                 <p>关节行走</p>

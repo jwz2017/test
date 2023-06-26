@@ -4,16 +4,15 @@
     var world,floor;
     class TileTest extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("TileTest");
+            super("TileTest");
         }
         waitComplete() {
             world=new IsoWorld();
-            world.x=mapWidth/2;
+            world.x=width/2;
             world.y=100;
 
             // floor=new createjs.Container();
-            // world.x=floor.x=mapWidth/2;
+            // world.x=floor.x=width/2;
             // world.y=floor.y=100;
             stage.addChild(world);
             for (let i = 0; i < 20; i++) {

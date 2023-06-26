@@ -10,16 +10,15 @@
     front=200,back=-200;
     class Velocity3D extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("3d速度");
+            super("3d速度");
         }
         waitComplete() {
             xpos=ypos=zpos=0;
             vpX=width/2;
             vpY=height/2;
-            ball=new Barrage();
+            ball=new CirActor();
             ball.speed.z=0;
-            ball.setSize(50,50);
+            ball.init(50,50);
             stage.addChild(ball);
         }
         runGame() {
@@ -85,7 +84,5 @@
         }
 
     }
-    Velocity3D.loadItem = null;
-    Velocity3D.loaderbar=null;;
     window.Velocity3D = Velocity3D;
 })();

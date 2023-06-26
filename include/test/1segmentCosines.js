@@ -7,14 +7,13 @@
     var segment0,segment1;
     class SegmentCosines extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("余弦定理");
+            super("余弦定理");
         }
         waitComplete() {
             segment0=new Segment();
-            segment0.setSize(100,20);
+            segment0.init(100,20);
             segment1=new Segment();
-            segment1.setSize(100,20);
+            segment1.init(100,20);
             segment1.x=width/2;
             segment1.y=height/2;
             stage.addChild(segment0,segment1);

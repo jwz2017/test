@@ -6,38 +6,14 @@
     <meta name="viewport"
         content="width=device-width,initial-scale=1, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="css/normlize.css">
+    <link rel="stylesheet" href="css/game.css">
     <title>space hero</title>
     <script src="classes/createjs.min.js"></script>
-    <script src="classes/gframe.js"></script>
     <script src="classes/mc.js"></script>
     <script src="classes/collision.js"></script>
+    <script src="classes/gframe.js"></script>
     <!-- 修改 -->
     <script src="include/2spaceHero.js"></script>
-    <style>
-        #container {
-            min-width: 320px;
-            max-width: 600px;
-            width: 100%;
-            margin: 0 auto;
-            height: 100vh;
-            position: relative;
-            overflow: hidden;
-            /* background-color: rgb(202, 128, 17); */
-        }
-
-        #game {
-            margin: 0 auto;
-            position: relative;
-            transform-origin: 0 0;
-            /* background-color: aqua; */
-        }
-
-        #game canvas {
-            /* background-color: #999; */
-            position: absolute;
-        }   
-    </style>
 </head>
 
 <body>
@@ -45,8 +21,7 @@
         <!-- 游戏界面 -->
         <div id="game">
             <!-- 随舞台缩放 dom-->
-            <img src="assets/spacehero/bg.png" style="position:absolute">
-            <canvas id="canvas" width="600" height="700">
+            <canvas id="canvas" width="600" height="700" style="background-image:url(assets/spacehero/bg.png) ;">
             </canvas>
         </div>
         <!-- 不随舞台缩放 dom -->

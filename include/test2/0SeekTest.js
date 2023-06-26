@@ -4,9 +4,7 @@
     var vehicle;
     class VehiclSeek extends Game {
         constructor() {
-            super();
-
-            this.titleScreen.setText("机车追寻测试");
+            super("机车追寻测试");
         }
         waitComplete() {
             vehicle=new SteeredActor();

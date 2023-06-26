@@ -6,8 +6,7 @@
     vx=0,vy=0,vz=0,ax=0,ay=0,az=0,gravity=0.3;
     class Trees extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("屏幕环绕3d");
+            super("屏幕环绕3d");
         }
         waitComplete() {
             stage.canvas.style.background="#000";
@@ -80,7 +79,5 @@
         }
 
     }
-    Trees.loadItem = null;
-    Trees.loaderbar=null;;
     window.Trees = Trees;
 })();

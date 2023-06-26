@@ -9,8 +9,7 @@
     bounce=-0.6;
     class FireWork extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("烟火");
+            super("烟火");
         }
         waitComplete() {
             stage.canvas.style.background="#000";
@@ -18,9 +17,9 @@
             vpX=width/2;
             vpY=height/2;
             for (let i = 0; i < numBalls; i++) {
-                const ball = new Barrage();
+                const ball = new CirActor();
                 ball.color=utils.randomColor();
-                ball.setSize(3,3);
+                ball.init(3,3);
                 ball.speed.x=Math.random()*6-3;
                 ball.speed.y=Math.random()*6-6;
                 ball.speed.z=Math.random()*6-3;
@@ -61,7 +60,5 @@
         }
 
     }
-    FireWork.loadItem = null;
-    FireWork.loaderbar=null;;
     window.FireWork = FireWork;
 })();

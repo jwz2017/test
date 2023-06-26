@@ -4,12 +4,11 @@
     var world,box,speed=4;
     class Collision extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("碰撞测试");
+            super("碰撞测试");
         }
         waitComplete() {
             world=new IsoWorld();
-            world.x=mapWidth/2;
+            world.x=width/2;
             world.y=100;
             stage.addChild(world);
 

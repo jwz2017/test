@@ -7,25 +7,23 @@
     cycle=0,vx=0,vy=0;
     class SegmentWalk extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("关节行走");
-            
+            super("关节行走");
         }
         waitComplete() {
             segment0=new Segment();
-            segment0.setSize(100,30);
+            segment0.init(100,30);
             segment0.x=400;
             segment0.y=100;
             segment1=new Segment();
-            segment1.setSize(100,20);
+            segment1.init(100,20);
             segment1.x=segment0.getPin().x;
             segment1.y=segment0.getPin().y;
             segment2=new Segment();
-            segment2.setSize(100,30);
+            segment2.init(100,30);
             segment2.x=400;
             segment2.y=100;
             segment3=new Segment();
-            segment3.setSize(100,20);
+            segment3.init(100,20);
             segment3.x=segment2.getPin().x;
             segment3.y=segment2.getPin().y;
             stage.addChild(segment0,segment1,segment2,segment3);

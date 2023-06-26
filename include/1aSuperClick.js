@@ -2,7 +2,6 @@ window.onload = function () {
     "use strict";
     /*************游戏入口*****/
     var g = new GFrame('canvas');
-    g.adapt();
     g.preload(SuperClick);
     // FPS.startFPS(stage);
 };
@@ -33,19 +32,15 @@ window.onload = function () {
 
     class SuperClick extends Game {
         constructor() {
-            super();
+            super("super click");
             this.maxLevel = 2;
-            this.titleScreen.setText("super click");
-
         }
         /**建立游戏元素游戏初始化
          * 在构造函数内建立
          */
         createScoreBoard() {
             GFrame.style.SCOREBOARD_HEIGHT = 100;
-            this.scoreBoard = new ScoreBoard();
-            GFrame.style.SCOREBOARD_COLOR="#000000";
-            this.scoreBoard.createBg();
+            this.scoreBoard = new ScoreBoard(0,0,null);
             this.scoreBoard.createTextElement(SCORE, '0', 20, 14);
             this.scoreBoard.createTextElement(LEVEL, '0', 320, 14);
             this.scoreBoard.createTextElement(CLICKS, '0', 560, 14);
@@ -65,7 +60,7 @@ window.onload = function () {
                 if (createjs.Ticker.paused) {
                     return;
                 } else if (e.target.type === BAD) {
-                    model.dispatchEvent(GFrame.event.GAME_OVER);
+                    stage.dispatchEvent(GFrame.event.GAME_OVER);
                 } else if (e.target.type === GOOD && e.target.first === true) {
                     e.target.clicked = true;
                     e.target.first = false;
@@ -165,7 +160,7 @@ window.onload = function () {
         }
         _checkLevelUp() {
             if (achieve >= needed) {
-                model.dispatchEvent(GFrame.event.LEVEL_UP)
+                stage.dispatchEvent(GFrame.event.LEVEL_UP)
             }
         }
         remove() {
@@ -179,8 +174,6 @@ window.onload = function () {
         }
 
     }
-    SuperClick.loaded = false;
-    SuperClick.loadItem = null;
     window.SuperClick = SuperClick;
 })();
 class Ball extends createjs.Shape {

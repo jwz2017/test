@@ -4,8 +4,7 @@
     var vehicle;
     class WanderTest extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("漫游行为");
+            super("漫游行为");
         }
         waitComplete() {
             vehicle=new SteeredActor(200,200);

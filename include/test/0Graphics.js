@@ -3,9 +3,8 @@
     //游戏变量;
     class Graphics extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("绘画工具");
-            this.instructionScreen.setText("1:画虚线\r2:画扇形\r3:画同心圆");
+            super("绘画工具");
+            this.instructionScreen.title.text="1:画虚线\r2:画扇形\r3:画同心圆";
         }
         waitComplete() {
             var shape=stage.addChild(new createjs.Shape());

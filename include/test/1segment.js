@@ -4,14 +4,13 @@
     var segment0,segment1,slider0,slider1;
     class SingleSegment extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("关节运动");
+            super("关节运动");
         }
         waitComplete() {
             segment0=new Segment(200,150);
-            segment0.setSize(100,20);
+            segment0.init(100,20);
             segment1=new Segment();
-            segment1.setSize(100,20);
+            segment1.init(100,20);
             segment1.x=segment0.getPin().x;
             segment1.y=segment0.getPin().y;
             stage.addChild(segment0,segment1);
@@ -22,9 +21,6 @@
             slider1=new Slider(stage,"rot1",this.change,550,100,120,20)
             slider1.setMmum(0,-160);
         }
-        runGame() {
-            
-        }
         change(){
             //测试
             segment0.rotation=slider0.value;
@@ -32,7 +28,6 @@
             segment1.x=segment0.getPin().x;
             segment1.y=segment0.getPin().y;
         }
-
     }
     window.SingleSegment = SingleSegment;
 })();

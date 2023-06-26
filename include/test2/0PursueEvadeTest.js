@@ -4,9 +4,7 @@
     var pursuer,evader;
     class PursueEvade extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("追捕和躲避测试");
-            
+            super("追捕和躲避测试");
         }
         waitComplete() {
             pursuer=new SteeredActor(200,200);

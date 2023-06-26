@@ -4,8 +4,7 @@
     var vehicle, path, shape;
     class PathTest extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("路径跟随");
+            super("路径跟随");
         }
         waitComplete() {
             shape = new createjs.Shape();

@@ -8,16 +8,15 @@
         fl = 250;
     class Perspective1 extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("透视1");
+            super("透视1");
         }
         waitComplete() {
             xpos=ypos=zpos=0;
             vpX=width/2;
             vpY=height/2;
 
-            ball=new Barrage();
-            ball.setSize(50,50);
+            ball=new CirActor();
+            ball.init(50,50);
             stage.addChild(ball);
         }
         runGame() {
@@ -41,7 +40,5 @@
         }
 
     }
-    Perspective1.loadItem = null;
-    Perspective1.loaderbar = null;;
     window.Perspective1 = Perspective1;
 })();

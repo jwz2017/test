@@ -5,12 +5,11 @@
     speed=5;
     class MotionTest extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("移动测试");
+            super("移动测试");
         }
         waitComplete() {
             world=new IsoWorld();
-            world.x=mapWidth/2;
+            world.x=width/2;
             world.y=100;
             stage.addChild(world);
 

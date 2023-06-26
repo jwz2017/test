@@ -4,9 +4,7 @@
     var vehicle;
     class VehiclFlee extends Game {
         constructor() {
-            super();
-
-            this.titleScreen.setText("机车逃离测试");
+            super("机车逃离测试");
         }
         waitComplete() {
             vehicle=new SteeredActor(200,200);

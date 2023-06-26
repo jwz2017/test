@@ -18,12 +18,11 @@
             id: "mapic",
             src: "loadsprite/ma.png"
         }];
-        static id = 'A81D833FE7C7754FB5395FF7A6EFA6E1';
+        static loadId = 'A81D833FE7C7754FB5395FF7A6EFA6E1';
         constructor() {
-            super();
+            super("资源加载01");
             // this.titleScreen=new lib.Title();
-            this.titleScreen.setText("资源加载01");
-            this.instructionScreen.setText("1:图片预加载\r2:九宫格使用\r3:animate库加载\r4:animate制作sprite\r5:dom加入到舞台\r6:dom加入到animate\r7:位图字体\r8:sprite animation随机播放速度");
+            this.instructionScreen.title.text="1:图片预加载\r2:九宫格使用\r3:animate库加载\r4:animate制作sprite\r5:dom加入到舞台\r6:dom加入到animate\r7:位图字体\r8:sprite animation随机播放速度";
 
             /** *******************************************预加载图片**********************************************
              * 直接使用地址  queue()设置false后和getResult等同
@@ -88,10 +87,13 @@
             this.pop.y = 150;
             this.pop.x = 53;
             this.pop.win.btn.cursor = "pointer";
+            this.pop.on("add",()=>{
+                this.nameInpuElement.visible=true;
+            })
             this.pop.win.btn.on("click", () => {
                 this.pop.gotoAndStop(0);
                 stage.removeChild(this.pop);
-                this.nameInpuElement.visible=false;
+                this.nameInput.style.display="none";
             })
             var buttonss = new createjs.SpriteSheet({
                 images: [queue.getResult("spritesheet_button")],
@@ -110,7 +112,7 @@
                 this.button2.alpha=0.5+button2Helper.enabled*0.5;
                 // this.button2.mouseEnabled=button2Helper.enabled;
                 stage.addChild(this.pop);
-                this.nameInpuElement.visible=true;
+                this.nameInput.style.display="block";
                 this.pop.gotoAndPlay(1);
             })
         }
@@ -174,7 +176,6 @@
          */
         createScoreBoard() {
             this.scoreBoard = new ScoreBoard(0, height - GFrame.style.SCOREBOARD_HEIGHT);
-            this.scoreBoard.createBg();
             this.scoreBoard.createTextElement(SCORE, '0%', 10, 10, {
                 spriteSheet: queue.getResult("loaderbarData")
             });

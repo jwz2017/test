@@ -4,8 +4,7 @@
     var numDots=50,friction=0.95,dots,shape;
     class Brownian extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("布朗运动");
+            super("布朗运动");
         }
         waitComplete() {
             shape=new createjs.Shape();
@@ -14,8 +13,8 @@
             stage.canvas.style.background="#fff";
             dots=[];
             for (let i = 0; i < numDots; i++) {
-                const dot = new Barrage();
-                dot.setSize(2,2);
+                const dot = new CirActor();
+                dot.init(2,2);
                 dot.x=Math.random()*width;
                 dot.y=Math.random()*height;
                 dots.push(dot);

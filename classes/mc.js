@@ -893,7 +893,7 @@ class ScrollContainer extends createjs.Container {
 
   set scrollY(y) {
     const h = this.contentSize.height - this.getBounds().height
-    this.container.y = Math.min(0, Math.max(y, -h))
+    this.container.y = Math.min(0, Math.floor(Math.max(y, -h)))
     this.scrollBarV.value = y
     this.dispatchEvent("scroll")
   }

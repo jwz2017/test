@@ -5,12 +5,11 @@
     gravity=2,friction=0.95,bounce=-0.9;
     class MotionTest2 extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("移动测试2");
+            super("移动测试2");
         }
         waitComplete() {
             world=new IsoWorld();
-            world.x=mapWidth/2;
+            world.x=width/2;
             world.y=100;
             stage.addChild(world);
             for (let i = 0; i < 20; i++) {

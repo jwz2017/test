@@ -2,7 +2,6 @@ window.onload = function () {
     "use strict";
     /*************游戏入口*****/
     var g = new GFrame('canvas');
-    g.adapt();
     g.preload(Colordrop);
     // FPS.startFPS(stage);
 };
@@ -16,8 +15,7 @@ window.onload = function () {
     var slots, shapes;
     class Colordrop extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("Colordrop");
+            super("Colordrop");
             
             slots = [];
             shapes = [];
@@ -40,7 +38,7 @@ window.onload = function () {
             }
         }
         createScoreBoard() {
-            this.scoreBoard = new ScoreBoard(0, 0);
+            this.scoreBoard = new ScoreBoard();
             this.scoreBoard.createTextElement(SCORE, '0', 20, 14);
             this.scoreBoard.createTextElement(LEVEL, '0', 320, 14);
         }
@@ -116,8 +114,6 @@ window.onload = function () {
         }
 
     }
-    Colordrop.loaded = false;
-    Colordrop.loadItem = null;
     window.Colordrop = Colordrop;
 })();
 

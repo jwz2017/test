@@ -4,8 +4,7 @@
     var vehicle;
     class VehiclArrive extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("机车到达");
+            super("机车到达");
         }
         waitComplete() {
             vehicle=new SteeredActor();

@@ -4,14 +4,13 @@
     var vehicles,numVehicles=30;
     class FlockTest extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("群落测试");
+            super("群落测试");
         }
         waitComplete() {
             vehicles=[];
             for (let i = 0; i < numVehicles; i++) {
                 const vehicle =new SteeredActor();
-                vehicle.pos.setValues(Math.random()*mapWidth,Math.random()*mapHeight);
+                vehicle.pos.setValues(Math.random()*width,Math.random()*height);
                 vehicle.speed.setValues(Math.random()*20-10,Math.random()*20-10);
                 vehicle.edgeBehavior=Actor.BOUNCE;
                 vehicles.push(vehicle);

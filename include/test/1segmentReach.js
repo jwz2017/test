@@ -5,21 +5,20 @@
     bounce=-1;
     class SegmentReach extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("关节伸展");
+            super("关节伸展");
         }
         waitComplete() {
             segments=[];
-            ball=new Barrage();
+            ball=new CirActor();
             ball.maxSpeed=20;
             ball.edgeBehavior=Actor.BOUNCE;
-            ball.setSize(50,50);
+            ball.init(50,50);
             ball.speed.x=10;
             stage.addChild(ball);
             
             for (let i = 0; i < numSegments; i++) {
                 var segment = new Segment();
-                segment.setSize(50,10);
+                segment.init(50,10);
                 stage.addChild(segment);
                 segments.push(segment);
             }

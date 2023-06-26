@@ -7,20 +7,18 @@
     var ball0, ball1;
     class Billiard extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("单轴动量碰撞");
-
+            super("单轴动量碰撞");
         }
         waitComplete() {
-            ball0 = new Barrage();
-            ball0.setSize(80, 80, true);
+            ball0 = new CirActor();
+            ball0.init(80,80);
             ball0.mass = 2;
             ball0.x = 50;
             ball0.y = height / 2;
             ball0.speed.x = 1;
 
-            ball1 = new Barrage();
-            ball1.setSize(50, 50, true);
+            ball1 = new CirActor();
+            ball1.init(40,40);
             ball1.mass = 1;
             ball1.x = 700;
             ball1.y = height / 2;
@@ -40,7 +38,5 @@
             }
         }
     }
-    Billiard.loadItem = null;
-    Billiard.loaderbar = null;;
     window.Billiard = Billiard;
 })();

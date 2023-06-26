@@ -1,18 +1,11 @@
 window.onload = function () {
     "use strict";
     /*************游戏入口*****/
+    GFrame.style.TITLE_TEXT_COLOR = "#fff";
+    canvas.style.backgroundColor="#000";
     var g = new GFrame('canvas');
-    g.adapt();
-    var loader = new createjs.FontLoader({
-        src: ["assets/fonts/regul-book.woff",
-            "assets/fonts/regul-bold.woff"
-        ]
-    });
-    loader.on("complete", () => {
-        g.preload(SpaceShip);
-        g.startFPS();
-    }, null, true);
-    loader.load();
+    g.preload(SpaceShip);
+    g.startFPS();
 };
 (function () {
     "use strict";
@@ -31,16 +24,14 @@ window.onload = function () {
 
     class SpaceShip extends Game {
         constructor() {
-            GFrame.style.TITLE_TEXT_COLOR = "#fff";
-            super();
-            this.titleScreen.setText("飞机游戏");
+            super("飞机游戏");
             ship = new Ship();
         }
         /**建立游戏元素游戏初始化
          * 在构造函数内建立
          */
         createScoreBoard() {
-            this.scoreBoard = new ScoreBoard();
+            this.scoreBoard = new ScoreBoard(0,0,null);
             this.scoreBoard.createTextElement(SCORE, '0', 20, 14);
             this.scoreBoard.createTextElement(LEVEL, '0', 320, 14);
         }
@@ -82,6 +73,7 @@ window.onload = function () {
                     bullet.x = ship.x + ship.hit * Math.cos(bullet.speed.angle);
                     bullet.y = ship.y + ship.hit * Math.sin(bullet.speed.angle);
                     bullet.updatePos();
+                    stage.addChild(bullet);
                     console.log(bullets.length);
                 }
             } else {
@@ -106,13 +98,13 @@ window.onload = function () {
                 o.act();
                 //石块与飞船碰撞
                 if (o.hitRadius(ship)) {
-                    model.dispatchEvent(GFrame.event.GAME_OVER);
+                    stage.dispatchEvent(GFrame.event.GAME_OVER);
                     return;
                 }
                 //与子弹碰撞
                 for (let i=bullets.length-1;i>=0;i--) {
                     const p = bullets[i];
-                    if (p.active&&o.contains(p.x,p.y)) {
+                    if (p.active&&o.contains(p)) {
                         score+=o.score;
                         this.scoreBoard.update(SCORE,score);
                         p.recycle();
@@ -160,8 +152,8 @@ window.onload = function () {
                     rockBelt[i] = new SpaceRock(0,0, size);
                     break;
                 } else if (!rockBelt[i].active) {
-                    rockBelt[i].drawShape(size,size);
-                    rockBelt[i].init();
+                    // rockBelt[i].drawShape(size,size);
+                    rockBelt[i].init(size,size);
                     rockBelt[i].activate();
                     break;
                 } else {
@@ -173,18 +165,16 @@ window.onload = function () {
         }
 
     }
-    SpaceShip.loadItem = null;
-    SpaceShip.loaderbar = null;;
     window.SpaceShip = SpaceShip;
 
-    class Bullet extends HitActor {
+    class Bullet extends Actor {
         constructor(pos) {
             super(pos);
             this.speed.length=5;
-            this.setSize(6 , 1);
+            this.init(6 , 1);
         }
         drawShape(width,height) {
-            this.image.graphics.beginStroke("#ffffff").moveTo(-width/2, 0).lineTo(width/2, 0);
+            this.image.graphics.clear().beginStroke("#ffffff").moveTo(-width/2, 0).lineTo(width/2, 0);
             this.image.setBounds(-width/2,-height/2,width,height);
         }
     }

@@ -3,8 +3,7 @@
     //游戏变量;
     class isoTransformTest extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("等角坐标转换测试");
+            super("等角坐标转换测试");
         }
         waitComplete() {
             var p0=new Point3D(0,0,0);

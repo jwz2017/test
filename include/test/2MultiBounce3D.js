@@ -6,16 +6,15 @@
     front=100,back=-100;
     class MultiBounce3D extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("多球反弹");
+            super("多球反弹");
         }
         waitComplete() {
             balls=[];
             vpX=width/2;
             vpY=height/2;
             for (let i = 0; i < numBalls; i++) {
-                const ball = new Barrage();
-                ball.setSize(30,30);
+                const ball = new CirActor();
+                ball.init(30,30);
                 ball.speed.x=Math.random()*10-5;
                 ball.speed.y=Math.random()*10-5;
                 ball.speed.z=Math.random()*10-5;
@@ -72,7 +71,5 @@
             }
         }
     }
-    MultiBounce3D.loadItem = null;
-    MultiBounce3D.loaderbar=null;;
     window.MultiBounce3D = MultiBounce3D;
 })();

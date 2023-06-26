@@ -4,8 +4,7 @@
     var vehicleA,vehicleB,vehicleC;
     class FleeTest2 extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("逃离测试2");
+            super("逃离测试2");
         }
         waitComplete() {
             vehicleA=new SteeredActor(200,200);

@@ -8,17 +8,15 @@
     var chainShape,balls;
     class Chain extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("链式运动");
-            
+            super("链式运动");
         }
         waitComplete() {
             balls=[];
             chainShape=new createjs.Shape();
             stage.addChild(chainShape);
             for (let i = 0; i < 7; i++) {
-                const ball = new Barrage();
-                ball.setSize(20,20);
+                const ball = new CirActor();
+                ball.init(20,20);
                 stage.addChild(ball);    
                 balls.push(ball);      
             }
@@ -48,7 +46,5 @@
         }
 
     }
-    Chain.loadItem = null;
-    Chain.loaderbar=null;;
     window.Chain = Chain;
 })();

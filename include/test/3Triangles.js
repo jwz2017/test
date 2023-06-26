@@ -5,8 +5,7 @@
     color="#ffcccc";
     class Triangles extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("三角绘制");
+            super("三角绘制");
         }
         waitComplete() {
             light=new Light();

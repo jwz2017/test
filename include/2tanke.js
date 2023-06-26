@@ -2,18 +2,19 @@ window.onload = function () {
     "use strict";
     /*************游戏入口*****/
     var g = new GFrame('canvas');
-    g.adapt();
+    // g.loaderBar=null;
     g.preload(Tanke);
     g.startFPS();
 };
 (function () {
     "use strict";
     //游戏变量;
-    var score;
     const SCORE = "score",
         LEVEL = "level";
-    var spriteSheet, actorChars, map,
+    var score;
+    var spriteData, spriteSheet, actorChars, mapContainer,
         tanks, bullets, enemyBullets,
+        step = 32,
         plans = [
             [
                 [30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30],
@@ -32,14 +33,18 @@ window.onload = function () {
                 [30, 0, 0, 0, 0, 0, 0, 28, 0, 23, 0, 28, 1, 0, 0, 0, 0, 0, 0, 30],
                 [30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30]
             ]
-        ]
+        ];
+
     class Tanke extends Game {
+        static loadItem = [{
+            id: "tanke",
+            src: "tanke/q.png"
+        }];
         constructor() {
-            super();
-            this.titleScreen.setText("坦克大战");
-            this.instructionScreen.setText("方向w,a,s,d\n小键盘4开火攻击");
-            this.maxLevel = 1;
-            this.container = new createjs.Container();
+            super("坦克大战");
+            this.instructionScreen.title.text = "方向w,a,s,d\n小键盘4开火攻击";
+        }
+        init() {
             actorChars = {
                 "1": SpritePlayer,
                 "23": Live,
@@ -47,14 +52,13 @@ window.onload = function () {
                 "22": Tank,
                 "9": Enemy
             }
-            map = new createjs.Container();
-            var spriteData = {
+            spriteData = {
                 images: [queue.getResult("tanke")],
                 frames: {
-                    width: 32,
-                    height: 32,
-                    regX: 16,
-                    regY: 16
+                    width: step,
+                    height: step,
+                    regX: step / 2,
+                    regY: step / 2
                 },
                 animations: {
                     player: [1, 8, "player", 0.1],
@@ -71,10 +75,8 @@ window.onload = function () {
                 }
             };
             spriteSheet = new createjs.SpriteSheet(spriteData);
+            mapContainer = new GridsMap(width - 640 >> 1, height - 480 >> 1, 640, 480, step, step, new createjs.Container);
         }
-        /**建立游戏元素游戏初始化
-         * 在构造函数内建立
-         */
         createScoreBoard() {
             this.scoreBoard = new ScoreBoard(0, 0, null);
             this.scoreBoard.createTextElement(SCORE, '0', 20, 14);
@@ -88,26 +90,39 @@ window.onload = function () {
         newLevel() {
             this.scoreBoard.update(LEVEL, this.level);
             //创建网格
-            this.createGrid(plans, 32, 32, actorChars, map);
-            this.container.y = height -mapHeight >> 1;
-            this.container.x = width - mapWidth >> 1;
-            tanks = actors.filter(function (actor) {
+            let plan = plans[this.level - 1];
+            mapContainer.createGridMap(plan, actorChars, (ch, xpos, ypos) => {
+                var fieldType = null;
+                var tile = new createjs.Sprite(spriteSheet, ch).set({
+                    regX: -step / 2,
+                    regY: -step / 2,
+                    x: xpos,
+                    y: ypos
+                });
+                if (actorChars[ch] || ch == 0) {
+                    tile.gotoAndStop(0);
+                } else {
+                    fieldType = "wall";
+                }
+                mapContainer.map.addChild(tile);
+                return fieldType;
+            });
+            tanks = mapContainer.actors.filter(function (actor) {
                 return actor.type == "player" || actor.type == "enemy";
             });
             bullets = [];
             enemyBullets = [];
         }
         waitComplete() {
-            stage.addChild(this.scoreBoard, this.container);
-
+            stage.addChild(this.scoreBoard, mapContainer);
         }
         runGame() {
-            for (let i = actors.length - 1; i >= 0; i--) {
-                const actor = actors[i];
+            for (let i = mapContainer.actors.length - 1; i >= 0; i--) {
+                const actor = mapContainer.actors[i];
                 actor.act();
                 if (actor.fire) {
                     actor.fire = false;
-                    let bullet,angle=(actor.rotation-90)*Math.PI/180;
+                    let bullet, angle = (actor.rotation - 90) * Math.PI / 180;
                     switch (actor.type) {
                         case "player":
                             bullet = this.getActor(bullets, Barrage1);
@@ -115,12 +130,13 @@ window.onload = function () {
                             break;
                         case "enemy":
                             bullet = this.getActor(enemyBullets, EnemyBarrage);
-                            bullet.speed.angle =angle;
+                            bullet.speed.angle = angle;
                             break;
                     }
-                    bullet.x=actor.x+Math.cos(angle)*actor.hit;
-                    bullet.y=actor.y+Math.sin(angle)*actor.hit;
+                    bullet.x = actor.x + Math.cos(angle) * actor.hit;
+                    bullet.y = actor.y + Math.sin(angle) * actor.hit;
                     bullet.updatePos();
+                    mapContainer.addChild(bullet);
                 }
             }
             for (const bullet of bullets) {
@@ -135,9 +151,7 @@ window.onload = function () {
             }
         }
         clear() {
-            this.container.removeAllChild();
-            map.removeAllChild();
-            map.uncache();
+            mapContainer.clear();
         }
         // setGrid(ch, x, y) {
         //     var fieldType = null;
@@ -174,37 +188,15 @@ window.onload = function () {
         //     this.map.graphics.beginBitmapFill(queue.getResult("tanke"), "no-repeat", mat).drawRect(xpos, ypos, stepWidth, stepHeight);
         //     return fieldType;
         // }
-        setGrid(ch, xpos, ypos) {
-            var fieldType = null;
-            var tile = new createjs.Sprite(spriteSheet, ch).set({
-                regX: -16,
-                regY: -16,
-                x:xpos,
-                y:ypos
-            });
-            if (actorChars[ch] || ch == 0) {
-                tile.gotoAndStop(0);
-            } else {
-                fieldType = "wall";
-            }
-            map.addChild(tile);
-            return fieldType;
-        }
-
     }
-    Tanke.loadItem = [{
-        id: "tanke",
-        src: "tanke/q.png"
-    }];
-    Tanke.loaderbar = null;
     window.Tanke = Tanke;
 
-    class SpritePlayer extends HitActor {
+    class SpritePlayer extends Actor {
         constructor(xpos, ypos) {
             super(xpos, ypos);
             this.type = "player";
-            this.speedRate =1;
-            this.setSize(0.8*stepWidth, 0.8*stepHeight);
+            this.speedRate = 1;
+            this.init(0.8 * step, 0.8 * step);
             this.setSpriteData(spriteSheet, "player");
             this.image.paused = true;
             this.nextBullet = 0;
@@ -220,7 +212,7 @@ window.onload = function () {
                 case "up":
                     this.speed.y = -this.speedRate;
                     this.rotation = 0;
-                    this.paused = false;
+                    this.image.paused = false;
                     break;
                 case "down":
                     this.speed.y = this.speedRate;
@@ -249,13 +241,13 @@ window.onload = function () {
             }
 
             var newPos = this.pos.plus(this.speed);
-            var obstacle = this.hitMap(newPos);
+            var obstacle = mapContainer.hitMap(this.size, newPos);
             if (obstacle) {
                 // if (obstacle == "lava") {
                 //     this.status = "lose";
                 // }
             } else {
-                var actor = this.hitActors(actors,newPos);
+                var actor = this.hitActors(mapContainer.actors, newPos);
                 if (!actor || actor.type != "enemy") {
                     this.pos = newPos;
                     this.update();
@@ -278,44 +270,44 @@ window.onload = function () {
             }
         }
     }
-    class Barrage1 extends HitActor {
+    class Barrage1 extends CirActor {
         constructor(xpos, ypos) {
             super(xpos, ypos);
-            this.speed.length=3;
-            this.setSize(0.26*stepWidth, 0.26*stepHeight);
+            this.speed.length = 3;
+            this.init(8, 8);
             this.setSpriteData(spriteSheet, "barrage")
         }
-        act(){
-            let obstacle=this.hitMap();
+        act() {
+            let obstacle = mapContainer.hitMap(this.size, this.pos);
             if (!obstacle) {
-                let actor=this.hitActors(actors);
-                if (!actor||actor.type!="enemy") {
+                let actor = this.hitActors(mapContainer.actors);
+                if (!actor || actor.type != "enemy") {
                     super.act();
-                }else if (actor.type=="enemy") {
+                } else if (actor.type == "enemy") {
                     this.recycle();
                 }
-            }else{
+            } else {
                 this.recycle();
             }
         }
     }
 
-    class EnemyBarrage extends HitActor {
+    class EnemyBarrage extends CirActor {
         constructor(xpos, ypos) {
             super(xpos, ypos);
-            this.speed.length=3;
-            this.setSize(6, 6);
+            this.speed.length = 3;
+            this.init(8, 8);
         }
-        act(){
-            let obstacle=this.hitMap();
+        act() {
+            let obstacle = mapContainer.hitMap(this.size, this.pos);
             if (!obstacle) {
-                let actor=this.hitActors(actors);
-                if (!actor||actor.type!="player") {
+                let actor = this.hitActors(mapContainer.actors);
+                if (!actor || actor.type != "player") {
                     super.act();
-                }else if (actor.type=="player") {
+                } else if (actor.type == "player") {
                     this.recycle();
                 }
-            }else{
+            } else {
                 this.recycle();
             }
         }
@@ -325,32 +317,31 @@ window.onload = function () {
         constructor(xpos, ypos) {
             super(xpos, ypos);
             this.type = "live";
-            this.setSize(stepWidth, stepHeight);
+            this.init(step, step);
             this.setSpriteData(spriteSheet, "live");
-            this.update();
         }
     }
     class Bullet extends Actor {
         constructor(xpos, ypos) {
             super(xpos, ypos);
             this.type = "bullet";
-            this.setSize(0.3*stepWidth, 0.7*stepHeight);
+            this.init(0.3 * step, 0.7 * step);
             this.setSpriteData(spriteSheet, "buttle");
         }
     }
     class Tank extends Actor {
         constructor(xpos, ypos) {
             super(xpos, ypos);
-            this.setSize(0.6*stepWidth, 0.6*stepHeight);
+            this.init(0.6 * step, 0.6 * step);
             this.setSpriteData(spriteSheet, "tanke");
             this.type = "tank";
         }
     }
-    class Enemy extends HitActor {
+    class Enemy extends Actor {
         constructor(xpos, ypos) {
             super(xpos, ypos);
-            this.speedRate =0.64;
-            this.setSize(0.8*stepWidth, 0.8*stepHeight);
+            this.speedRate = 0.64;
+            this.init(0.8 * step, 0.8 * step);
             this.setSpriteData(spriteSheet, "enemy");
             this.tick = 0;
             this.key = 80;
@@ -391,9 +382,9 @@ window.onload = function () {
                 this.fire = true;
             }
             var newPos = this.pos.plus(this.speed);
-            var obstacle = this.hitMap(newPos);
+            var obstacle = mapContainer.hitMap(this.size, newPos);
             if (!obstacle) {
-                if (!this.hitActors(tanks,newPos)) {
+                if (!this.hitActors(tanks, newPos)) {
                     this.pos = newPos;
                     this.update();
                 }

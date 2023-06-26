@@ -4,14 +4,13 @@
     var segments,numSegments=30;
     class SegmentDrag extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("关节拖拽");
+            super("关节拖拽");
         }
         waitComplete() {
             segments=[];
             for (let i = 0; i < numSegments; i++) {
                 const segment = new Segment();
-                segment.setSize(50,10);
+                segment.init(50,10);
                 stage.addChild(segment);
                 segments.push(segment);
             }

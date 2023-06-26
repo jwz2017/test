@@ -12,16 +12,15 @@
         back = -200;
     class Collision3D extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("3D碰撞检测");
+            super("3D碰撞检测");
         }
         waitComplete() {
             balls = [];
             vpX = width / 2;
             vpY = height / 2;
             for (let i = 0; i < numBalls; i++) {
-                const ball = new Barrage();
-                ball.setSize(30, 30);
+                const ball = new CirActor();
+                ball.init(30, 30);
                 ball.pos.x = Math.random() * 400 - 200;
                 ball.pos.y = Math.random() * 400 - 200;
                 ball.pos.z = Math.random() * 400 - 200;

@@ -6,16 +6,15 @@
         fl = 250;
     class RotateY extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("绕Y轴旋转");
+            super("绕Y轴旋转");
         }
         waitComplete() {
             vpX = width / 2;
             vpY = height / 2;
             balls = [];
             for (let i = 0; i < numBalls; i++) {
-                const ball = new Barrage();
-                ball.setSize(30, 30);
+                const ball = new CirActor();
+                ball.init(30, 30);
                 ball.speed.z = 0;
                 ball.pos.x = Math.random() * 200 - 100;
                 ball.pos.y = Math.random() * 200 - 100;
@@ -65,7 +64,5 @@
         }
 
     }
-    RotateY.loadItem = null;
-    RotateY.loaderbar = null;;
     window.RotateY = RotateY;
 })();

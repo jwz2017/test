@@ -2,9 +2,8 @@ window.onload = function () {
     "use strict";
     /*************游戏入口*****/
     var g = new GFrame('canvas');
-    g.adapt();
     g.preload(Match);
-    g.startFPS();
+    // g.startFPS();
 };
 (function () {
     "use strict";
@@ -12,23 +11,45 @@ window.onload = function () {
     const LEVEL = "level";
     var faces, cards, selectedCards, matches;
     class Match extends Game {
+        static loadItem = [{
+            id: "back",
+            src: "match/back.png",
+        }, {
+            id: "card",
+            src: "match/card.png"
+        }, {
+            id: "garlic",
+            src: "match/garlic.png"
+        }, {
+            id: "onion",
+            src: "match/onion.png"
+        }, {
+            id: "pepper",
+            src: "match/pepper.png"
+        }, {
+            id: "potato",
+            src: "match/potato.png"
+        }, {
+            id: "spinach",
+            src: "match/spinach.png"
+        }, {
+            id: "tomato",
+            src: "match/tomato.png"
+        }];
         constructor() {
-            super();
-            this.titleScreen.setText("查找游戏0");
-            
+            super("查找游戏0");
+
         }
         createScoreBoard() {
-            this.scoreBoard = new ScoreBoard(0,0,null);
+            this.scoreBoard = new ScoreBoard(0, 0, null);
             this.scoreBoard.createTextElement(LEVEL, '0', 320, 14);
-          }
-        newGame() {
-            selectedCards = [];
-            matches = 0;
-            faces=[];
-            cards=[];
         }
         newLevel() {
             this.scoreBoard.update(LEVEL, this.level);
+            selectedCards = [];
+            matches = 0;
+            faces = [];
+            cards = [];
             faces = ['garlic', 'onion', 'pepper', 'potato', 'spinach', 'tomato'];
         }
         waitComplete() {
@@ -69,7 +90,7 @@ window.onload = function () {
                     x: xpos,
                     y: ypos,
                     rotation: 0
-                }, 300).call(()=>{
+                }, 300).call(() => {
                     // card.back.shadow=new createjs.Shadow("#333",4,4,6);
                 });
                 xpos += 150;
@@ -107,7 +128,7 @@ window.onload = function () {
         }
         evalGame() {
             if (matches === faces.length) {
-                model.dispatchEvent(GFrame.event.LEVEL_UP);
+                stage.dispatchEvent(GFrame.event.LEVEL_UP);
             } else {
                 selectedCards = [];
             }
@@ -117,57 +138,31 @@ window.onload = function () {
 
         }
         clear() {
-            cards.forEach(element=> {
-                if(element)element.removeEventListener('click', this._onClick);
+            cards.forEach(element => {
+                if (element) element.removeEventListener('click', this._onClick);
             });
         }
 
     }
-    Match.loaded=false;
-    Match.loadItem=[{
-        id: "back",
-        src: "match/back.png",
-    }, {
-        id: "card",
-        src: "match/card.png"
-    }, {
-        id: "garlic",
-        src: "match/garlic.png"
-    }, {
-        id: "onion",
-        src: "match/onion.png"
-    }, {
-        id: "pepper",
-        src: "match/pepper.png"
-    }, {
-        id: "potato",
-        src: "match/potato.png"
-    }, {
-        id: "spinach",
-        src: "match/spinach.png"
-    }, {
-        id: "tomato",
-        src: "match/tomato.png"
-    }];
     window.Match = Match;
 
     class Card extends createjs.Container {
-        constructor(face, card = "card", back = "back") {
+        constructor(face) {
             super();
             this.back = new createjs.Bitmap(queue.getResult("card")); //使用queue,不能clone   使用地址不能用image.width.要直接用数字
-            
+
             //加阴影。。。位图直接加阴影在手机上很卡。。可用矢量加阴影
             // this.back1=new createjs.Shape();
             // this.back1.graphics.beginFill("#000").drawRoundRect(0,0,this.back.image.width,this.back.image.height,10);
 
             // this.addChild(this.back1);
             // this.back1.shadow=new createjs.Shadow("#333",3,3,5);
-            this.back.shadow=new createjs.Shadow("#333",3,3,5);
-            
+            this.back.shadow = new createjs.Shadow("#333", 3, 3, 5);
+
             this.regX = this.back.image.width / 2;
             this.regY = this.back.image.height / 2;
             this.addChild(this.back);
-    
+
             this.back = new createjs.Bitmap(queue.getResult(face));
             this.back.regX = this.back.image.width / 2;
             this.back.regY = this.back.image.height / 2;
@@ -182,7 +177,7 @@ window.onload = function () {
             this.back = new createjs.Bitmap(queue.getResult('back'));
             // this.back.image.crossOrigin="Anonymous";
             this.addChild(this.back);
-            this.a=0;
+            this.a = 0;
         }
     }
 })();

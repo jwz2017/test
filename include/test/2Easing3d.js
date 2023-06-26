@@ -5,14 +5,13 @@
     easing=.1,fl=250;
     class Easing3d extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("3d缓动");
+            super("3d缓动");
         }
         waitComplete() {
             vpX=width/2;
             vpY=height/2;
-            ball=new Barrage();
-            ball.setSize(50,50);
+            ball=new CirActor();
+            ball.init(50,50);
             ball.pos.z=0;
             ball.speed.z=0;
             tx=Math.random()*500-250;
@@ -45,7 +44,5 @@
         }
 
     }
-    Easing3d.loadItem = null;
-    Easing3d.loaderbar=null;;
     window.Easing3d = Easing3d;
 })();

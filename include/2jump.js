@@ -2,32 +2,24 @@ window.onload = function () {
     "use strict";
     /*************游戏入口*****/
     var g = new GFrame('canvas');
-    g.adapt();
-    var loader = new createjs.FontLoader({
-        src: ["assets/fonts/regul-book.woff",
-            "assets/fonts/regul-bold.woff"
-        ],
-        type: "font"
-    });
-    loader.on("complete", () => {
-        g.preload(Jump);
-        g.startFPS();
-    }, null, true);
-    loader.load();
-    // g.preload(Jump);
-    // g.startFPS();
+    g.preload(Jump);
+    g.startFPS();
 };
-(function () {mapWidth
+(function () {
     "use strict";
     //游戏变量;
     var score;
     const SCORE = "score",
         LEVEL = "level";
-    var spriteSheet, actorChars, bullets,
-        map = new createjs.Shape(),
+    var spriteSheet,
+        actorChars,
+        mapContainer,
+        bullets,
+        winWidth = 750,
+        winHeight = 400,
         plans = [
             [
-                "                      v      |          ",
+                "                      v      |         x",
                 "                                        ",
                 "                                        ",
                 "  x             = x                     ",
@@ -47,7 +39,7 @@ window.onload = function () {
                 "     xxxxx                              ",
                 "     xxxxx                              ",
                 "     xxxxx                              ",
-                "     xxxxx                              "
+                "x    xxxxx                              "
             ],
             [
                 "                             |                        ",
@@ -77,14 +69,13 @@ window.onload = function () {
             id: "guiqizhan",
             src: "jump/guiqizhan.png"
         }];
-        // static loaderbar = null;;
         constructor() {
-            super();
-            this.titleScreen.setText("Jump");
-            this.instructionScreen.setText("方向w,a,s,d\n小键盘4567普通攻击，跳跃，技能")
-
+            super("Jump");
+            this.instructionScreen.title.text = "方向w,a,s,d\n小键盘4567普通攻击，跳跃，技能";
+        }
+        init() {
             this.maxLevel = plans.length;
-            this.container = new ScrollContainer(null, 0, (height - 400) / 2, 750, 400, 0, 0, false, false);
+            mapContainer = new GridsMap(0, (height - winHeight) / 2, winWidth, winHeight, 30, 30, new createjs.Shape())
             let spriteData = {
                 images: [queue.getResult("woody_0"), "assets/sprite/woody_1.png", queue.getResult("woody_2")],
                 frames: {
@@ -151,6 +142,7 @@ window.onload = function () {
                 "|": Lava,
                 "v": Lava
             }
+
         }
         createScoreBoard() {
             this.scoreBoard = new ScoreBoard(0, 0);
@@ -159,42 +151,54 @@ window.onload = function () {
         }
         newGame() {
             score = 0;
-            this.scoreBoard.update(SCORE,score);
+            this.scoreBoard.update(SCORE, score);
         }
         newLevel() {
             bullets = [];
             this.scoreBoard.update(LEVEL, this.level);
-            this.createGrid(plans, 30 ,30, actorChars, map);
-            this.container.contentSize = {
-                width: mapWidth,
-                height: mapHeight
-            };
+            let plan = plans[this.level - 1];
+            mapContainer.createGridMap(plan, actorChars, (ch, xpos, ypos) => {
+                let fieldType = null;
+                let color = "#555";
+                if (ch == "x") {
+                    fieldType = "wall";
+                    color = "#fff";
+                } else if (ch == "!") {
+                    fieldType = "lava";
+                    color = "rgb(255,100,100)";
+                }
+                mapContainer.map.graphics.beginFill(color).drawRect(xpos, ypos, mapContainer.stepWidth, mapContainer.stepHeight);
+                return fieldType;
+            });
         }
         waitComplete() {
-            stage.addChild(this.scoreBoard, this.container);
-            this.scrollPlayerIntoView(this.player, this.container);
-        }
-        
-        runGame() {
-            //控制player 
 
-            //渲染actors
-            for (let i = actors.length - 1; i >= 0; i--) {
-                const actor = actors[i];
+            stage.addChild(this.scoreBoard, mapContainer);
+            mapContainer.scrollPlayerIntoView();
+        }
+
+        runGame() {
+            // 渲染actors
+            for (let i = mapContainer.actors.length - 1; i >= 0; i--) {
+                const actor = mapContainer.actors[i];
                 actor.act();
+                //创建子弹
                 if (actor.fire) {
                     actor.fire = false;
                     switch (actor.type) {
                         case "player":
-                            let bullet=this.getActor(bullets,Barrage1);
-                            let angle=actor.angle*Math.PI/180;
-                            if (actor.angle==0)bullet.scaleX=1;
-                            else bullet.scaleX=-1;
-                            bullet.speed.angle=angle;
-                            bullet.x=actor.x;
-                            bullet.y=actor.y;
-
+                            let bullet = this.getActor(bullets, Barrage1);
+                            if (actor.arrow == "right") {
+                                bullet.scaleX = 1;
+                                bullet.speed.angle = 0;
+                            } else {
+                                bullet.scaleX = -1;
+                                bullet.speed.angle = Math.PI;
+                            }
+                            bullet.x = actor.x;
+                            bullet.y = actor.y;
                             bullet.updatePos();
+                            mapContainer.addChild(bullet);
                             break;
                     }
                 }
@@ -206,47 +210,31 @@ window.onload = function () {
                 }
             }
             //滚动地图
-            this.scrollPlayerIntoView(this.player, this.container);
+            mapContainer.scrollPlayerIntoView();
         }
-
         clear() {
-            this.container.removeAllChildren();
-            map.uncache();
-            map.graphics.clear();
-        }
-        setGrid(ch, xpos, ypos) {
-            var fieldType = null;
-            var color = "#555";
-            if (ch == "x") {
-                fieldType = "wall";
-                color = "#fff";
-            } else if (ch == "!") {
-                fieldType = "lava";
-                color = "rgb(255,100,100)";
-            }
-            map.graphics.beginFill(color).drawRect(xpos , ypos , stepWidth, stepHeight);
-            return fieldType;
+            mapContainer.clear();
         }
 
     }
-    
+
     window.Jump = Jump;
 
-    class JumpPlayer extends HitActor {
-        constructor(xpos,ypos) {
-            super(xpos,ypos);
+    class JumpPlayer extends Actor {
+        constructor(xpos, ypos) {
+            super(xpos, ypos);
             this.speed.zero();
             this.status = "walk";
             this.type = "player";
-            this.angle = 0;
+            this.arrow = "right";
             this.xspeed = 1.2;
             this.yspeed = 6;
             this.gravity = 0.27;
             this.runXSpeed = 1.8;
             this.isrun = false;
             this.runtick = 0;
-            this.pos.add(new Vector(0,-0.5*stepHeight));
-            this.setSize(0.8*stepWidth, 1.5*stepHeight);
+            this.pos.add(new Vector(0, -0.5 * 30));
+            this.init(0.8 * 30, 1.5 * 30);
             this.setSpriteData(spriteSheet, "stand", 0.6);
         }
         startRoll() {
@@ -256,22 +244,22 @@ window.onload = function () {
             this.image.gotoAndPlay("roll");
             //重设图片位置
             this.size.y = this.size.y / 2;
-            this.pos=this.pos.plus(new Vector(0,this.size.y));
-            this.image.regY =30;
+            this.pos = this.pos.plus(new Vector(0, this.size.y));
+            this.image.regY = 30;
         }
         stopRoll() {
-            this.pos=this.pos.plus(new Vector(0,-this.size.y));
+            this.pos = this.pos.plus(new Vector(0, -this.size.y));
             this.size.y *= 2;
             this.image.regY = 0;
         }
         moveY() {
             this.speed.y += this.gravity;
             var newPos = this.pos.plus(new Vector(0, this.speed.y));
-            var obstacle = this.hitMap(newPos);
+            var obstacle = mapContainer.hitMap(this.size, newPos);
             if (obstacle) {
                 //落地地面以后
                 if (obstacle == "lava") {
-                    model.dispatchEvent(GFrame.event.GAME_OVER);
+                    this.dispatchEvent(GFrame.event.GAME_OVER, true);
                     // return;
                 } else if (this.status == "jump" && this.speed.y > 0) {
                     //检测跳跃是否结束
@@ -317,18 +305,18 @@ window.onload = function () {
                 //检测是否停止
                 if (this.status == "roll") {
                     this.stopRoll();
-                    let obstacle = this.hitMap(this.pos);
+                    let obstacle = mapContainer.hitMap(this.size, this.pos);
                     if (obstacle) {
-                        this.pos=this.oldPos;
+                        this.pos = this.oldPos;
                     }
                 }
                 this.status = "walk"
                 this.speed.x = 0;
                 if (this.image.currentAnimation != "stand") this.image.gotoAndPlay("stand");
             }
-            if(this.status == "roll"){
-                
-            }else if (this.status == "jump" || this.status == "walk") {
+            if (this.status == "roll") {
+
+            } else if (this.status == "jump" || this.status == "walk") {
                 if (pressed[pressed.length - 1] == "right" || pressed[pressed.length - 1] == "left") {
                     let key = pressed[pressed.length - 1];
                     if (this.image.currentAnimation == "stand") {
@@ -341,30 +329,30 @@ window.onload = function () {
                         }
                         this.runtick = 0;
                     }
-                    
-                    if (key == "left" && this.angle == 0) {
+
+                    if (key == "left" && this.arrow == "right") {
                         this.image.scaleX *= -1;
                         this.xspeed *= -1;
                         this.runXSpeed *= -1;
-                        this.angle = 180;
-                    } else if (key == "right" && this.angle == 180) {
+                        this.arrow = "left";
+                    } else if (key == "right" && this.arrow == "left") {
                         this.image.scaleX *= -1;
                         this.xspeed *= -1;
                         this.runXSpeed *= -1;
-                        this.angle = 0;
+                        this.arrow = "right";
                     }
                     this.speed.x = this.isrun ? this.runXSpeed : this.xspeed;
-                }else{
-                    this.speed.x=0;
+                } else {
+                    this.speed.x = 0;
                 }
-            }else{
-                this.speed.x=0;
+            } else {
+                this.speed.x = 0;
             }
             var newPos = this.pos.plus(new Vector(this.speed.x, 0));
-            var obstacle = this.hitMap(newPos);
+            var obstacle = mapContainer.hitMap(this.size, newPos);
             if (obstacle) {
                 if (obstacle == "lava") {
-                    model.dispatchEvent(GFrame.event.GAME_OVER);
+                    this.dispatchEvent(GFrame.event.GAME_OVER, true);
                 }
             } else {
                 this.pos = newPos;
@@ -373,54 +361,49 @@ window.onload = function () {
         act() {
             this.moveX();
             this.moveY();
-            this.update();
-            var actor = this.hitActors(actors);
+            var actor = this.hitActors(mapContainer.actors);
             if (actor) {
-                this.hitResult(actor);
-            }
-        }
-        hitResult(actor) {
-            if (actor.type == "coin") {
-                actor.parent.removeChild(actor);
-                actors.splice(actors.indexOf(actor), 1);
-                score += 20;
-                model.dispatchEvent(new ScoreUpdate(SCORE, score));
-                if (!actors.some(function (actor) {
+                if (actor.type == "coin") {
+                    actor.parent.removeChild(actor);
+                    mapContainer.actors.splice(mapContainer.actors.indexOf(actor), 1);
+                    score += 20;
+                    this.dispatchEvent(new ScoreUpdate(SCORE, score));
+                    if (!mapContainer.actors.some(function (actor) {
                         return actor.type == "coin";
                     })) {
-                    model.dispatchEvent(GFrame.event.LEVEL_UP);
-                }
-            } else if (actor.type == "big") {
-                actor.parent.removeChild(actor);
-                actors.splice(actors.indexOf(actor), 1);
+                        this.dispatchEvent(GFrame.event.LEVEL_UP, true);
+                    }
+                } else if (actor.type == "big") {
+                    actor.parent.removeChild(actor);
+                    mapContainer.actors.splice(mapContainer.actors.indexOf(actor), 1);
 
-                if (this.status == "roll") {
-                    this.image.gotoAndPlay("stand");
-                    this.status = "walk";
-                    this.stopRoll();
+                    if (this.status == "roll") {
+                        this.image.gotoAndPlay("stand");
+                        this.status = "walk";
+                        this.stopRoll();
+                    }
+                    this.pos.y -= this.size.y * 0.1;
+                    // this.pos.x -= this.size.x * 0.1;
+                    let a = this.act;
+                    this.act = function () { };
+                    createjs.Tween.get(this).to({
+                        scaleX: this.scaleX * 1.2,
+                        scaleY: this.scaleY * 1.2
+                    }, 800, createjs.Ease.quadOut).call(() => {
+                        this.setSize(1.2, 1.2);
+                        this.act = a;
+                    });
+                } else if (actor.type == "lava") {
+                    this.dispatchEvent(GFrame.event.GAME_OVER, true);
                 }
-                this.pos.y-=this.size.y*0.2;
-                this.pos.x-=this.size.x*0.1;
-                this.setSize(this.size.x * 1.2, this.size.y * 1.2,false);
-                let a = this.act;
-                this.act = function () {};
-                createjs.Tween.get(this).to({
-                    scaleX: this.scaleX * 1.2,
-                    scaleY: this.scaleY * 1.2
-                }, 800, createjs.Ease.quadOut).call(() => {
-                    this.act = a;
-                });
-            } else if (actor.type == "lava") {
-                model.dispatchEvent(GFrame.event.GAME_OVER);
             }
-
+            this.update();
         }
     }
-    class Barrage1 extends HitActor {
-        constructor(xpos,ypos) {
-            super(xpos,ypos);
-            this.speed.length=5;
-            this.setSize(0.7*stepWidth, 0.7*stepHeight);
+    class Barrage1 extends Actor {
+        constructor(xpos, ypos) {
+            super(xpos, ypos);
+            this.speed.length = 5;
             var skilData = {
                 images: [queue.getResult("guiqizhan")],
                 frames: {
@@ -435,42 +418,48 @@ window.onload = function () {
                     run2: [8, 11, "run2", 0.3]
                 }
             };
+            this.init(0.7 * mapContainer.stepWidth, 0.7 * mapContainer.stepHeight);
             this.setSpriteData(new createjs.SpriteSheet(skilData), "run", 0.5);
         }
-        act(){
-            var obstacle=this.hitMap();
+        act() {
+            var obstacle = mapContainer.hitMap(this.size, this.pos);
             if (!obstacle) {
-                let actor=this.hitActors(actors);
-                if (actor&&actor.type=="lava") {
+                let actor = this.hitActors(mapContainer.actors);
+                if (actor && actor.type == "lava") {
                     this.recycle();
-                }else{
-                    super.act();
+                } else {
+                    this.speed.truncate(this.maxSpeed);
+                    this.pos.add(this.speed);
+                    this.update();
+                    if (mapContainer.outOfWin(this)) {
+                        this.recycle()
+                    }
                 }
-            }else{
+            } else {
                 this.recycle();
             }
         }
     }
 
     class Lava extends Actor {
-        constructor(xpos,ypos, ch) {
-            super(xpos,ypos);
-            this.speed.length=1.6;
+        constructor(xpos, ypos, ch) {
+            super(xpos, ypos);
+            this.speed.length = 1.6;
             if (ch == "=") {
                 // this.spe;
             } else if (ch == "|") {
-                this.speed.angle=Math.PI/2;
+                this.speed.angle = Math.PI / 2;
             } else if (ch == "v") {
-                this.speed.angle=Math.PI/2;
-                this.repeatPos = new Vector(xpos,ypos);
+                this.speed.angle = Math.PI / 2;
+                this.repeatPos = new Vector(xpos, ypos);
             }
             this.type = "lava";
             this.color = "rgb(255,100,100)";
-            this.setSize(stepWidth, stepHeight);
+            this.init(30, 30);
         }
         act() {
             var newPos = this.pos.plus(this.speed);
-            if (!this.hitMap(newPos)) {
+            if (!mapContainer.hitMap(this.size, newPos)) {
                 this.pos = newPos;
             } else if (this.repeatPos) {
                 this.pos = this.repeatPos;
@@ -481,19 +470,19 @@ window.onload = function () {
         }
     }
     class Coin extends Actor {
-        constructor(xpos,ypos) {
-            super(xpos,ypos);
-            this.angleSpeed =0.08;
+        constructor(xpos, ypos) {
+            super(xpos, ypos);
+            this.angleSpeed = 0.08;
             this.wobbleDist = 2.1;
             this.angle = Math.random() * Math.PI * 2;
             this.type = "coin";
             this.color = "rgb(241,229,89)";
-            this.pos.y+=0.2*stepHeight;
-            this.setSize(0.6*stepWidth, 0.6*stepHeight);
+            this.pos.y += 0.2 * 30;
+            this.init(0.6 * 30, 0.6 * 30);
             this.basePos = this.pos.clone();
         }
         act() {
-            this.rotation++;
+            this.image.rotation++;
             this.angle += this.angleSpeed;
             this.speed.y = Math.sin(this.angle) * this.wobbleDist;
             this.pos = this.basePos.plus(new Vector(0, this.speed.y));
@@ -501,10 +490,10 @@ window.onload = function () {
         }
     }
     class Big extends Coin {
-        constructor(xpos,ypos) {
-            super(xpos,ypos);
+        constructor(xpos, ypos) {
+            super(xpos, ypos);
             this.type = "big";
-            this.setSize(0.4*stepWidth, 0.4*stepHeight);
+            this.setSize(0.6, 0.6);
         }
 
     }

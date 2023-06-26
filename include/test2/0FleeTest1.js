@@ -3,8 +3,7 @@
     var seeker,fleer;
     class FleeTest1 extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("逃离测试1");
+            super("逃离测试1");
         }
         waitComplete() {
             seeker=new SteeredActor(200,200);

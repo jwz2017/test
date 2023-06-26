@@ -1,0 +1,49 @@
+/**
+ * 1. Correct the line height in all browsers.
+ * 2. Prevent adjustments of font size after orientation changes in iOS.
+ */
+html {
+    line-height: 1.15; /* 1 */
+    -webkit-text-size-adjust: 100%; /* 2 */
+   }
+/**
+  * Remove the margin in all browsers.
+  */
+  *,
+  ::before,
+  ::after{
+    margin: 0;
+    padding: 0;
+    /* 针对移动端 */
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -webkit-tap-highlight-color:transparent;
+  }
+  body{
+    font-size: 14px;
+    color: #333;
+    font-family: Arial, Helvetica, sans-serif;
+    background: #e5e5e5;
+  }
+#container {
+    min-width: 320px;
+    max-width: 750px;
+    margin: 0 auto;
+    height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+#game {
+    transform-origin: 0 0;
+}
+
+#game canvas {
+    background-color: #9eb195;
+}
+@font-face {
+  font-family:"regul" ;
+  src: url("../assets/fonts/regul-book.woff");
+  /* src:url("../assets/fonts/regul-bold.woff"); */
+  font-display:swap;
+}

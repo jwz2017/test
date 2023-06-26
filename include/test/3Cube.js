@@ -4,8 +4,7 @@
     var points,triangles,vpX,vpY,shape,light;
     class Cube extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("正方体");
+            super("正方体");
         }
         waitComplete() {
             shape=new createjs.Shape();

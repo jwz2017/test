@@ -8,8 +8,7 @@
         shape;
     class NodeGarden extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("节点花园");
+            super("节点花园");
         }
         waitComplete() {
             particles=[];
@@ -17,11 +16,11 @@
             shape = new createjs.Shape();
             stage.addChild(shape);
             for (let i = 0; i < numParticles; i++) {
-                const particle = new Barrage();
+                const particle = new CirActor();
                 particle.edgeBehavior=Actor.WRAP;
                 let size = Math.random() * 20 + 4;
-                particle.setSize(size, size);
-                particle.pos.setValues(Math.random()*mapWidth,Math.random()*mapHeight);
+                particle.init(size, size);
+                particle.pos.setValues(Math.random()*width,Math.random()*height);
                 particle.speed.setValues(Math.random()*6-3,Math.random()*6-3);
                 particle.mass = size;
                 stage.addChild(particle);
@@ -30,9 +29,6 @@
             }
         }
         runGame() {
-            for (const particle of particles) {
-                particle.act();
-            }
             shape.graphics.clear();
             for (let i = 0; i < numParticles - 1; i++) {
                 const partA = particles[i];
@@ -40,6 +36,9 @@
                     const partB = particles[j];
                     this.spring(partA, partB);
                 }
+            }
+            for (const particle of particles) {
+                particle.act();
             }
         }
         spring(partA, partB) {
@@ -59,7 +58,6 @@
                 partB.speed.x -= ax / partB.mass;
                 partB.speed.y -= ay / partB.mass;
             }
-
         }
     }
     window.NodeGarden = NodeGarden;

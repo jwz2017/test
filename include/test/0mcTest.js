@@ -3,9 +3,8 @@
     //游戏变量;定义。。构造内初始化，new game初始化
     class Mctest extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("mc组件测试");
-            this.instructionScreen.setText("游戏介绍");
+            super("mc组件测试");
+            this.instructionScreen.text="游戏介绍";
         }
         newGame() {
             

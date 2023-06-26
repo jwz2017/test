@@ -5,8 +5,7 @@
     numPoints=50,fl=250;
     class Lines3D extends Game {
         constructor() {
-            super();
-            this.titleScreen.setText("3D线条");
+            super("3D线条");
         }
         waitComplete() {
             shape=new createjs.Shape();
@@ -38,7 +37,5 @@
         }
 
     }
-    Lines3D.loadItem = null;
-    Lines3D.loaderbar=null;;
     window.Lines3D = Lines3D;
 })();

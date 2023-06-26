@@ -2,29 +2,85 @@ window.onload = function () {
     "use strict";
     /*************游戏入口*****/
     var g = new GFrame('canvas');
-    g.adapt();
     g.preload(Puzzle);
     // FPS.startFPS(stage);
 };
 (function () {
     "use strict";
     //游戏变量;定义。。构造内初始化，new game初始化
-    const 
-      LEVEL = "level",
-    PUZZLE_COLUMNS = 5,
+    const LEVEL = "level",
+        PUZZLE_COLUMNS = 5,
         PUZZLE_ROWS = 4,
         PUZZLE_SIZE = 150;
-    var selectedPieces = [],
-        pieces=[];
+    var selectedPieces,
+        pieces;
 
     class Puzzle extends Game {
+        static loadItem = [{
+            id: "puzzle",
+            src: "puzzle/mam.png"
+        }];
         constructor() {
-            super();
-            this.titleScreen.setText("拼图游戏");
+            super("拼图游戏");
         }
-        createScoreBoard(){
-            this.scoreBoard = new ScoreBoard(0,0,null);
+        createScoreBoard() {
+            this.scoreBoard = new ScoreBoard(0, 0, null);
             this.scoreBoard.createTextElement(LEVEL, '0', 320, 14);
+        }
+        
+        newGame() {
+            selectedPieces = [];
+            pieces = [];
+        }
+        newLevel() {
+            this.scoreBoard.update(LEVEL, this.level);
+        }
+        waitComplete() {
+            stage.addChild(this.scoreBoard);
+            //分割图片
+            let l = PUZZLE_COLUMNS * PUZZLE_ROWS;
+            for (let i = 0, col = 0, row = 0; i < l; i++) {
+                const piece = new createjs.Bitmap(queue.getResult("puzzle"));
+                piece.sourceRect = new createjs.Rectangle(col * PUZZLE_SIZE, row * PUZZLE_SIZE, PUZZLE_SIZE, PUZZLE_SIZE);
+                piece.homePoint = {
+                    x: col * PUZZLE_SIZE,
+                    y: row * PUZZLE_SIZE + 70
+                };
+                piece.x = piece.homePoint.x;
+                piece.y = piece.homePoint.y;
+                stage.addChild(piece);
+                pieces[i] = piece;
+                col++;
+                if (col === PUZZLE_COLUMNS) {
+                    col = 0;
+                    row++;
+                }
+            }
+            //随机排列图片
+            setTimeout(() => {
+                let p = [],
+                    _this = this,
+                    l, randomIndex;
+                p = p.concat(pieces);
+                l = p.length;
+                for (let i = 0, col = 0, row = 0; i < l; i++) {
+                    randomIndex = Math.floor(Math.random() * p.length);
+                    const piece = p[randomIndex];
+                    p.splice(randomIndex, 1);
+                    createjs.Tween.get(piece).to({
+                        x: col * PUZZLE_SIZE,
+                        y: row * PUZZLE_SIZE + 70
+                    }, 200);
+                    piece.addEventListener('click', this.onPieceClick = function (e) {
+                        _this._onPieceClick(e);
+                    });
+                    col++;
+                    if (col === PUZZLE_COLUMNS) {
+                        col = 0;
+                        row++;
+                    }
+                }
+            }, 3000);
         }
         _onPieceClick(e) {
             if (selectedPieces.length === 2) {
@@ -61,7 +117,7 @@ window.onload = function () {
             var win = true;
             selectedPieces[0].uncache();
             selectedPieces[1].uncache();
-            for (let i = 0; i <pieces.length; i++) {
+            for (let i = 0; i < pieces.length; i++) {
                 const piece = pieces[i];
                 if (piece.x != piece.homePoint.x || piece.y != piece.homePoint.y) {
                     win = false;
@@ -76,63 +132,6 @@ window.onload = function () {
             }
             selectedPieces = [];
         }
-        newGame() {
-            selectedPieces=[];
-            pieces=[];
-        }
-        newLevel() {
-            this.scoreBoard.update(LEVEL, this.level);
-        }
-        waitComplete() {
-            stage.addChild(this.scoreBoard);
-            //分割图片
-            let l = PUZZLE_COLUMNS * PUZZLE_ROWS;
-            for (let i = 0, col = 0, row = 0; i < l; i++) {
-                const piece = new createjs.Bitmap(queue.getResult("puzzle"));
-                piece.sourceRect = new createjs.Rectangle(col * PUZZLE_SIZE, row * PUZZLE_SIZE, PUZZLE_SIZE, PUZZLE_SIZE);
-                piece.homePoint = {
-                    x: col * PUZZLE_SIZE,
-                    y: row * PUZZLE_SIZE+70
-                };
-                piece.x = piece.homePoint.x;
-                piece.y = piece.homePoint.y;
-                stage.addChild(piece);
-                pieces[i]=piece;
-                col++;
-                if (col === PUZZLE_COLUMNS) {
-                    col = 0;
-                    row++;
-                }
-            }
-            //随机排列图片
-            setTimeout(() => {
-                let p = [],
-                    _this = this,
-                    l, randomIndex;
-                p = p.concat(pieces);
-                l = p.length;
-                for (let i = 0, col = 0, row = 0; i < l; i++) {
-                    randomIndex = Math.floor(Math.random() * p.length);
-                    const piece = p[randomIndex];
-                    p.splice(randomIndex, 1);
-                    createjs.Tween.get(piece).to({
-                        x: col * PUZZLE_SIZE,
-                        y: row * PUZZLE_SIZE+70
-                    }, 200);
-                    piece.addEventListener('click', this.onPieceClick = function (e) {
-                        _this._onPieceClick(e);
-                    });
-                    col++;
-                    if (col === PUZZLE_COLUMNS) {
-                        col = 0;
-                        row++;
-                    }
-                }
-            }, 3000);
-        }
-        runGame() {
-
-        }
         clear() {
             pieces.forEach(element => {
                 if (element) {
@@ -142,12 +141,5 @@ window.onload = function () {
         }
 
     }
-    Puzzle.loaded = false;
-    Puzzle.loadItem = [{
-        id: "puzzle",
-        src: "puzzle/mam.png"
-    }];
     window.Puzzle = Puzzle;
-
-
 })();
