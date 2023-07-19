@@ -63,7 +63,7 @@
                     a=new DrawnIsoTile(size,"#cccccc");
                 }else if(ch=="2"){
                     node.walkable=false;
-                    a=new DrawnIsoBox(size,mc.parseColor(Math.random()*0xffffff,false),size);
+                    a=new DrawnIsoBox(size,GFrame.parseColor(Math.random()*0xffffff,false),size);
                 }
                 a.xpos=node.x*size;
                 a.zpos=node.y*size;

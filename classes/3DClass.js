@@ -84,7 +84,7 @@ class Triangle {
         return cax * bcy > cay * bcx;
     }
     getAdjustedColor() {
-        let color = mc.parseColor(this._color, true);
+        let color = GFrame.parseColor(this._color, true);
         let red = color >> 16;
         let green = color >> 8 & 0xff;
         let blue = color & 0xff;
@@ -92,7 +92,7 @@ class Triangle {
         red *= lightFactor;
         green *= lightFactor;
         blue *= lightFactor;
-        return mc.parseColor(red << 16 | green << 8 | blue);
+        return GFrame.parseColor(red << 16 | green << 8 | blue);
     }
     _getLightFactor() {
         let ab = new Object();
@@ -279,12 +279,12 @@ class DrawnIsoBox extends DrawnIsoTile {
     }
     drawShape() {
         this.shape.graphics.clear();
-        let color = mc.parseColor(this.color, true);
+        let color = GFrame.parseColor(this.color, true);
         let red = color >> 16;
         let green = color >> 8 & 0xff;
         let blue = color & 0xff;
-        let leftShadow = mc.parseColor((red * .5) << 16 | (green * .5) << 8 | (blue * .5));
-        let rightShadow = mc.parseColor((red * .75) << 16 | (green * .75) << 8 | (blue * .75));
+        let leftShadow = GFrame.parseColor((red * .5) << 16 | (green * .5) << 8 | (blue * .5));
+        let rightShadow = GFrame.parseColor((red * .75) << 16 | (green * .75) << 8 | (blue * .75));
         let h = this._height * IsoUtils.Y_CORRECT;
         //draw top
         this.shape.graphics.beginFill(this._color).
