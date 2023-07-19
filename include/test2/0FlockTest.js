@@ -10,7 +10,8 @@
             vehicles=[];
             for (let i = 0; i < numVehicles; i++) {
                 const vehicle =new SteeredActor();
-                vehicle.pos.setValues(Math.random()*width,Math.random()*height);
+                vehicle.init(15);
+                vehicle.setPos(Math.random()*width,Math.random()*height);
                 vehicle.speed.setValues(Math.random()*20-10,Math.random()*20-10);
                 vehicle.edgeBehavior=Actor.BOUNCE;
                 vehicles.push(vehicle);

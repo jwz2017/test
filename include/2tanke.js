@@ -12,13 +12,13 @@ window.onload = function () {
     const SCORE = "score",
         LEVEL = "level";
     var score;
-    var spriteData, spriteSheet, actorChars, mapContainer,
+    var spriteData, spriteSheet, actorChars,
         tanks, bullets, enemyBullets,
         step = 32,
         plans = [
             [
                 [30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30],
-                [30, 9, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 9, 30],
+                [30, 9, 0, 0, 0, 0, 0, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 9, 30],
                 [30, 0, 0, 24, 25, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 26, 26, 26, 0, 30],
                 [30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 20, 0, 0, 0, 26, 0, 30],
                 [30, 0, 0, 22, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 30],
@@ -33,7 +33,8 @@ window.onload = function () {
                 [30, 0, 0, 0, 0, 0, 0, 28, 0, 23, 0, 28, 1, 0, 0, 0, 0, 0, 0, 30],
                 [30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30]
             ]
-        ];
+        ],
+        mapContainer = new GridsMap(0, 0, plans[0][0].length * step, plans[0].length * step, step, step);
 
     class Tanke extends Game {
         static loadItem = [{
@@ -75,7 +76,8 @@ window.onload = function () {
                 }
             };
             spriteSheet = new createjs.SpriteSheet(spriteData);
-            mapContainer = new GridsMap(width - 640 >> 1, height - 480 >> 1, 640, 480, step, step, new createjs.Container);
+            mapContainer.x = width - mapContainer.width >> 1;
+            mapContainer.y = height - mapContainer.height >> 1;
         }
         createScoreBoard() {
             this.scoreBoard = new ScoreBoard(0, 0, null);
@@ -91,27 +93,26 @@ window.onload = function () {
             this.scoreBoard.update(LEVEL, this.level);
             //创建网格
             let plan = plans[this.level - 1];
-            mapContainer.createGridMap(plan, actorChars, (ch, xpos, ypos) => {
-                var fieldType = null;
-                var tile = new createjs.Sprite(spriteSheet, ch).set({
+            bullets = [];
+            enemyBullets = [];
+            mapContainer.createGridMap(plan, actorChars, (ch, node) => {
+                var tile = new createjs.Sprite(spriteSheet).set({
                     regX: -step / 2,
                     regY: -step / 2,
-                    x: xpos,
-                    y: ypos
+                    x: node.x * step,
+                    y: node.y * step
                 });
                 if (actorChars[ch] || ch == 0) {
                     tile.gotoAndStop(0);
                 } else {
-                    fieldType = "wall";
+                    tile.gotoAndStop(ch);
+                    node.walkable = false;
                 }
-                mapContainer.map.addChild(tile);
-                return fieldType;
+                mapContainer.addChildToFloor(tile);
             });
-            tanks = mapContainer.actors.filter(function (actor) {
+            tanks= mapContainer.actors.filter(function (actor) {
                 return actor.type == "player" || actor.type == "enemy";
             });
-            bullets = [];
-            enemyBullets = [];
         }
         waitComplete() {
             stage.addChild(this.scoreBoard, mapContainer);
@@ -120,24 +121,6 @@ window.onload = function () {
             for (let i = mapContainer.actors.length - 1; i >= 0; i--) {
                 const actor = mapContainer.actors[i];
                 actor.act();
-                if (actor.fire) {
-                    actor.fire = false;
-                    let bullet, angle = (actor.rotation - 90) * Math.PI / 180;
-                    switch (actor.type) {
-                        case "player":
-                            bullet = this.getActor(bullets, Barrage1);
-                            bullet.speed.angle = angle;
-                            break;
-                        case "enemy":
-                            bullet = this.getActor(enemyBullets, EnemyBarrage);
-                            bullet.speed.angle = angle;
-                            break;
-                    }
-                    bullet.x = actor.x + Math.cos(angle) * actor.hit;
-                    bullet.y = actor.y + Math.sin(angle) * actor.hit;
-                    bullet.updatePos();
-                    mapContainer.addChild(bullet);
-                }
             }
             for (const bullet of bullets) {
                 if (bullet.active) {
@@ -234,23 +217,24 @@ window.onload = function () {
             if (this.nextBullet <= 0) {
                 if (keys.attack) {
                     this.nextBullet = this.BULLET_TIME;
-                    this.fire = true;
+                    this.createBullet();
                 }
             } else {
                 this.nextBullet--;
             }
 
-            var newPos = this.pos.plus(this.speed);
-            var obstacle = mapContainer.hitMap(this.size, newPos);
+            let rect = this.rect.clone();
+            rect.x += this.speed.x;
+            rect.y += this.speed.y;
+            var obstacle = mapContainer.hitMap(rect);
             if (obstacle) {
                 // if (obstacle == "lava") {
                 //     this.status = "lose";
                 // }
             } else {
-                var actor = this.hitActors(mapContainer.actors, newPos);
+                var actor = this.hitActors(mapContainer.actors, rect);
                 if (!actor || actor.type != "enemy") {
-                    this.pos = newPos;
-                    this.update();
+                    this.plus(this.speed.x,this.speed.y);
                 }
                 if (actor) {
                     switch (actor.type) {
@@ -269,6 +253,15 @@ window.onload = function () {
                 }
             }
         }
+        createBullet() {
+            let bullet, angle = (this.rotation - 90) * Math.PI / 180;
+            bullet = Game.getActor(bullets, Barrage1);
+            bullet.speed.angle = angle;
+            bullet.x = this.x + Math.cos(angle) * this.hit;
+            bullet.y = this.y + Math.sin(angle) * this.hit;
+            bullet.setPos(bullet.x,bullet.y);
+            mapContainer.addChild(bullet);
+        }
     }
     class Barrage1 extends CirActor {
         constructor(xpos, ypos) {
@@ -278,7 +271,7 @@ window.onload = function () {
             this.setSpriteData(spriteSheet, "barrage")
         }
         act() {
-            let obstacle = mapContainer.hitMap(this.size, this.pos);
+            let obstacle = mapContainer.hitMap(this.rect);
             if (!obstacle) {
                 let actor = this.hitActors(mapContainer.actors);
                 if (!actor || actor.type != "enemy") {
@@ -299,7 +292,7 @@ window.onload = function () {
             this.init(8, 8);
         }
         act() {
-            let obstacle = mapContainer.hitMap(this.size, this.pos);
+            let obstacle = mapContainer.hitMap(this.rect);
             if (!obstacle) {
                 let actor = this.hitActors(mapContainer.actors);
                 if (!actor || actor.type != "player") {
@@ -379,19 +372,30 @@ window.onload = function () {
             }
             if (this.tick1 >= 201) {
                 this.tick1 = 0;
-                this.fire = true;
+                this.createBullet();
             }
-            var newPos = this.pos.plus(this.speed);
-            var obstacle = mapContainer.hitMap(this.size, newPos);
+            let rect = this.rect.clone();
+            rect.x += this.speed.x;
+            rect.y += this.speed.y;
+            var obstacle = mapContainer.hitMap(rect);
             if (!obstacle) {
-                if (!this.hitActors(tanks, newPos)) {
-                    this.pos = newPos;
-                    this.update();
+                let actor = this.hitActors(mapContainer.actors, rect);
+                if (!actor || (actor.type != "enemy" && actor.type != "player")) {
+                    this.plus(this.speed.x,this.speed.y);
                 }
             } else {
                 this.key = Math.random() * 100;
                 this.tick = 0;
             }
+        }
+        createBullet() {
+            let bullet, angle = (this.rotation - 90) * Math.PI / 180;
+            bullet = Game.getActor(enemyBullets, EnemyBarrage);
+            bullet.speed.angle = angle;
+            bullet.x = this.x + Math.cos(angle) * this.hit;
+            bullet.y = this.y + Math.sin(angle) * this.hit;
+            bullet.setPos(bullet.x,bullet.y);
+            mapContainer.addChild(bullet);
         }
 
     }

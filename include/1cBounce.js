@@ -12,9 +12,9 @@ window.onload = function () {
         LEVEL = "level",
         LIVES = "lives";
 
-    var score, lives, bricks, container,
+    var score, lives, bricks,
         actorChars,
-        stepWidth=50,
+        stepWidth=44,
         stepHeight=30,
         colorOffse = Math.random() * 360,
         count = 0,
@@ -44,7 +44,8 @@ window.onload = function () {
                 "               ",
                 "      @        "
             ]
-        ];
+        ],
+        container = new GridsMap(0, GFrame.style.SCOREBOARD_HEIGHT, plans[0][0].length*stepWidth, plans[0].length*stepHeight, stepWidth, stepHeight);
 
     class Bounce extends Game {
         constructor() {
@@ -57,8 +58,7 @@ window.onload = function () {
                 "p": Puck,
                 "/": AngleBounce
             }
-            container = new GridsMap(0, GFrame.style.SCOREBOARD_HEIGHT, width, height, stepWidth, stepHeight);
-
+            container.x=width-container.width>>1;
         }
         createScoreBoard() {
             this.scoreBoard = new ScoreBoard();
@@ -75,26 +75,27 @@ window.onload = function () {
         newLevel() {
             bricks = [];
             this.scoreBoard.update(LEVEL, this.level);
+            let shap=new createjs.Shape;
             let plan = plans[this.level - 1];
-            container.createGridMap(plan, actorChars, (ch, xpos, ypos) => {
-                var fieldType = null;
+            container.createGridMap(plan, actorChars, (ch,node) => {
                 if (ch == "w") {
-                    fieldType = "wall";
-                    let bg = new Actor(xpos, ypos);
+                    node.walkable=false;
+                    let bg = new Actor(node.x*stepWidth, node.y*stepHeight);
                     bg.init(stepWidth,stepHeight);
                     container.addChild(bg);
                 } else if (ch == "x" || ch == "l") {
-                    fieldType = new Brick(xpos, ypos, ch);
+                    node.walkable=false;
+                    let fieldType = new Brick(node.x*stepWidth, node.y*stepHeight, ch);
+                    node.brick=fieldType;
                     bricks.push(fieldType);
                     container.addChild(fieldType);
                 }
-                return fieldType;
             });
-
+            shap.graphics.beginFill("#fff").drawRect(0,0,container.width,container.height);
+            container.addChildToFloor(shap);
         }
         waitComplete() {
-            container.player.pos.y=height-GFrame.style.SCOREBOARD_HEIGHT-container.player.size.y;
-            container.player.update();
+            // container.player.plus(0,stepHeight-container.player.rect.height);
             stage.addChild(container, this.scoreBoard);
         }
         runGame() {
@@ -130,10 +131,11 @@ window.onload = function () {
             } else if (pressed[pressed.length - 1] == "right") {
                 this.speed.x = this.xspeed;
             }
-            var newPos = this.pos.plus(this.speed);
-            if (!this.hitBounds(newPos)) {
-                this.pos = newPos;
-                this.update();
+            var rect=this.rect.clone();
+            rect.x+=this.speed.x;
+            rect.y+=this.speed.y;
+            if (!container.hitMap(rect)) {
+                this.plus(this.speed.x,0);
             }
         }
     }
@@ -145,65 +147,66 @@ window.onload = function () {
             this.init(15, 15);
             this.speed.angle = Math.PI / 2;
             this.combo = 0;
-            this.homePos = this.pos.clone();
+            this.homePos = this.rect.clone();
         }
         act() {
             this.moveX();
             this.moveY();
-            this.update();
-            var actor = this.hitActors(container.actors);
+            var actor=this.hitActors(container.actors);
             if (actor) {
                 this.hitResult(actor);
             }
         }
         moveX() {
-            var newPos = this.pos.plus(new Vector(this.speed.x, 0));
-            var fieldType = container.hitMap(this.size,newPos);
-            if (!fieldType) {
-                this.pos = newPos;
-            } else if (fieldType == "wall") {
-                this.combo = 0;
-                this.speed.x *= -1;
-            } else if (fieldType.type == "brick" || fieldType.type == "live") {
-                this.speed.x *= -1;
+            let rect=this.rect.clone();
+            rect.x+=this.speed.x;
+            var fieldType = container.hitMap(rect);
+            if(!fieldType){
+                this.plus(this.speed.x,0);
+            }else if (fieldType.brick) {
+                this.speed.x*=-1;
                 this.hitBrickResult(fieldType);
+            }else{
+                this.combo=0;
+                this.speed.x*=-1;
             }
         }
         moveY() {
-            var newPos = this.pos.plus(new Vector(0, this.speed.y));
-            var fieldType = container.hitMap(this.size,newPos);
+            let rect=this.rect.clone();
+            rect.y+=this.speed.y;
+            var fieldType = container.hitMap(rect);
             if (!fieldType) {
-                this.pos = newPos;
-            } else if (fieldType == "wall") {
-                this.combo = 0;
-                this.speed.y *= -1;
-            } else if (fieldType == "lava") {
+                this.plus(0,this.speed.y);
+            } else if (fieldType.death ==true) {
                 if (lives > 0) {
-                    this.pos = this.homePos;
+                    this.setPos(this.homePos.x,this.homePos.y);
                     this.speed.length = this.speedlength;
                     this.speed.angle = Math.PI / 2;
-                    // this.speedRate = this.av;
-                    // this.angle = 90;
                     lives--;
                     this.dispatchEvent(new ScoreUpdate(LIVES, lives));
                 } else {
                     this.dispatchEvent(GFrame.event.GAME_OVER,true);
                 }
-            } else if (fieldType.type == "brick" || fieldType.type == "live") {
+            } else if (fieldType.brick) {
                 this.speed.y *= -1;
                 this.hitBrickResult(fieldType);
+            }else{
+                this.combo = 0;
+                this.speed.y *= -1;
             }
         }
-        hitBrickResult(fieldType) {
+        hitBrickResult(fieldType1) {
+            let fieldType=fieldType1.brick;
             this.combo++;
             score++;
+            let rect=fieldType.rect;
             if (this.combo > 4) {
                 score += (this.combo * 10);
                 let combotex = new createjs.Text('combo x' + (this.combo * 10), '14px Times', '#ff0000');
                 combotex.regX = combotex.getBounds().width / 2;
                 combotex.regY = combotex.getBounds().height / 2;
-                combotex.x = fieldType.x + fieldType.size.x / 2;
-                combotex.y = fieldType.y + fieldType.size.y / 2;
+                combotex.x = fieldType.x + rect.width / 2;
+                combotex.y = fieldType.y + rect.height / 2;
                 combotex.alpha = 0;
                 this.parent.addChild(combotex);
                 createjs.Tween.get(combotex).to({
@@ -221,7 +224,7 @@ window.onload = function () {
                 this.dispatchEvent(new ScoreUpdate(LIVES, lives));
             }
             bricks.splice(bricks.indexOf(fieldType), 1);
-            container.grids[fieldType.pos.y / stepHeight][fieldType.pos.x / stepWidth] = null;
+            fieldType1.walkable=true;
             fieldType.parent.removeChild(fieldType);
             if (bricks.length == 0) {
                 this.dispatchEvent(GFrame.event.LEVEL_UP,true);
@@ -229,12 +232,15 @@ window.onload = function () {
         }
 
         hitResult(actor) {
+            let rect=this.rect;
             if (actor.type == "player") {
+                let rect1=actor.rect;
+                console.log(rect.y-this.y);
                 this.combo = 0;
-                this.speed.length = this.speedlength + Math.abs(this.pos.x - actor.pos.x - actor.size.x / 2) * 0.15;
-                this.speed.angle = 210 * Math.PI / 180 + (this.pos.x - actor.pos.x) / actor.size.x * 120 * Math.PI / 180;
+                this.speed.length = this.speedlength + Math.abs(rect.x - rect1.x - rect1.width / 2) * 0.15;
+                this.speed.angle = 210 * Math.PI / 180 + (rect.x - rect1.x) / rect1.width * 120 * Math.PI / 180;
             } else if (actor.type == "angleBounce") {
-                this.hitAngleBounce(actor);
+                actor.hitAngleBounce(this);
             }
         }
     }
@@ -243,36 +249,28 @@ window.onload = function () {
             super(xpos, ypos);
             if (ch == "x") {
                 this.color = createjs.Graphics.getHSL(Math.cos((count++) * 0.1) * 30 + colorOffse,
-                    80,
-                    35,
-                    1);
+                80,
+                35,
+                1);
                 this.type = "brick";
+                this.init(stepWidth,stepHeight);
             } else if (ch == "l") {
                 this.color = "#595";
                 this.type = "live";
+                this.init(stepWidth,stepHeight);
                 var text = new createjs.Text('1Up', "24px Times", '#fff');
                 text.textAlign = "center";
                 text.textBaseline = "middle";
                 this.addChild(text);
             }
-            this.init(stepWidth,stepHeight);
         }
     }
-    class AngleBounce extends Actor {
-        constructor(xpos, ypos) {
-            super(xpos, ypos);
-            this.type = "angleBounce";
-            this.init(200);
+    class AngleBounce extends BounceActor{
+            constructor(xpos,ypos){
+                super(xpos,ypos);
+                this.init(200,20);
+            }
+    
         }
-        drawShape(w) {
-            this.image.graphics.clear().setStrokeStyle(2).beginStroke(this.color).moveTo(-w / 2, 0).lineTo(w / 2, 0);
-            this.image.setBounds(-w / 2, 0, w, 1);
-            this.image.rotation = 20;
-
-            let angle = this.image.rotation * Math.PI / 180;
-            this.cos = Math.cos(angle);
-            this.sin = Math.sin(angle);
-        }
-    }
 
 })();

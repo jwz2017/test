@@ -70,7 +70,7 @@ window.onload = function () {
             }
         }
         shuffleCards() {
-            utils.randomArray(cards);
+            GFrame.randomArray(cards);
         }
         deelCards() {
             var xpos = 150,

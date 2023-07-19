@@ -41,7 +41,7 @@
                 const partA = particles[i];
                 for (let j = i + 1; j < numParticles; j++) {
                     const partB = particles[j];
-                    this.gravitate(partA, partB);
+                    Game.gravitate(partA, partB);
                 }
             }
             grid.check(particles);
@@ -51,7 +51,7 @@
                 let partB = grid.checks[i + 1];
                 // this.gravitate(partA,partB);
                 if (partA.hitRadius(partB)) {
-                    this.billiardCollision(partA, partB);
+                    Game.billiardCollision(partA, partB);
                 }
             }
 

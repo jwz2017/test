@@ -20,6 +20,8 @@
   <script src="classes/effect.js"></script>
   <script src="classes/collision.js"></script>
   <script src="classes/3DClass.js"></script>
+  <script src="classes/GridsMap.js"></script>
+
 
   <!--04-->
 
@@ -71,6 +73,10 @@
   <script src="include/test2/1MotionTest.js"></script>
   <script src="include/test2/1MotionTest2.js"></script>
   <script src="include/test2/1Collision.js"></script>
+  <script src="include/test2/1graphicsTileTest.js"></script>
+  <script src="include/test2/1maptest.js"></script>
+  <script src="include/test2/2aStar.js"></script>
+  <script src="include/test2/2astarMove.js"></script>
 </head>
 
 <body>
@@ -156,17 +162,17 @@
               <li>
                 <h4>测试</h4>
                 <p>actor测试</p>
-                <a href="#" title="ActorTest" onclick="productClick(this)" >ActorTest</a>
+                <a href="#" title="ActorTest" onclick="productClick(this)">ActorTest</a>
                 <p>图形工具</p>
-                <a href="#" title="Graphics"  onclick="productClick(this)">Graphics</a>
+                <a href="#" title="Graphics" onclick="productClick(this)">Graphics</a>
                 <p>资源加载 </p>
                 <a href="#" title="LoadBitmap" onclick="productClick(this)">LoadBitmap</a>
                 <p>矢量组件</p>
-                <a href="#" title="Mctest" onclick="productClick(this)" >Mctest</a>
+                <a href="#" title="Mctest" onclick="productClick(this)">Mctest</a>
               </li>
               <li>
                 <p>链式运动</p>
-                <a href="#" title="Chain" onclick="productClick(this)" >Chain</a>
+                <a href="#" title="Chain" onclick="productClick(this)">Chain</a>
                 <p>单轴碰撞</p>
                 <a href="#" title="Billiard" onclick="productClick(this)">Billiard</a>
                 <p>动量碰撞</p>
@@ -177,7 +183,7 @@
                 <a href="#" title="NodeGarden" onclick="productClick(this)">NodeGarden</a>
               </li>
               <li>
-                <p>矩形碰撞</p>
+                <p>旋转矩形碰撞</p>
                 <a href="#" title="RectRotate" onclick="productClick(this)">RectRotate</a>
               </li>
             </ul>
@@ -270,7 +276,7 @@
                 <h4>二等角游戏</h4>
                 <p>坐标转换测试</p>
                 <a href="#" title="isoTransformTest" onclick="productClick(this)">isoTransformTest</a>
-                <p>TileTest</p>
+                <p>Tile测试</p>
                 <a href="#" title="TileTest" onclick="productClick(this)">TileTest</a>
                 <p>移动测试</p>
                 <a href="#" title="MotionTest" onclick="productClick(this)">MotionTest</a>
@@ -278,6 +284,18 @@
                 <a href="#" title="MotionTest2" onclick="productClick(this)">MotionTest2</a>
                 <p>碰撞测试</p>
                 <a href="#" title="Collision" onclick="productClick(this)">Collision</a>
+                <p>图片tile测试</p>
+                <a href="#" title="GraphicsTileTest" onclick="productClick(this)">GraphicsTileTest</a>
+                <p>地图编辑器测试</p>
+                <a href="#" title="MapTest" onclick="productClick(this)">MapTest</a>
+              </li>
+              <li>
+                <hr>
+                <h4>AStar</h4>
+                <p>a-star测试</p>
+                <a href="#" title="AStarTest" onclick="productClick(this)">AStarTest</a>
+                <p>a-star智能寻路</p>
+                <a href="#" title="AstarMove" onclick="productClick(this)">AstarMove</a>
               </li>
             </ul>
           </div>
@@ -327,7 +345,7 @@
               </li>
               <li>
                 <a href="spaceHero.html"><img src="assets/main/spacehero.jpg" alt="太空英雄"></a>
-                <p>太空英雄</p>
+                <p>像素级碰撞检测</p>
               </li>
             </ul>
             <ul id="pro_con2" class="sk_product" style="display: none;">

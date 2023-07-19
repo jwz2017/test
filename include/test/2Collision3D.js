@@ -20,7 +20,8 @@
             vpY = height / 2;
             for (let i = 0; i < numBalls; i++) {
                 const ball = new CirActor();
-                ball.init(30, 30);
+                ball.init(30);
+                ball.pos=new Point3D();
                 ball.pos.x = Math.random() * 400 - 200;
                 ball.pos.y = Math.random() * 400 - 200;
                 ball.pos.z = Math.random() * 400 - 200;
@@ -47,8 +48,8 @@
                     let dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
                     if (dist < ballA.hit + ballB.hit) {
                         ballA.color = ballB.color = "#00f";
-                        ballA.drawShape(ballA.size.x, ballA.size.y);
-                        ballB.drawShape(ballB.size.x, ballB.size.y);
+                        ballA.drawShape(ballA.rect.width, ballA.rect.height);
+                        ballB.drawShape(ballB.rect.width, ballB.rect.height);
                     }
                 }
             }

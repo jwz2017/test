@@ -19,8 +19,9 @@
                 const particle = new CirActor();
                 particle.edgeBehavior=Actor.WRAP;
                 let size = Math.random() * 20 + 4;
-                particle.init(size, size);
-                particle.pos.setValues(Math.random()*width,Math.random()*height);
+                particle.init(size);
+                particle.setPos(Math.random()*width,Math.random()*height);
+
                 particle.speed.setValues(Math.random()*6-3,Math.random()*6-3);
                 particle.mass = size;
                 stage.addChild(particle);

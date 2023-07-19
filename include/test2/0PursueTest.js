@@ -8,9 +8,9 @@
         }
         waitComplete() {
             seeker=new SteeredActor(400,0);
-
+            seeker.init(15);
             pursuer=new SteeredActor(400,0);
-
+            pursuer.init(15);
             target=new CirActor(200,300);
             target.init(30,30);
             target.edgeBehavior=Actor.WRAP;
@@ -19,7 +19,7 @@
             
         }
         runGame() {
-            seeker.seek(target.pos);
+            seeker.seek(target);
             seeker.act();
 
             pursuer.pursue(target);

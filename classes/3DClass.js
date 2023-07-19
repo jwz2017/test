@@ -84,7 +84,7 @@ class Triangle {
         return cax * bcy > cay * bcx;
     }
     getAdjustedColor() {
-        let color = utils.parseColor(this._color, true);
+        let color = mc.parseColor(this._color, true);
         let red = color >> 16;
         let green = color >> 8 & 0xff;
         let blue = color & 0xff;
@@ -92,7 +92,7 @@ class Triangle {
         red *= lightFactor;
         green *= lightFactor;
         blue *= lightFactor;
-        return utils.parseColor(red << 16 | green << 8 | blue);
+        return mc.parseColor(red << 16 | green << 8 | blue);
     }
     _getLightFactor() {
         let ab = new Object();
@@ -259,14 +259,14 @@ class DrawnIsoTile extends IsoObject {
     }
     set height(value) {
         this._height = value;
-        this.draw();
+        this.drawShape();
     }
     get height() {
         return this._height;
     }
     set color(value) {
         this._color = value;
-        this.draw();
+        this.drawShape();
     }
     get color() {
         return this._color;
@@ -279,12 +279,12 @@ class DrawnIsoBox extends DrawnIsoTile {
     }
     drawShape() {
         this.shape.graphics.clear();
-        let color = utils.parseColor(this.color, true);
+        let color = mc.parseColor(this.color, true);
         let red = color >> 16;
         let green = color >> 8 & 0xff;
         let blue = color & 0xff;
-        let leftShadow = utils.parseColor((red * .5) << 16 | (green * .5) << 8 | (blue * .5));
-        let rightShadow = utils.parseColor((red * .75) << 16 | (green * .75) << 8 | (blue * .75));
+        let leftShadow = mc.parseColor((red * .5) << 16 | (green * .5) << 8 | (blue * .5));
+        let rightShadow = mc.parseColor((red * .75) << 16 | (green * .75) << 8 | (blue * .75));
         let h = this._height * IsoUtils.Y_CORRECT;
         //draw top
         this.shape.graphics.beginFill(this._color).
@@ -311,6 +311,17 @@ class DrawnIsoBox extends DrawnIsoTile {
             lineTo(this._size, -h).
             endFill();
     }
+}
+//使用外部图形类
+class GraphicTile extends IsoObject {
+    constructor(size, gfx, xoffset, yoffset) {
+        super(size);
+        // let gfx = new ClassRef();
+        gfx.x = -xoffset;
+        gfx.y = -yoffset;
+        this.addChild(gfx);
+    }
+
 }
 /**
  * 等角世界类
@@ -344,14 +355,4 @@ class IsoWorld extends createjs.Container {
             return a.depth - b.depth;
         });
     }
-}
-class GraphicTile extends IsoObject {
-    constructor(size, ClassRef, xoffset, yoffset) {
-        super(size);
-        let gfx = new ClassRef();
-        gfx.x = -xoffset;
-        gfx.y = -yoffset;
-        this.addChild(gfx);
-    }
-
 }

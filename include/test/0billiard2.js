@@ -24,12 +24,13 @@
             ball1.speed.x=Math.random()*10-5;
             ball1.speed.y=Math.random()*10-5;
             stage.addChild(ball0,ball1);
+            ball1.setSize(0.5)
         }
         runGame() {
            ball0.act();
            ball1.act();
-            if (ball0.hitRadius(ball1)) {
-                this.billiardCollision(ball0,ball1);
+           if (ball0.hitRadius(ball1)) {
+                Game.billiardCollision(ball0,ball1);
             }
         }
 

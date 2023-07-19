@@ -11,6 +11,7 @@
             vpX=width/2;
             vpY=height/2;
             ball=new CirActor();
+            ball.pos=new Vector(0,0);
             ball.init(50,50);
             ball.pos.z=0;
             ball.speed.z=0;

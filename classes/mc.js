@@ -26,7 +26,6 @@ mc.style = {
     this.labelColor = "#cccccc";
   }
 };
-
 //---------------------------------------------------Graphics---------------------------------------------------------------
 class Rect extends createjs.Graphics {
   constructor() {
@@ -120,7 +119,7 @@ class Arrow extends Rect {
   }
   drawShape(x,y,width,height){
     const mat = new createjs.Matrix2D().translate(width / 2, height / 2).rotate(this._arrowRotation);
-    utils.drawPoints(this, mat, this._getPoints(width, height));
+    mc.drawPoints(this, mat, this._getPoints(width, height));
   }
   _getPoints(width, height) {
     return [
@@ -245,7 +244,7 @@ class ArrowButtonShape extends PushButtonShape {
 
     }
     const mat = new createjs.Matrix2D().translate(this._width / 2, this._height / 2).rotate(this._arrowRotation);
-    utils.drawPoints(this.graphics, mat, [
+    GFrame.drawPoints(this.graphics, mat, [
       [0, -this.arrowHeight / 2 - 1],
       [this.arrowHeight, this.arrowHeight / 2 - 1],
       [-this.arrowHeight, this.arrowHeight / 2 - 1],
@@ -905,7 +904,10 @@ class ScrollContainer extends createjs.Container {
     };
   }
   set contentSize(size) {
-    this.container.setBounds(0, 0, size.width, size.height)
+    let b=this.getBounds();
+    let w= Math.max(b.width - mc.style.SCROLL_BAR_SIZE, size.width);
+    let h=Math.max(b.height - mc.style.SCROLL_BAR_SIZE, size.height);
+    this.container.setBounds(0, 0, w, h);
     this.scrollBarH.contentLength = size.width
     this.scrollBarV.contentLength = size.height
     if (size.width <= this.getBounds().width ) {
@@ -937,67 +939,7 @@ class ScrollContainer extends createjs.Container {
   }
 }
 
-/*****************************utils****************************** */
+/*****************************mc****************************** */
 
 
-var utils = {};
-/**
- * Returns a color in the format: '#RRGGBB', or as a hex number if specified.
- * @param {number|string} color
- * @param {boolean}      toNumber=false  Return color as a hex number.
- * @return {string|number}
- */
-utils.parseColor = function (color, toNumber) {
-    if (toNumber === true) {
-        if (typeof color === 'number') {
-            return (color | 0); //chop off decimal
-        }
-        if (typeof color === 'string' && color[0] === '#') {
-            color = color.slice(1);
-        }
-        return window.parseInt(color, 16);
-    } else {
-        if (typeof color === 'number') {
-            color = '#' + ('00000' + (color | 0).toString(16)).substr(-6); //pad
-        }
-        return color;
-    }
-};
-/**
- * 随机颜色
- */
-utils.randomColor = function () {
-    return "rgb(" + Math.floor(Math.random() * 256) + "," +
-        Math.floor(Math.random() * 256) + "," +
-        Math.floor(Math.random() * 256) + ")";
-};
-/**
- * 将点连线
- * @param {*} g 
- * @param {*} mat 
- * @param {*} points 
- */
-utils.drawPoints = function (g, mat, points) {
-    points.forEach((point, i) => {
-        const p = mat.transformPoint(point[0], point[1])
-        p.x = Math.ceil(p.x);
-        p.y = Math.ceil(p.y)
-        if (i == 0) {
-            g.moveTo(p.x, p.y)
-        } else {
-            g.lineTo(p.x, p.y)
-        }
-    });
-}
-/**
- * Array随机排序
- */
-utils.randomArray=function(array){
-    if (!Array.prototype.derangedArray) {
-        Array.prototype.derangedArray = function () {
-            for (var j, x, i = this.length; i; j = parseInt(Math.random() * i), x = this[--i], this[i] = this[j], this[j] = x);
-            return this;
-        };
-    }
-    array=array.derangedArray();
-}
+

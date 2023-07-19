@@ -36,12 +36,73 @@ class GFrame {
     STATE_LEVEL_OUT: "statelevelout",
     STATE_WAIT: "statewait"
   };
+  /**颜色转换
+ * Returns a color in the format: '#RRGGBB', or as a hex number if specified.
+ * @param {number|string} color
+ * @param {boolean}      toNumber=false  Return color as a hex number.
+ * @return {string|number}
+ */
+  static parseColor = function (color, toNumber) {
+    if (toNumber === true) {
+      if (typeof color === 'number') {
+        return (color | 0); //chop off decimal
+      }
+      if (typeof color === 'string' && color[0] === '#') {
+        color = color.slice(1);
+      }
+      return window.parseInt(color, 16);
+    } else {
+      if (typeof color === 'number') {
+        color = '#' + ('00000' + (color | 0).toString(16)).substr(-6); //pad
+      }
+      return color;
+    }
+  };
+  /**
+  * 随机颜色
+  */
+  static randomColor = function () {
+    return "rgb(" + Math.floor(Math.random() * 256) + "," +
+      Math.floor(Math.random() * 256) + "," +
+      Math.floor(Math.random() * 256) + ")";
+  };
+  /**
+  * 将点连线 
+  * @param {*} g 
+  * @param {*} mat 
+  * @param {*} points 
+  */
+  static drawPoints = function (g, mat, points) {
+    points.forEach((point, i) => {
+      const p = mat.transformPoint(point[0], point[1])
+      p.x = Math.ceil(p.x);
+      p.y = Math.ceil(p.y)
+      if (i == 0) {
+        g.moveTo(p.x, p.y)
+      } else {
+        g.lineTo(p.x, p.y)
+      }
+    });
+  }
+  /**
+  * Array随机排序
+  */
+  static randomArray = function (array) {
+    if (!Array.prototype.derangedArray) {
+      Array.prototype.derangedArray = function () {
+        for (var j, x, i = this.length; i; j = parseInt(Math.random() * i), x = this[--i], this[i] = this[j], this[j] = x);
+        return this;
+      };
+    }
+    array = array.derangedArray();
+  }
   constructor(canvasId) {
     this.loaderBar = null;
     this.isLoaded = false;
     this._systemFunction = this._systemWaitForClose;
     //建立舞台
     stage = new createjs.Stage(canvasId);
+    // createjs.DisplayObject._hitTestContext = stage.canvas.getContext("2d",{willReadFrequently: true});
     //开启鼠标经过事件
     stage.enableMouseOver();
     //开启触摸
@@ -71,7 +132,6 @@ class GFrame {
     switch (stateval) {
       case GFrame.state.STATE_WAIT:
         this._systemFunction = this._systemWait;
-        stage.addChild(this.fade, this.spin1);
         break;
       case GFrame.state.STATE_WAIT_FOR_CLOSE:
         this._systemFunction = this._systemWaitForClose;
@@ -398,7 +458,7 @@ class ShapeBackground extends createjs.Container {
     // middle spinner:
     this.spin2 = new createjs.Container();
     this.spin2.addChild(this.shape);
-    this.spin2.x = 391;
+    this.spin2.x = 375;
     // outside spinner:
     this.spin1 = new createjs.Container();
     this.spin1.addChild(this.spin2);
@@ -420,7 +480,7 @@ class ShapeBackground extends createjs.Container {
     this.spin2.rotation = 0;
     this.shape.rotation = 0;
     stage.autoClear = true;
-    createjs.Ticker.framerate = 62;
+    // createjs.Ticker.framerate = 62;
   }
   updateWaitBg() {
     this.c++;
@@ -595,6 +655,80 @@ class Game {
     16: "shift",
     17: "ctrl"
   };
+  //创建元素
+  static getActor(array, Actor) {
+    let len = array.length,
+      i = 0;
+    while (i <= len) {
+      if (!array[i]) {
+        array[i] = new Actor();
+        break;
+      } else if (!array[i].active) {
+        array[i].active = true;
+        break;
+      } else {
+        i++;
+      }
+    }
+    return array[i];
+  }
+
+  //动量守恒碰撞
+  static billiardCollision(ball0, ball1) {
+    let dx = ball1.x - ball0.x,
+      dy = ball1.y - ball0.y,
+      angle = Math.atan2(dy, dx);
+    //设置ball0的位置为原点
+    let pos0 = new Vector(0, 0);
+    //旋转ball1的位置
+    let pos1 = new Vector(dx, dy);
+    pos1.rotate(angle, true);
+    //旋转ball0的速度
+    let vel0 = new Vector(ball0.speed.x, ball0.speed.y);
+    vel0.rotate(angle, true);
+    //旋转ball1的速度
+    let vel1 = new Vector(ball1.speed.x, ball1.speed.y);
+    vel1.rotate(angle, true);
+    //碰撞的作用力
+    let vxTotal = vel0.x - vel1.x;
+    vel0.x = ((ball0.mass - ball1.mass) * vel0.x + 2 * ball1.mass * vel1.x) / (ball0.mass + ball1.mass);
+    vel1.x = vxTotal + vel0.x;
+    //更新位置，避免两球重叠
+    let absV = Math.abs(vel0.x) + Math.abs(vel1.x);
+    let overlap = (ball0.hit + ball1.hit) - Math.abs(pos0.x - pos1.x);
+    pos0.x += vel0.x / absV * overlap;
+    pos1.x += vel1.x / absV * overlap;
+
+    //将位置旋转回来
+    pos0.rotate(angle, false);
+    pos1.rotate(angle, false);
+    //将位置调整为屏幕的实际位置
+    ball1.setPos(ball0.x + pos1.x, ball0.y + pos1.y);
+    ball0.setPos(ball0.x + pos0.x, ball0.y + pos0.y);
+    //将速度旋转回来
+    vel0.rotate(angle, false);
+    vel1.rotate(angle, false);
+    ball0.speed.setValues(vel0.x, vel0.y);
+    ball1.speed.setValues(vel1.x, vel1.y);
+  }
+
+  //相互吸引函数
+  static gravitate(partA, partB) {
+    let dx = partB.x - partA.x,
+      dy = partB.y - partA.y,
+      distSQ = dx * dx + dy * dy,
+      dist = Math.sqrt(distSQ),
+      force = partA.mass * partB.mass / distSQ,
+      ax = force * dx / dist,
+      ay = force * dy / dist;
+    //弹性吸引
+    // let ax=dx*0.012,
+    // ay=dy*0.012;
+    partA.speed.x += ax / partA.mass;
+    partA.speed.y += ay / partA.mass;
+    partB.speed.x -= ax / partB.mass;
+    partB.speed.y -= ay / partB.mass;
+  }
   constructor(titleText) {
     mc.style.fontSize = 32; //mc组件字体大小
     this.level = 0;
@@ -650,197 +784,9 @@ class Game {
   clear() {
 
   }
-
-  //创建元素
-  getActor(array, Actor) {
-    let len = array.length,
-      i = 0;
-    while (i <= len) {
-      if (!array[i]) {
-        array[i] = new Actor();
-        break;
-      } else if (!array[i].active) {
-        array[i].active = true;
-        break;
-      } else {
-        i++;
-      }
-    }
-    return array[i];
-  }
-
-  //动量守恒碰撞
-  billiardCollision(ball0, ball1) {
-    let dx = ball1.x - ball0.x,
-      dy = ball1.y - ball0.y,
-      angle = Math.atan2(dy, dx);
-    //设置ball0的位置为原点
-    let pos0 = new Vector(0, 0);
-    //旋转ball1的位置
-    let pos1 = new Vector(dx, dy);
-    pos1.rotate(angle, true);
-    //旋转ball0的速度
-    let vel0 = new Vector(ball0.speed.x, ball0.speed.y);
-    vel0.rotate(angle, true);
-    //旋转ball1的速度
-    let vel1 = new Vector(ball1.speed.x, ball1.speed.y);
-    vel1.rotate(angle, true);
-    //碰撞的作用力
-    let vxTotal = vel0.x - vel1.x;
-    vel0.x = ((ball0.mass - ball1.mass) * vel0.x + 2 * ball1.mass * vel1.x) / (ball0.mass + ball1.mass);
-    vel1.x = vxTotal + vel0.x;
-    //更新位置，避免两球重叠
-    let absV = Math.abs(vel0.x) + Math.abs(vel1.x);
-    let overlap = (ball0.size.x / 2 + ball1.size.x / 2) - Math.abs(pos0.x - pos1.x);
-    pos0.x += vel0.x / absV * overlap;
-    pos1.x += vel1.x / absV * overlap;
-
-    //将位置旋转回来
-    pos0.rotate(angle, false);
-    pos1.rotate(angle, false);
-    //将位置调整为屏幕的实际位置
-    ball1.x = ball0.x + pos1.x;
-    ball1.y = ball0.y + pos1.y;
-    ball0.x = ball0.x + pos0.x;
-    ball0.y = ball0.y + pos0.y;
-    ball0.updatePos();
-    ball1.updatePos();
-    //将速度旋转回来
-    vel0.rotate(angle, false);
-    vel1.rotate(angle, false);
-    ball0.speed.setValues(vel0.x, vel0.y);
-    ball1.speed.setValues(vel1.x, vel1.y);
-  }
-
-  //相互吸引函数
-  gravitate(partA, partB) {
-    let dx = partB.x - partA.x,
-      dy = partB.y - partA.y,
-      distSQ = dx * dx + dy * dy,
-      dist = Math.sqrt(distSQ),
-      force = partA.mass * partB.mass / distSQ,
-      ax = force * dx / dist,
-      ay = force * dy / dist;
-    //弹性吸引
-    // let ax=dx*0.012,
-    // ay=dy*0.012;
-    partA.speed.x += ax / partA.mass;
-    partA.speed.y += ay / partA.mass;
-    partB.speed.x -= ax / partB.mass;
-    partB.speed.y -= ay / partB.mass;
-  }
 }
 
-/**
- * *******网格游戏类 需要mc组件**************************************************
- */
-class GridsMap extends ScrollContainer {
-  constructor(x, y, width, height, stepWidth, stepHeight, map) {
-    super(null, x, y, width, height, width, height, false, false);
-    this.stepWidth = stepWidth;
-    this.stepHeight = stepHeight;
-    this.width = width;
-    this.height = height;
-    this.map = map;
-  }
-  createGridMap(plan, actorChars, drawGrid) {
-    if (this.map) this.addChild(this.map);
-    this.grids = [];
-    this.actors = [];
-    let w = plan[0].length,
-      h = plan.length;
-    this.mapWidth = w * this.stepWidth;
-    this.mapHeight = h * this.stepHeight;
-    for (let y = 0; y < h; y++) {
-      const line = plan[y],
-        gridLine = [];
-      for (let x = 0; x < w; x++) {
-        const ch = line[x],
-          Act = actorChars[ch];
-        if (Act) {
-          this.actors.push(new Act(x * this.stepWidth, y * this.stepHeight, ch));
-        }
-        gridLine.push(drawGrid(ch, x * this.stepWidth, y * this.stepHeight));
-      }
-      this.grids.push(gridLine);
-    }
-    this.actors.forEach((actor) => {
-      this.addChild(actor);
-    });
-    this.player = this.actors.filter(function (actor) {
-      return actor.type == "player";
-    })[0];
-    if (this.map) this.map.cache(0, 0, this.mapWidth, this.mapHeight);
-    this.contentSize = {
-      width: this.mapWidth,
-      height: this.mapHeight
-    };
-  }
-  //屏幕滚动
-  scrollPlayerIntoView() {
-    let marginw = this.width / 3;
-    let marginh = this.height / 3;
-    //this viewpot
-    this.mapleft = -this.scrollX,
-      this.mapright = this.mapleft + this.width,
-      this.maptop = -this.scrollY,
-      this.mapbottom = this.maptop + this.height;
-    if (this.player.x < this.mapleft + marginw) {
-      this.scrollX = -this.player.x + marginw;
-    } else if (this.player.x > this.mapright - marginw) {
-      this.scrollX = -this.player.x - marginw + this.width;
-    }
-    if (this.player.y < this.maptop + marginh) {
-      this.scrollY = Math.floor(-this.player.y + marginh);
-    } else if (this.player.y > this.mapbottom - marginh) {
-      this.scrollY = Math.floor(-this.player.y - marginh + this.height);
-    }
-  }
-  /**检测是否出屏幕
-   * 
-   * @param {*} x this.x
-   * @param {*} y this.y
-   * @returns boolean
-   */
-  outOfWin(actor) {
-    return actor.pos.x + actor.size.x < this.mapleft || actor.pos.x > this.mapright || actor.pos.y + actor.size.y < this.maptop || actor.pos.y > this.mapbottom;
-  }
-  //检测地图与元素碰撞
-  hitMap(actorSize, newPos) {
-    let pos = new Vector(newPos.x / this.stepWidth, newPos.y / this.stepHeight);
-    let size = new Vector(actorSize.x / this.stepWidth, actorSize.y / this.stepHeight);
-    var xStart = Math.floor(pos.x);
-    var xEnd = Math.ceil(pos.x + size.x);
-    var yStart = Math.floor(pos.y);
-    var yEnd = Math.ceil(pos.y + size.y);
-    if (xStart < 0 || xEnd > this.grids[0].length || yStart < 0) {
-      return "wall";
-    } else if (yEnd > this.grids.length) {
-      return "lava";
-    }
-    for (var y = yStart; y < yEnd; y++) {
-      for (var x = xStart; x < xEnd; x++) {
-        var fieldType = this.grids[y][x];
-        if (fieldType) {
-          return fieldType;
-        }
-      }
-    }
-  }
 
-  /**
-   * 关卡结束后清理
-   */
-  clear() {
-    this.removeAllChildren();
-    if (this.map instanceof createjs.Shape) {
-      this.map.uncache();
-      this.map.graphics.clear();
-    } else if (this.map instanceof createjs.Container) {
-      this.map.removeAllChildren();
-    }
-  }
-}
 
 //向量角色类**************************************************************************
 class Vector {
@@ -964,66 +910,41 @@ class Actor extends createjs.Container {
   static RECYCLE = "recycle";
   constructor(xpos = 0, ypos = 0) {
     super();
+    this._rect = new createjs.Rectangle(xpos, ypos);
     this.edgeBehavior = Actor.RECYCLE;
-    this.pos = new Vector(xpos, ypos);
     this.speed = new Vector(0, 0);
-    // this.speed.length = 5;
     this.maxSpeed = 10;
     this.active = true;
     this.color = "rgb(64,64,64)";
-    this.image = new createjs.Shape();
-    this.addChild(this.image);
   }
   init(width, height) {
+    this.setBounds(null);
+    this.removeAllChildren();
+    this.scaleX = this.scaleY = 1;
+    this.image = new createjs.Shape();
+    this.addChild(this.image);
     this.drawShape(width, height);
-    this._initSize();
-  }
-  _initSize(){
     let b = this.getBounds();
-    this.size = new Vector(b.width, b.height);
-    this._offX = b.x;
-    this._offY = b.y;
-    this.update();
+    this.setBounds(b.x, b.y, b.width, b.height);
+    this._update();
   }
-  drawShape(width, height) {
-    this.image.graphics.clear().beginFill(this.color).drawRect(-width / 2, -height / 2, width, height);
-    this.setBounds(-width / 2, -height / 2, width, height);
-    // this.hit = Math.max(width, height) / 2;
-    this.hit = Math.sqrt(width * width + height * height) / 2;
-  }
-  update() {
-    this.x = this.pos.x - this._offX;
-    this.y = this.pos.y - this._offY;
+  _update() {
+    let b = this.getBounds();
+    if (!this.hit) this.hit = Math.sqrt(b.width * b.width + b.height * b.height) / 2;
+    this._rect.width = b.width;
+    this._rect.height = b.height;
+    this.x = this._rect.x - b.x;
+    this.y = this._rect.y - b.y;
   }
 
-  updatePos() {
-    // let b=this.getTransformedBounds();
-    this.pos.setValues(this.x + this._offX, this.y + this._offY);
+  drawShape(width, height) {
+    this.image.graphics.clear().beginFill(this.color).drawRect(-width / 2, -height / 2, width, height);
+    this.image.setBounds(-width / 2, -height / 2, width, height);
   }
-  /**
-   * 设置大小，参数为缩放比例
-   * @param {*} scaleX 
-   * @param {*} scaleY 
-   */
-  setSize(scaleX, scaleY) {
-    let b = this.getBounds();
-    this.scaleX = scaleX;
-    this.scaleY = scaleY;
-    this._offX = b.x * scaleX;
-    this._offY = b.y * scaleY;
-    this.size.setValues(b.width * scaleX, b.height * scaleY);
-    this.hit = Math.max(b.width * scaleX, b.height * scaleY) / 2;
-    this.updatePos();
-  }
-  setReg(x, y) {
-    this.regX = x;
-    this.regY = y;
-    this.x += this.regX * this.scaleX;
-    this.y += this.regY * this.scaleY;
-    this.updatePos();
-  }
+
   setSpriteData(spriteSheet, animation, scale = 1) {
-    // if (this.image) this.removeChild(this.image);
+    //显示辅助矩形
+    // if(this.image)this.removeChild(this.image);
     this.image = new createjs.Sprite(spriteSheet, animation);
     let b = this.image.getBounds();
     if (b.x == 0) {
@@ -1031,31 +952,54 @@ class Actor extends createjs.Container {
       this.image.regY = b.height / 2;
     }
     this.image.scale = scale;
-    this.addChild(this.image);
-    if (!this.size) {
-      this._initSize();
+    if (!this.getBounds()) {
+      this.addChild(this.image);
+      this._update();
+    } else {
+      this.addChild(this.image);
     }
   }
-
-  //获取中心点，注册点在x轴时才可用
-  getCenterPoint() {
-    let x1 = this.size.x / 2 + this.regX * this.scaleX,
-      // y1 = this.size.y / 2 + this.regY*this.scaleY,
-      angle = this.rotation * Math.PI / 180,
-      cos = Math.cos(angle),
-      sin = Math.sin(angle),
-      // x2 = cos * x1 - sin * y1,
-      // y2 = cos * y1 + sin * x1;
-      x2 = cos * x1,
-      y2 = sin * x1;
-    return new Vector(x2 + this.x, y2 + this.y);
+  get rect() {
+    return this._rect;
   }
-
+  setPos(x, y) {
+    this.x = x;
+    this.y = y;
+    this._rect.copy(this.getTransformedBounds());
+  }
+  plus(speedX, speedY) {
+    this.x += speedX;
+    this.y += speedY;
+    this._rect.x += speedX;
+    this._rect.y += speedY;
+  }
+  setSize(scaleX, scaleY) {
+    this.scaleX = scaleX;
+    this.scaleY = scaleY;
+    this._rect.copy(this.getTransformedBounds());
+    this.hit = Math.sqrt(this._rect.width * this._rect.width + this._rect.height * this._rect.height) / 2;
+  }
+  setReg(regX, regY) {
+    this.regX = regX;
+    this.regY = regY;
+    this._rect.copy(this.getTransformedBounds());
+  }
   recycle() {
     this.active = false;
     this.parent.removeChild(this);
   }
-
+  //检测 元素之间是否碰撞
+  hitActors(actors, rect = this.rect) {
+    for (var i = 0; i < actors.length; i++) {
+      var other = actors[i];
+      if (other == this) {
+        continue;
+      }
+      if (rect.intersects(other.rect)) {
+        return other;
+      }
+    }
+  }
 
   /**检测是否碰撞屏幕
    * 
@@ -1063,8 +1007,8 @@ class Actor extends createjs.Container {
    * @param {*} y this.y
    * @returns boolean
    */
-  hitBounds(pos = this.pos, mapWidth = width, mapHeight = height) {
-    return pos.x < 0 || pos.x + this.size.x > mapWidth || pos.y < 0 || pos.y + this.size.y > mapHeight;
+  hitBounds(rect = this.rect, mapWidth = width, mapHeight = height) {
+    return rect.x < 0 || rect.x + rect.width > mapWidth || rect.y < 0 || rect.y + rect.height > mapHeight;
 
   }
   /**检测是否出边界
@@ -1073,79 +1017,52 @@ class Actor extends createjs.Container {
  * @param {*} y this.y
  * @returns boolean
  */
-  outOfBounds(pos = this.pos) {
-    return pos.x + this.size.x < 0 || pos.x > width || pos.y + this.size.y < 0 || pos.y > height;
+  outOfBounds(rect = this.rect) {
+    return rect.x + rect.width < 0 || rect.x > width || rect.y + rect.height < 0 || rect.y > height;
   }
   /**屏幕反弹
    * 
    * @param {*} bounce -1
    */
   rebounds(bounce = -1, mapWidth = width, mapHeight = height) {
-    if (this.pos.x < 0) {
-      this.pos.x = 0;
+    let rect = this.rect;
+    if (rect.x < 0) {
       this.speed.x *= bounce;
-    } else if (this.pos.x + this.size.x > mapWidth) {
-      this.pos.x = mapWidth - this.size.x;
+      rect.x = 0;
+      this.x = rect.width / 2;
+    } else if (rect.x + rect.width > mapWidth) {
       this.speed.x *= bounce;
+      rect.x = mapWidth - rect.width;
+      this.x = mapWidth - rect.width / 2;
     }
-    if (this.pos.y < 0) {
-      this.pos.y = 0;
+    if (rect.y < 0) {
       this.speed.y *= bounce;
-    } else if (this.pos.y + this.size.y > mapHeight) {
-      this.pos.y = mapHeight - this.size.y;
+      rect.y = 0;
+      this.y = rect.height / 2;
+    } else if (rect.y + rect.height > mapHeight) {
       this.speed.y *= bounce;
+      rect.y = mapHeight - rect.height;
+      this.y = mapHeight - rect.height / 2;
     }
   }
 
   //屏幕环绕
   placeInBounds(mapWidth = width, mapHeight = height) {
-    if (this.pos.x + this.size.x < 0) {
-      this.pos.x = mapWidth;
-    } else if (this.pos.x > mapWidth) {
-      this.pos.x = -this.size.x;
+    let rect = this.rect;
+    if (rect.x + rect.width < 0) {
+      rect.x = mapWidth;
+      this.x = mapWidth + rect.width / 2;
+    } else if (rect.x > mapWidth) {
+      rect.x = -rect.width;
+      this.x = -rect.width / 2;
     }
-    if (this.pos.y + this.size.y < 0) {
-      this.pos.y = mapHeight;
-    } else if (this.pos.y > mapHeight) {
-      this.pos.y = -this.size.y;
+    if (rect.y + rect.height < 0) {
+      rect.y = mapHeight;
+      this.y = mapHeight + rect.height / 2;
+    } else if (rect.y > mapHeight) {
+      rect.y = -rect.height;
+      this.y = -rect.height / 2;
     }
-  }
-  /**矩形碰撞
- * 
- * @param {*} other 
- * @param {*} x this.x
- * @param {*} y this.y
- * @returns boolean
- */
-  hitRect(other, pos = this.pos) {
-    return (other.pos.x <= pos.x + this.size.x && pos.x <= other.pos.x + other.size.x && other.pos.y <= pos.y + this.size.y && pos.y <= other.pos.y + other.size.y);
-  }
-  /**检测 元素之间是否碰撞
-   * 
-   * @param {*} actors 
-   * @param {*} x this.x
-   * @param {*} y this.y
-   * @returns 
-   */
-  hitActors(actors, pos = this.pos) {
-    for (var i = 0; i < actors.length; i++) {
-      var other = actors[i];
-      if (other == this) {
-        continue;
-      }
-      if (this.hitRect(other, pos)) {
-        return other;
-      }
-    }
-  }
-  /**包括其他对象
-   * 
-   * @param {*} other 
-   * @returns boolean
-   */
-  contains(other) {
-    let rect = new createjs.Rectangle(this.pos.x, this.pos.y, this.size.x, this.size.y);
-    return rect.contains(other.pos.x, other.pos.y, other.size.x, other.size.y);
   }
   /**两个球体碰撞或球与点的碰撞
    * 
@@ -1173,44 +1090,19 @@ class Actor extends createjs.Container {
   hitWRadius(otherHit, otherX, otherY, x = this.x, y = this.y) {
     return this.hit + otherHit > Math.sqrt(Math.pow(Math.abs(x - otherX), 2) + Math.pow(Math.abs(y - otherY), 2));
   }
-  //斜面反弹
-  hitAngleBounce(actor) {
-    let x1 = this.x - actor.x,
-      y1 = this.y - actor.y,
-      //反向旋转y,vy
-      y2 = actor.cos * y1 - actor.sin * x1,
-      vy2 = actor.cos * this.speed.y - actor.sin * this.speed.x;
-    if (y2 > -this.hit && y2 < vy2) {
-      y2 = -this.hit;
-      vy2 *= -1;
-      //反向旋转x,vx
-      let x2 = actor.cos * x1 + actor.sin * y1,
-        vx2 = actor.cos * this.speed.x + actor.sin * this.speed.y;
-      //将一切旋转回去
-      this.x = actor.x + actor.cos * x2 - actor.sin * y2;
-      this.y = actor.y + actor.cos * y2 + actor.sin * x2;
-      this.speed.x = actor.cos * vx2 - actor.sin * vy2;
-      this.speed.y = actor.cos * vy2 + actor.sin * vx2;
-      this.updatePos();
-    }
-  }
+
   act() {
     this.speed.truncate(this.maxSpeed);
-    this.pos.add(this.speed);
+    this.plus(this.speed.x, this.speed.y);
     if (this.edgeBehavior == Actor.WRAP) {
-      if (this.outOfBounds()) {
-        this.placeInBounds();
-      }
+      this.placeInBounds();
     } else if (this.edgeBehavior == Actor.BOUNCE) {
-      if (this.hitBounds()) {
-        this.rebounds();
-      }
+      this.rebounds();
     } else if (this.edgeBehavior == Actor.RECYCLE) {
       if (this.outOfBounds()) {
         this.recycle();
       }
     }
-    this.update();
   }
 }
 
@@ -1223,11 +1115,63 @@ class CirActor extends Actor {
   constructor(xpos, ypos) {
     super(xpos, ypos);
   }
-  drawShape(width) {
-    var radius = width / 2;
+
+  drawShape(size) {
+    let radius = size / 2;
     this.image.graphics.clear().beginRadialGradientFill(["#c9c9c9", this.color], [0, 1], radius / 3, -radius / 3, 0, radius / 6, -radius / 6, radius).drawCircle(0, 0, radius);
-    this.setBounds(-radius, -radius, width, width);
+    this.image.setBounds(-radius, -radius, size, size);
     this.hit = radius;
+  }
+  setSize(scale) {
+    this.scaleX = scale;
+    this.scaleY = scale;
+    this._rect.copy(this.getTransformedBounds());
+    this.hit = this._rect.width / 2;
+  }
+
+}
+//斜面反弹类
+class BounceActor extends Actor {
+  constructor(xpos, ypos) {
+    super(xpos, ypos);
+    this.type = "angleBounce";
+    this.cos = 1;
+    this.sin = 0;
+  }
+  init(width, rotation) {
+    super.init(width, rotation);
+  }
+  drawShape(w, rotation) {
+    this.image.graphics.clear().setStrokeStyle(2).beginStroke(this.color).moveTo(-w / 2, 0).lineTo(w / 2, 0);
+    this.image.setBounds(-w / 2, 0, w, 1);
+    this.setRotation(rotation);
+  }
+  setRotation(val) {
+    this.image.rotation = val;
+    let angle = this.image.rotation * Math.PI / 180;
+    this.cos = Math.cos(angle);
+    this.sin = Math.sin(angle);
+  }
+  //斜面反弹
+  hitAngleBounce(actor) {
+    let x1 = actor.x - this.x,
+      y1 = actor.y - this.y,
+      //反向旋转y,vy
+      y2 = this.cos * y1 - this.sin * x1,
+      vy2 = this.cos * actor.speed.y - this.sin * actor.speed.x;
+    if (y2 > -actor.hit && y2 < vy2) {
+      y2 = -actor.hit;
+      vy2 *= -1;
+      //反向旋转x,vx
+      let x2 = this.cos * x1 + this.sin * y1,
+        vx2 = this.cos * actor.speed.x + this.sin * actor.speed.y;
+      //将一切旋转回去
+      actor.x = this.x + this.cos * x2 - this.sin * y2;
+      actor.y = this.y + this.cos * y2 + this.sin * x2;
+      actor.setPos(actor.x, actor.y);
+      actor.speed.x = this.cos * vx2 - this.sin * vy2;
+      actor.speed.y = this.cos * vy2 + this.sin * vx2;
+    }
   }
 }
 
@@ -1265,26 +1209,27 @@ class SteeredActor extends Actor {
     //作用力最大length
     this.maxForce = 1;
     // this.drawShape(15);
-    this.init(15);
+    this.color = "#ffffff";
   }
   drawShape(width) {
-    this.image = new createjs.Shape();
     this.shipFlame = new createjs.Shape();
-    this.addChild(this.shipFlame, this.image);
+    this.addChild(this.shipFlame);
     var g = this.image.graphics;
     g.clear();
-    g.beginStroke("#ffffff");
+    g.beginStroke(this.color);
     g.moveTo(0, width); //nose
     g.lineTo(width / 2, -width / 1.6); //rfin
     g.lineTo(0, -width / 5); //notch
     g.lineTo(-width / 2, -width / 1.6); //lfin
     g.closePath(); // nose
     //draw ship flame
-    this.shipFlame.y = -width / 1.6;
+    this.shipFlame.rotation=-90;
+    this.image.rotation=-90;
+    this.shipFlame.x = -width / 1.6;
     this.shipFlame.alpha = 0;
     g = this.shipFlame.graphics;
     g.clear();
-    g.beginStroke("#FFFFFF");
+    g.beginStroke(this.color);
     g.moveTo(width / 5, 0); //ship
     g.lineTo(width / 2.5, -width / 3.3); //rpoint
     g.lineTo(width / 5, -width / 5); //rnotch
@@ -1292,7 +1237,7 @@ class SteeredActor extends Actor {
     g.lineTo(-width / 5, -width / 5); //lnotch
     g.lineTo(-width / 2.5, -width / 3.3); //lpoint
     g.lineTo(-width / 5, -0); //ship
-    this.setBounds(-width / 2, -width, width, width * 2);
+    this.setBounds(-width , -width/2, width, width * 2);
     this.hit = width - 2;
   }
   act() {
@@ -1301,41 +1246,41 @@ class SteeredActor extends Actor {
     this.speed.add(this.steeringForce);
     this.steeringForce.setValues(0, 0);
     super.act();
-    this.rotation = this.speed.angle * 180 / Math.PI - 90;
+    if(!this.key)this.rotation = this.speed.angle * 180 / Math.PI;
   }
   //寻找行为 
   seek(target) {
-    let centerPos = this.pos.plus(this.size.divide(2));
-    // let centerPos = new Vector(this.x,this.y);
-    let desiredVelocity = target.sub(centerPos);
+    let centerPos = new Vector(this.x, this.y);
+    let targetcenterPos = new Vector(target.x, target.y);
+    let desiredVelocity = targetcenterPos.sub(centerPos);
     desiredVelocity.normalize();
     desiredVelocity = desiredVelocity.times(this.maxSpeed);
-    let force = desiredVelocity.sub(this.speed);
+    let force=desiredVelocity.sub(this.speed);
     this.steeringForce.add(force);
   }
   //避开行为 以目标点反向逃离
   flee(target) {
-    let centerPos = this.pos.plus(this.size.divide(2));
-    // let centerPos = new Vector(this.x,this.y);
-    let desiredVelocity = target.sub(centerPos);
+    let centerPos = new Vector(this.x, this.y);
+    let targetcenterPos = new Vector(target.x, target.y);
+    let desiredVelocity = targetcenterPos.sub(centerPos);
     desiredVelocity.normalize();
     desiredVelocity = desiredVelocity.times(this.maxSpeed);
     let force = desiredVelocity.sub(this.speed);
     this.steeringForce = this.steeringForce.sub(force);
+    
   }
   //到达行为
-  arrive(target) {
-    let centerPos = this.pos.plus(this.size.divide(2));
-    // let centerPos = new Vector(this.x,this.y);
-    let desiredVelocity = target.sub(centerPos);
+  arrive(targetPos) {
+    let centerPos = new Vector(this.x, this.y);
+    let desiredVelocity = targetPos.sub(centerPos);
     desiredVelocity.normalize();
-    let dist = centerPos.dist(target);
+    let dist = centerPos.dist(targetPos);
     if (dist > this.arrivalThreshold) {
       desiredVelocity = desiredVelocity.times(this.maxSpeed);
     } else {
       desiredVelocity = desiredVelocity.times(this.maxSpeed * dist / this.arrivalThreshold);
     }
-    let force = desiredVelocity.sub(this.speed);
+    let force=desiredVelocity.sub(this.speed);
     this.steeringForce.add(force);
   }
   /**
@@ -1343,9 +1288,8 @@ class SteeredActor extends Actor {
    * @param {Actor} target Actor
    */
   pursue(target) {
-    let centerPos = this.pos.plus(this.size.divide(2));
-    // let centerPos = new Vector(this.x,this.y);
-    let targetcenterPos = target.pos.plus(target.size.divide(2));
+    let centerPos = new Vector(this.x, this.y);
+    let targetcenterPos = new Vector(target.x, target.y);
     let lookAheadTime = centerPos.dist(targetcenterPos) / this.maxSpeed;
     let predictedTarget = targetcenterPos.plus(target.speed.times(lookAheadTime));
     this.seek(predictedTarget);
@@ -1355,8 +1299,8 @@ class SteeredActor extends Actor {
    * @param {Actor} target actor类型
    */
   evade(target) {
-    let centerPos = this.pos.plus(this.size.divide(2));
-    let targetcenterPos = target.pos.plus(target.size.divide(2));
+    let centerPos = new Vector(this.x, this.y);
+    let targetcenterPos = new Vector(target.x, target.y);
     let lookAheadTime = centerPos.dist(targetcenterPos) / this.maxSpeed;
     let predictedTarget = targetcenterPos.plus(target.speed.times(lookAheadTime));
     this.flee(predictedTarget);
@@ -1381,8 +1325,8 @@ class SteeredActor extends Actor {
     for (let i = 0; i < circles.length; i++) {
       const circle = circles[i];
       const heading = this.speed.clone().normalize();
-      const centerPos = this.pos.plus(this.size.divide(2));
-      const circlescenterPos = circle.pos.plus(circle.size.divide(2));
+      const centerPos = new Vector(this.x, this.y);
+      const circlescenterPos = new Vector(circle.x, circle.y);
       //障碍物和机车间的位移向量
       const difference = circlescenterPos.sub(centerPos);
       const dotProd = difference.dot(heading);
@@ -1418,7 +1362,7 @@ class SteeredActor extends Actor {
    */
   followPath(path, loop = false) {
     let wayPoint = path[this.pathIndex];
-    let centerPos = this.pos.plus(this.size.divide(2));
+    let centerPos = new Vector(this.x, this.y);
     if (!wayPoint) return;
     if (centerPos.dist(wayPoint) < this.pathThreshold) {
       if (this.pathIndex >= path.length - 1) {
@@ -1447,8 +1391,9 @@ class SteeredActor extends Actor {
       const vehicle = vehicles[i];
       if (vehicle != this && this.inSight(vehicle)) {
         averageVelocity.add(vehicle.speed);
-        averagePosition.add(vehicle.pos);
-        if (this.tooClose(vehicle)) this.flee(vehicle.pos);
+        averagePosition.x += vehicle.x;
+        averagePosition.y += vehicle.y;
+        if (this.tooClose(vehicle)) this.flee(vehicle);
         inSightCount++;
       }
     }
@@ -1465,9 +1410,11 @@ class SteeredActor extends Actor {
    * @returns boolen
    */
   inSight(vehicle) {
-    if (this.pos.dist(vehicle.pos) > this.inSightDist) return false;
+    let centerPos = new Vector(this.x, this.y);
+    let targetcenterPos = new Vector(vehicle.x, vehicle.y);
+    if (centerPos.dist(targetcenterPos) > this.inSightDist) return false;
     let heading = this.speed.clone().normalize();
-    let difference = vehicle.pos.sub(this.pos);
+    let difference = targetcenterPos.sub(centerPos);
     let dotProd = difference.dot(heading);
     if (dotProd < 0) return false;
     return true
@@ -1478,6 +1425,8 @@ class SteeredActor extends Actor {
    * @returns boolen
    */
   tooClose(vehicle) {
-    return this.pos.dist(vehicle.pos) < this.tooCloseDist;
+    let centerPos = new Vector(this.x, this.y);
+    let targetcenterPos = new Vector(vehicle.x, vehicle.y);
+    return centerPos.dist(targetcenterPos) < this.tooCloseDist;
   }
 }

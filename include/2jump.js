@@ -13,10 +13,11 @@ window.onload = function () {
         LEVEL = "level";
     var spriteSheet,
         actorChars,
-        mapContainer,
         bullets,
+        step = 30,
         winWidth = 750,
         winHeight = 400,
+        mapContainer = new GridsMap(0, 0, winWidth, winHeight, step, step),
         plans = [
             [
                 "                      v      |         x",
@@ -75,7 +76,7 @@ window.onload = function () {
         }
         init() {
             this.maxLevel = plans.length;
-            mapContainer = new GridsMap(0, (height - winHeight) / 2, winWidth, winHeight, 30, 30, new createjs.Shape())
+            mapContainer.y = (height - winHeight) / 2;
             let spriteData = {
                 images: [queue.getResult("woody_0"), "assets/sprite/woody_1.png", queue.getResult("woody_2")],
                 frames: {
@@ -157,24 +158,27 @@ window.onload = function () {
             bullets = [];
             this.scoreBoard.update(LEVEL, this.level);
             let plan = plans[this.level - 1];
-            mapContainer.createGridMap(plan, actorChars, (ch, xpos, ypos) => {
-                let fieldType = null;
+            mapContainer.createGridMap(plan, actorChars, (ch, node) => {
                 let color = "#555";
+                let shape = new createjs.Shape();
                 if (ch == "x") {
-                    fieldType = "wall";
+                    node.walkable = false;
                     color = "#fff";
                 } else if (ch == "!") {
-                    fieldType = "lava";
+                    node.walkable = false;
+                    node.death = true;
                     color = "rgb(255,100,100)";
                 }
-                mapContainer.map.graphics.beginFill(color).drawRect(xpos, ypos, mapContainer.stepWidth, mapContainer.stepHeight);
-                return fieldType;
+                shape.graphics.beginStroke(color).beginFill(color).drawRect(node.x * step, node.y * step, step, step);
+                mapContainer.addChildToFloor(shape);
             });
         }
         waitComplete() {
-
             stage.addChild(this.scoreBoard, mapContainer);
             mapContainer.scrollPlayerIntoView();
+            // mapContainer.player.init(18,30);
+            // mapContainer.player.setSpriteData(spriteSheet,"stand",0.4)
+            // console.log(mapContainer.player.getBounds(),mapContainer.player._bounds);
         }
 
         runGame() {
@@ -182,26 +186,6 @@ window.onload = function () {
             for (let i = mapContainer.actors.length - 1; i >= 0; i--) {
                 const actor = mapContainer.actors[i];
                 actor.act();
-                //创建子弹
-                if (actor.fire) {
-                    actor.fire = false;
-                    switch (actor.type) {
-                        case "player":
-                            let bullet = this.getActor(bullets, Barrage1);
-                            if (actor.arrow == "right") {
-                                bullet.scaleX = 1;
-                                bullet.speed.angle = 0;
-                            } else {
-                                bullet.scaleX = -1;
-                                bullet.speed.angle = Math.PI;
-                            }
-                            bullet.x = actor.x;
-                            bullet.y = actor.y;
-                            bullet.updatePos();
-                            mapContainer.addChild(bullet);
-                            break;
-                    }
-                }
             }
             //检测子弹
             for (const bullet of bullets) {
@@ -233,32 +217,34 @@ window.onload = function () {
             this.runXSpeed = 1.8;
             this.isrun = false;
             this.runtick = 0;
-            this.pos.add(new Vector(0, -0.5 * 30));
             this.init(0.8 * 30, 1.5 * 30);
+            this.plus(0,-0.5*30);
             this.setSpriteData(spriteSheet, "stand", 0.6);
         }
         startRoll() {
-            this.oldPos = new Vector(this.pos.x, this.pos.y);
+            this.oldPos = new Vector(this.x, this.y);
             this.status = "roll";
             this.speed.x = this.xspeed;
             this.image.gotoAndPlay("roll");
             //重设图片位置
-            this.size.y = this.size.y / 2;
-            this.pos = this.pos.plus(new Vector(0, this.size.y));
+            this.rect.height/=2;
+            this.plus(0,this.rect.height);
             this.image.regY = 30;
         }
         stopRoll() {
-            this.pos = this.pos.plus(new Vector(0, -this.size.y));
-            this.size.y *= 2;
+            this.plus(0,-this.rect.height);
+            this.rect.height*=2;
             this.image.regY = 0;
         }
         moveY() {
             this.speed.y += this.gravity;
-            var newPos = this.pos.plus(new Vector(0, this.speed.y));
-            var obstacle = mapContainer.hitMap(this.size, newPos);
+            var newRect = this.rect.clone();
+            newRect.y += this.speed.y;
+            var obstacle = mapContainer.hitMap(newRect);
             if (obstacle) {
                 //落地地面以后
-                if (obstacle == "lava") {
+                // if (obstacle == "lava") {
+                if (obstacle.death == true) {
                     this.dispatchEvent(GFrame.event.GAME_OVER, true);
                     // return;
                 } else if (this.status == "jump" && this.speed.y > 0) {
@@ -288,15 +274,27 @@ window.onload = function () {
                     //放子弹
                     this.status = "fire";
                     this.image.gotoAndPlay("fire");
-                    // this.fire(this.angle, Barrage1);
-                    this.fire = true;
+                    this.createBullet();
                 } else {
                     this.speed.y = 0;
                 }
             } else {
                 //未碰撞地图状态
-                this.pos = newPos;
+                this.plus(0,this.speed.y);
             }
+        }
+        //创建子弹
+        createBullet() {
+            let bullet = Game.getActor(bullets, Barrage1);
+            if (this.arrow == "right") {
+                bullet.scaleX = 1;
+                bullet.speed.angle = 0;
+            } else {
+                bullet.scaleX = -1;
+                bullet.speed.angle = Math.PI;
+            }
+            bullet.setPos(this.x,this.y);
+            mapContainer.addChild(bullet);
         }
         //玩家移动
         moveX() {
@@ -305,9 +303,9 @@ window.onload = function () {
                 //检测是否停止
                 if (this.status == "roll") {
                     this.stopRoll();
-                    let obstacle = mapContainer.hitMap(this.size, this.pos);
+                    let obstacle = mapContainer.hitMap(this.rect);
                     if (obstacle) {
-                        this.pos = this.oldPos;
+                        this.setPos(this.oldPos.x,this.oldPos.y);
                     }
                 }
                 this.status = "walk"
@@ -348,14 +346,15 @@ window.onload = function () {
             } else {
                 this.speed.x = 0;
             }
-            var newPos = this.pos.plus(new Vector(this.speed.x, 0));
-            var obstacle = mapContainer.hitMap(this.size, newPos);
+            var newRect = this.rect.clone();
+            newRect.x += this.speed.x;
+            var obstacle = mapContainer.hitMap(newRect);
             if (obstacle) {
-                if (obstacle == "lava") {
+                if (obstacle.death == true) {
                     this.dispatchEvent(GFrame.event.GAME_OVER, true);
                 }
             } else {
-                this.pos = newPos;
+                this.plus(this.speed.x,0);
             }
         }
         act() {
@@ -382,22 +381,20 @@ window.onload = function () {
                         this.status = "walk";
                         this.stopRoll();
                     }
-                    this.pos.y -= this.size.y * 0.1;
-                    // this.pos.x -= this.size.x * 0.1;
+                    this.plus(0,-this.rect.height * 0.1);
                     let a = this.act;
                     this.act = function () { };
                     createjs.Tween.get(this).to({
-                        scaleX: this.scaleX * 1.2,
-                        scaleY: this.scaleY * 1.2
+                        scaleX:1.2,
+                        scaleY:1.2
                     }, 800, createjs.Ease.quadOut).call(() => {
-                        this.setSize(1.2, 1.2);
+                        this.rect.copy(this.getTransformedBounds());
                         this.act = a;
                     });
                 } else if (actor.type == "lava") {
                     this.dispatchEvent(GFrame.event.GAME_OVER, true);
                 }
             }
-            this.update();
         }
     }
     class Barrage1 extends Actor {
@@ -422,15 +419,14 @@ window.onload = function () {
             this.setSpriteData(new createjs.SpriteSheet(skilData), "run", 0.5);
         }
         act() {
-            var obstacle = mapContainer.hitMap(this.size, this.pos);
+            var obstacle = mapContainer.hitMap(this.rect);
             if (!obstacle) {
                 let actor = this.hitActors(mapContainer.actors);
                 if (actor && actor.type == "lava") {
                     this.recycle();
                 } else {
                     this.speed.truncate(this.maxSpeed);
-                    this.pos.add(this.speed);
-                    this.update();
+                    this.plus(this.speed.x,this.speed.y);
                     if (mapContainer.outOfWin(this)) {
                         this.recycle()
                     }
@@ -445,28 +441,29 @@ window.onload = function () {
         constructor(xpos, ypos, ch) {
             super(xpos, ypos);
             this.speed.length = 1.6;
+            this.type = "lava";
+            this.color = "rgb(255,100,100)";
+            this.init(30, 30);
             if (ch == "=") {
                 // this.spe;
             } else if (ch == "|") {
                 this.speed.angle = Math.PI / 2;
             } else if (ch == "v") {
                 this.speed.angle = Math.PI / 2;
-                this.repeatPos = new Vector(xpos, ypos);
+                this.repeatPos = new Vector(this.x, this.y);
             }
-            this.type = "lava";
-            this.color = "rgb(255,100,100)";
-            this.init(30, 30);
         }
         act() {
-            var newPos = this.pos.plus(this.speed);
-            if (!mapContainer.hitMap(this.size, newPos)) {
-                this.pos = newPos;
+            var newrect = this.rect.clone();
+            newrect.x += this.speed.x;
+            newrect.y += this.speed.y;
+            if (!mapContainer.hitMap(newrect)) {
+                this.plus(this.speed.x,this.speed.y);
             } else if (this.repeatPos) {
-                this.pos = this.repeatPos;
+                this.setPos(this.repeatPos.x,this.repeatPos.y);
             } else {
                 this.speed = this.speed.times(-1);
             }
-            this.update();
         }
     }
     class Coin extends Actor {
@@ -477,24 +474,22 @@ window.onload = function () {
             this.angle = Math.random() * Math.PI * 2;
             this.type = "coin";
             this.color = "rgb(241,229,89)";
-            this.pos.y += 0.2 * 30;
             this.init(0.6 * 30, 0.6 * 30);
-            this.basePos = this.pos.clone();
+            this.y += 0.2 * 30;
+            this.basePos = new Vector(this.x, this.y);
         }
         act() {
             this.image.rotation++;
             this.angle += this.angleSpeed;
             this.speed.y = Math.sin(this.angle) * this.wobbleDist;
-            this.pos = this.basePos.plus(new Vector(0, this.speed.y));
-            this.update();
+            this.y = this.basePos.y + this.speed.y;
         }
     }
     class Big extends Coin {
         constructor(xpos, ypos) {
             super(xpos, ypos);
             this.type = "big";
-            this.setSize(0.6, 0.6);
+            this.scaleX=this.scaleY=0.6;
         }
-
     }
 })();

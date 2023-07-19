@@ -8,7 +8,8 @@
         }
         waitComplete() {
             shape = new createjs.Shape();
-            vehicle = new SteeredActor()
+            vehicle = new SteeredActor();
+            vehicle.init(15);
             stage.addChild(shape, vehicle);
 
             path = [];

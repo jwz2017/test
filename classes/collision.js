@@ -1,6 +1,6 @@
 /*
   The MIT License
-  像素检测和旋转矩形碰撞检测
+  像素级碰撞检测和旋转矩形碰撞检测
   Copyright (c) 2012 Olaf Horstmann, indiegamr.com
 
   Permission is hereby granted, free of charge, to any person obtaining a copy

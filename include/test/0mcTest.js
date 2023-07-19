@@ -16,12 +16,12 @@
              /**
              * 颜色parseColor
              */
-              console.log(utils.parseColor(0xffffff,true));//转换为数字
-              console.log(utils.parseColor("#ffffff",true));//转换为数字
+              console.log(mc.parseColor(0xffffff,true));//转换为数字
+              console.log(mc.parseColor("#ffffff",true));//转换为数字
   
-              console.log(utils.parseColor(0xffffff));//转换为string
+              console.log(mc.parseColor(0xffffff));//转换为string
               //B:randomColor随机颜色
-              console.log(utils.randomColor());
+              console.log(mc.randomColor());
   
               /**
                * drawPoints绘制图形
@@ -36,9 +36,9 @@
                   [-25, 25],
                   [0, -25]
               ];
-              utils.drawPoints(this.shape.graphics, mat, points);
+              mc.drawPoints(this.shape.graphics, mat, points);
               //D:Array随机排序
-              utils.randomArray(points);
+              mc.randomArray(points);
             stage.addChild(this.shape);
 
             // ----------------mc.style.darkStyle();//黑色主题------------------------

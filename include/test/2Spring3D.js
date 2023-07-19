@@ -12,7 +12,7 @@
             vpY=height/2;
             ball=new CirActor();
             ball.init(50,50);
-            ball.pos.z=0;
+            ball.pos=new Point3D();
             ball.speed.z=0;
             stage.addChild(ball);
             tx=Math.random()*500-250;

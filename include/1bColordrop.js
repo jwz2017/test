@@ -53,7 +53,7 @@ window.onload = function () {
         waitComplete() {
             stage.addChild(this.scoreBoard);
             //Array随机排序
-            utils.randomArray(shapes);
+            GFrame.randomArray(shapes);
 
             for (let i = 0; i < shapes.length; i++) {
                 const shape = shapes[i];

@@ -8,6 +8,7 @@
         }
         waitComplete() {
             vehicle=new SteeredActor();
+            vehicle.init(15,15);
             stage.addChild(vehicle);
         }
         runGame() {

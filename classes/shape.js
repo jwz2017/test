@@ -188,17 +188,20 @@ class Segment extends Actor {
     }
     getPin() {
         let ang = this.rotation * Math.PI / 180,
-            dist = this.size.x - this.size.y,
+            dist = this.rect.width - this.rect.height,
             xpos = this.x + Math.cos(ang) * dist,
             ypos = this.y + Math.sin(ang) * dist;
         return new Vector(xpos, ypos);
     }
 }
 //树
-class Tree extends Actor {
+class Tree extends createjs.Container {
     constructor(xpos, ypos) {
         super(xpos, ypos);
+        this.pos=new Vector();
         this.pos.z = 0;
+        this.pos.x=xpos;
+        this.pos.y=ypos;
         this.drawShape();
     }
     drawShape() {
@@ -221,140 +224,4 @@ class Tree extends Actor {
         this.hit = Math.sqrt(this.rect.width * this.rect.width + height * height);
     }
 
-}
-//ship飞机
-class Ship extends Actor {
-    constructor(xpos, ypos) {
-        super(xpos, ypos);
-        this.edgeBehavior=Actor.WRAP;
-        this.MAX_VELOCITY = 3;
-        this.TOGGLE = 60;
-        this.MAX_THRUST = 2;
-        this.timeout = 0;
-        this.thrust = 0;
-        this.shipFlame = new createjs.Shape();
-        this.addChild(this.shipFlame);
-        this.init(15);
-    }
-    drawShape(width) {
-        var g = this.image.graphics;
-        g.clear();
-        g.beginStroke("#ffffff");
-        g.moveTo(0, width); //nose
-        g.lineTo(width / 2, -width / 1.6); //rfin
-        g.lineTo(0, -width / 5); //notch
-        g.lineTo(-width / 2, -width / 1.6); //lfin
-        g.closePath(); // nose
-        //draw ship flame
-        this.shipFlame.y = -width / 1.6;
-        g = this.shipFlame.graphics;
-        g.clear();
-        g.beginStroke("#FFFFFF");
-        g.moveTo(width / 5, 0); //ship
-        g.lineTo(width / 2.5, -width / 3.3); //rpoint
-        g.lineTo(width / 5, -width / 5); //rnotch
-        g.lineTo(0, -width / 2); //tip
-        g.lineTo(-width / 5, -width / 5); //lnotch
-        g.lineTo(-width / 2.5, -width / 3.3); //lpoint
-        g.lineTo(-width / 5, -0); //ship
-        this.image.setBounds(-width / 2, -width, width, width*2);
-        this.hit=width-2;
-    }
-    act() {
-        super.act();
-        if (this.thrust > 0) {
-            this.timeout++;
-            this.shipFlame.alpha = 1;
-            if (this.timeout > this.TOGGLE) {
-                this.timeout = 0;
-                if (this.shipFlame.scaleX == 1) {
-                    this.shipFlame.scale = 0.6;
-                } else {
-                    this.shipFlame.scale = 1;
-                }
-            }
-            this.thrust -= 0.5;
-        } else {
-            this.shipFlame.alpha = 0;
-            this.thrust = 0;
-        }
-    }
-    accelerate() {
-        this.thrust += 0.2;
-        if (this.thrust >= this.MAX_THRUST) {
-            this.thrust = this.MAX_THRUST;
-        }
-        this.speed.x += Math.sin(this.rotation * (Math.PI / -180)) * this.thrust ;
-        this.speed.y += Math.cos(this.rotation * (Math.PI / -180)) * this.thrust ;
-
-        this.speed.x = Math.min(this.MAX_VELOCITY, Math.max(-this.MAX_VELOCITY, this.speed.x));
-        this.speed.y = Math.min(this.MAX_VELOCITY, Math.max(-this.MAX_VELOCITY, this.speed.y));
-    }
-}
-//石头
-class SpaceRock extends Actor {
-    static LRG_ROCK = 60;
-    static MED_ROCK = 40;
-    static SML_ROCK = 20;
-    constructor(xpos, ypos, size = SpaceRock.LRG_ROCK ) {
-        super(xpos, ypos);
-        this.edgeBehavior=Actor.WRAP;
-        this.init(size, size);
-        this.activate();
-    }
-    drawShape(width, height) {
-        this.hit = width / 2;
-        let angle = 0,
-            size = width / 2,
-            radius = width / 2;
-        this.image.graphics.clear();
-        this.image.graphics.beginStroke("#ffffff");
-        this.image.graphics.moveTo(0, radius);
-        //draw spacerock
-        while (angle < (Math.PI * 2 - .5)) {
-            angle += .25 + (Math.random() * 100) / 500;
-            radius = size + (size / 2 * Math.random());
-            this.image.graphics.lineTo(Math.sin(angle) * radius, Math.cos(angle) * radius);
-            this.hit = (this.hit + radius) / 2;
-        }
-        this.image.graphics.closePath();
-        this.setBounds(-width / 2, -height / 2, width, height);
-    }
-    activate() {
-        let angle = Math.random() * (Math.PI * 2);
-        this.speed.length =Math.sin(angle)*(2+20/this.hit);
-        this.speed.angle = angle;
-        this.spin = (Math.random() + 0.2) * this.speed.x;
-        this.score = Math.floor((5 + this.size.x / 10) * 100);
-        this.active = true;
-    }
-    floatOnScreen(width, height) {
-        if (Math.random() * (width + height) > width) {
-            if (this.speed.x > 0) {
-                this.pos.x = -this.size.x;
-            } else {
-                this.pos.x = this.size.x + width;
-            }
-            if (this.speed.y > 0) {
-                this.pos.y = Math.random() * height * 0.5;
-            } else {
-                this.pos.y = Math.random() * height * 0.5 + 0.5 * height;
-            }
-        } else {
-            if (this.speed.y > 0) {
-                this.pos.y = -this.size.y;
-            } else {
-                this.pos.y = this.size.y + height;
-            }
-            if (this.speed.x > 0) {
-                this.pos.x = Math.random() * width * 0.5;
-            } else {
-                this.pos.x = Math.random() * width * 0.5 + 0.5 * width;
-            }
-        }
-    }
-    act() {
-        super.act();
-        this.rotation+=this.spin;
-    }
 }

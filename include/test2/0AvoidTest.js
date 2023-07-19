@@ -9,6 +9,7 @@
         waitComplete() {
             circles=[];
             vehicle=new SteeredActor();
+            vehicle.init(15,15);
             // vehicle.maxSpeed=6;
             vehicle.edgeBehavior=Actor.BOUNCE;
             stage.addChild(vehicle);

@@ -18,7 +18,7 @@
             vpY=height/2;
             for (let i = 0; i < numBalls; i++) {
                 const ball = new CirActor();
-                ball.color=utils.randomColor();
+                ball.color=mc.randomColor();
                 ball.init(3,3);
                 ball.speed.x=Math.random()*6-3;
                 ball.speed.y=Math.random()*6-6;

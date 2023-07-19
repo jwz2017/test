@@ -58,9 +58,7 @@ window.onload = function () {
         }
         waitComplete() {
             this.player = new Ship();
-            this.player.pos.x = width - this.player.size.x >> 1;
-            this.player.pos.y = height - this.player.size.y;
-            this.player.update();
+            this.player.setPos(width/2,height-this.player.rect.height/2);
             stage.addChild(this.player, this.scoreBoard);
         }
         runGame() {
@@ -69,11 +67,9 @@ window.onload = function () {
             if (nextBullet <= 0) {
                 if (keys.attack) {
                     nextBullet = BULLET_TIME;
-                    let bullet = this.getActor(bullets, Bullet);
+                    let bullet = Game.getActor(bullets, Bullet);
                     bullet.speed.angle = -Math.PI / 2;
-                    bullet.x = this.player.x;
-                    bullet.y = this.player.y-this.player.size.y/2;
-                    bullet.updatePos();
+                    bullet.setPos(this.player.x,this.player.y)
                     stage.addChild(bullet);
                     console.log(bullets.length);
 
@@ -91,11 +87,9 @@ window.onload = function () {
             if (nextEnemy <= 0) {
                 timeToEnemy -= DIFFICULTY;
                 timeToEnemy = Math.max(timeToEnemy, 10);
-                let enemy = this.getActor(enemys, Enemy);
+                let enemy = Game.getActor(enemys, Enemy);
                 stage.addChild(enemy);
                 enemy.activate();
-                // enemy.pos=new Vector(200,200);
-                enemy.update();
                 enemy.floatOnScreen(width, height);
                 nextEnemy = timeToEnemy + timeToEnemy * Math.random();
             } else {
@@ -138,10 +132,11 @@ window.onload = function () {
             } else if (keys.down) {
                 this.speed.y = this.vx;
             }
-            let nextPos = this.pos.plus(this.speed);
-            if (!this.hitBounds(nextPos)) {
-                this.pos = nextPos;
-                this.update();
+            let rect=this.rect.clone();
+            rect.x+=this.speed.x;
+            rect.y+=this.speed.y;
+            if (!this.hitBounds(rect)) {
+                this.plus(this.speed.x,this.speed.y);
             }
         }
     }
@@ -157,21 +152,21 @@ window.onload = function () {
         }
         floatOnScreen(width, height) {
             //上下进入
-            this.pos.y = -this.size.y;
+            this.y=-this.getBounds().height/2;
             if (this.speed.x > 0) {
-                this.pos.x = Math.random() * width * 0.5;
+                this.x = Math.random() * width * 0.5;
             } else {
-                this.pos.x = Math.random() * width * 0.5 + 0.5 * width;
+               this.x = Math.random() * width * 0.5 + 0.5 * width;
             }
+            this.setPos(this.x,this.y);
         }
     }
     class Bullet extends Actor {
         constructor(xpos, ypos) {
             super(xpos, ypos);
             this.speed.length = 5;
-
             this.setSpriteData(queue.getResult("all"), "bullet");
-            this.setReg(this.size.x / 2, this.size.y / 2);
+            this.image.paused=true;
         }
     }
 })();

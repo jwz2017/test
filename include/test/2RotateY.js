@@ -16,6 +16,7 @@
                 const ball = new CirActor();
                 ball.init(30, 30);
                 ball.speed.z = 0;
+                ball.pos=new Point3D();
                 ball.pos.x = Math.random() * 200 - 100;
                 ball.pos.y = Math.random() * 200 - 100;
                 ball.pos.z = Math.random() * 200 - 100;

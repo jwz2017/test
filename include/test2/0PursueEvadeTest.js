@@ -8,9 +8,11 @@
         }
         waitComplete() {
             pursuer=new SteeredActor(200,200);
+            pursuer.init(15);
             pursuer.edgeBehavior=Actor.BOUNCE;
 
             evader=new SteeredActor(400,300);
+            evader.init(15);
             evader.edgeBehavior=Actor.BOUNCE;
             stage.addChild(pursuer,evader);
         }

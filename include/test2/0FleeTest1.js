@@ -7,15 +7,17 @@
         }
         waitComplete() {
             seeker=new SteeredActor(200,200);
+            seeker.init(15);
             seeker.edgeBehavior=Actor.BOUNCE;
 
             fleer=new SteeredActor(400,300);
+            fleer.init(15)
             fleer.edgeBehavior=Actor.BOUNCE;
             stage.addChild(seeker,fleer);    
         }
         runGame() {
-            seeker.seek(fleer.pos);
-            fleer.flee(seeker.pos);
+            seeker.seek(fleer);
+            fleer.flee(seeker);
             seeker.act();
             fleer.act();
         }
