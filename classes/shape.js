@@ -1,28 +1,28 @@
+import { stage } from "./gframe.js";
+import { Actor, Vector } from "./actor.js";
 //画个笑脸
-var DrawShape = {
-    drawSmile: function (g, x, y, bounds) {
-        //Head
-        g.setStrokeStyle(Math.round(bounds / 10), 'round', 'round');
-        g.beginStroke("#000");
-        g.beginFill("#FC0");
-        g.drawCircle(x, y, bounds); //55,53
-        //Mouth
-        g.beginFill(); // no fill
-        g.arc(x, y, bounds / 1.5, 0, Math.PI);
-        //Right eye
-        g.beginStroke(); // no stroke
-        g.beginFill("#000");
-        g.drawCircle(x - bounds / 3, y - bounds / 3, bounds / 7);
-        //Left eye
-        g.drawCircle(x + bounds / 3, y - bounds / 3, bounds / 7);
-    },
-
-}
+function drawSmile(g, x, y, bounds) {
+    //Head
+    g.setStrokeStyle(Math.round(bounds / 10), 'round', 'round');
+    g.beginStroke("#000");
+    g.beginFill("#FC0");
+    g.drawCircle(x, y, bounds); //55,53
+    //Mouth
+    g.beginFill(); // no fill
+    g.arc(x, y, bounds / 1.5, 0, Math.PI);
+    //Right eye
+    g.beginStroke(); // no stroke
+    g.beginFill("#000");
+    g.drawCircle(x - bounds / 3, y - bounds / 3, bounds / 7);
+    //Left eye
+    g.drawCircle(x + bounds / 3, y - bounds / 3, bounds / 7);
+};
 //柱形图标
 class BarGraph extends createjs.Container {
-    constructor(barData, height) {
+    constructor(barData,width, height=400) {
         super();
-        this.height = height || 400;
+        this.width=width
+        this.height = height;
         this.barValues = [];
         this.barName = [];
         barData.forEach(element => {
@@ -37,7 +37,7 @@ class BarGraph extends createjs.Container {
     init() {
         var numBars = this.barValues.length;
         var max = Math.max(...this.barValues);
-        var barWidth = (width - 150 - (numBars - 1) * this.barPadding) / numBars,
+        var barWidth = (this.width - 150 - (numBars - 1) * this.barPadding) / numBars,
             barHeight = this.height - 150;
 
         var bg = new createjs.Shape();
@@ -46,11 +46,11 @@ class BarGraph extends createjs.Container {
         // note how the drawing instructions can be chained together.
         bg.graphics.beginStroke("#444850")
             .moveTo(40, this.height - 69.5)
-            .lineTo(width - 70, this.height - 69.5)
+            .lineTo(this.width - 70, this.height - 69.5)
             .endStroke()
             .beginFill("#22252B")
-            .moveTo(width - 70, this.height - 70)
-            .lineTo(width - 60, this.height - 80)
+            .moveTo(this.width - 70, this.height - 70)
+            .lineTo(this.width - 60, this.height - 80)
             .lineTo(50, this.height - 80)
             .lineTo(40, this.height - 70)
             .closePath();
@@ -58,12 +58,12 @@ class BarGraph extends createjs.Container {
         for (var i = 0; i < 9; i++) {
             bg.graphics.beginStroke(i % 2 ? "#333840" : "#444850")
                 .moveTo(50, (this.height - 80 - i / 8 * barHeight | 0) + 0.5)
-                .lineTo(width - 60, (this.height - 80 - i / 8 * barHeight | 0) + 0.5);
+                .lineTo(this.width - 60, (this.height - 80 - i / 8 * barHeight | 0) + 0.5);
         }
         // add the graph title:
         var title = new createjs.Text("Quarterly Whatsits", "bold 24px Arial", "#FFF");
         title.textAlign = "center";
-        title.x = width / 2;
+        title.x = this.width / 2;
         title.y = 20;
         this.addChild(title);
         // draw the bars:
@@ -78,13 +78,13 @@ class BarGraph extends createjs.Container {
             var front = new createjs.Shape();
             front.graphics.beginLinearGradientFill(
                 [createjs.Graphics.getHSL(hue, 100, 60, 0.9),
-                    createjs.Graphics.getHSL(hue, 100, 20, 0.75)
+                createjs.Graphics.getHSL(hue, 100, 20, 0.75)
                 ],
                 [0, 1],
                 0,
                 -100,
                 barWidth, 0).drawRect(0, -100, barWidth + 1,
-                100);
+                    100);
             // draw the top of the bar, this will be positioned vertically in drawBar:
             var top = new createjs.Shape();
             top.graphics.beginFill(createjs.Graphics.getHSL(hue, 100, 70, 0.9))
@@ -198,10 +198,10 @@ class Segment extends Actor {
 class Tree extends createjs.Container {
     constructor(xpos, ypos) {
         super(xpos, ypos);
-        this.pos=new Vector();
+        this.pos = new Vector();
         this.pos.z = 0;
-        this.pos.x=xpos;
-        this.pos.y=ypos;
+        this.pos.x = xpos;
+        this.pos.y = ypos;
         this.drawShape();
     }
     drawShape() {
@@ -213,15 +213,15 @@ class Tree extends createjs.Container {
             w1 = Math.random() * 80 - 40,
             w2 = Math.random() * 60 - 30;
         g.clear().beginStroke(this.color).
-        moveTo(0, 0).
-        lineTo(0, -h).
-        moveTo(0, -30 - Math.random() * 30).
-        lineTo(w1, -100 - Math.random() * 40).
-        moveTo(0, -60 - Math.random() * 40).
-        lineTo(w2, -110 - Math.random() * 20);
+            moveTo(0, 0).
+            lineTo(0, -h).
+            moveTo(0, -30 - Math.random() * 30).
+            lineTo(w1, -100 - Math.random() * 40).
+            moveTo(0, -60 - Math.random() * 40).
+            lineTo(w2, -110 - Math.random() * 20);
         this.image.setBounds(Math.min(w1, w2), -h, Math.abs(w1) + Math.abs(w2), h);
         this.rect = this.getBounds();
-        this.hit = Math.sqrt(this.rect.width * this.rect.width + height * height);
+        this.hit = Math.sqrt(this.rect.width * this.rect.width + this.rect.height * this.rect.height);
     }
-
 }
+export{drawSmile,BarGraph,Segment,Tree}

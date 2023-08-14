@@ -3,80 +3,16 @@
 
 <head>
   <meta charset="utf-8">
-  <meta name="viewport"
-    content="width=device-width,initial-scale=1, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width,initial-scale=1, user-scalable=no" />
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <link rel="stylesheet" href="css/normlize.css">
   <link rel="stylesheet" href="css/index.css">
   <title>h5Test</title>
   <script src="classes/createjs.min.js"></script>
-  <script src="classes/mc.js"></script>
-  <script src="classes/GridCollision.js"></script>
-  <script src="classes/gframe.js"></script>
   <script src="classes/ScaleBitmap.js"></script>
   <script src="assets/lib.js"></script>
-  <script src="assets/loadsprite/ma.js"></script>
-  <script src="classes/shape.js"></script>
-  <script src="classes/effect.js"></script>
-  <script src="classes/collision.js"></script>
-  <script src="classes/3DClass.js"></script>
-  <script src="classes/GridsMap.js"></script>
-
-
   <!--04-->
-
-  <script src="include/index.js"></script>
-  <script src="include/test/0LoadBitmap.js"></script>
-  <script src="include/test/0Graphics.js"></script>
-  <script src="include/test/0mcTest.js"></script>
-  <script src="include/test/0Actortext.js"></script>
-  <script src="include/test/0chain.js"></script>
-  <script src="include/test/0billiard.js"></script>
-  <script src="include/test/0billiard2.js"></script>
-  <script src="include/test/0particle.js"></script>
-  <script src="include/test/0nodeGarden.js"></script>
-  <script src="include/test/0rectRotate.js"></script>
-  <script src="include/test/1segment.js"></script>
-  <script src="include/test/1segmentWalk.js"></script>
-  <script src="include/test/1segmentDrag.js"></script>
-  <script src="include/test/1segmentReach.js"></script>
-  <script src="include/test/1segmentCosines.js"></script>
-  <script src="include/test/2perspective1.js"></script>
-  <script src="include/test/2Velocity3D.js"></script>
-  <script src="include/test/2MultiBounce3D.js"></script>
-  <script src="include/test/2FireWork.js"></script>
-  <script src="include/test/2Trees.js"></script>
-  <script src="include/test/2Easing3d.js"></script>
-  <script src="include/test/2Spring3D.js"></script>
-  <script src="include/test/2RotateY.js"></script>
-  <script src="include/test/2Collision3D.js"></script>
-  <script src="include/test/3Lines3D.js"></script>
-  <script src="include/test/3Square3D.js"></script>
-  <script src="include/test/3Triangles.js"></script>
-  <script src="include/test/3Cube.js"></script>
-  <script src="include/test/4brownian.js"></script>
-  <script src="include/test/4random.js"></script>
-  <script src="include/test/4random2.js"></script>
-  <script src="include/test2/0SeekTest.js"></script>
-  <script src="include/test2/0FleeTest.js"></script>
-  <script src="include/test2/0FleeTest1.js"></script>
-  <script src="include/test2/0FleeTest2.js"></script>
-  <script src="include/test2/0ArriveTest.js"></script>
-  <script src="include/test2/0PursueTest.js"></script>
-  <script src="include/test2/0PursueEvadeTest.js"></script>
-  <script src="include/test2/0WanderTest.js"></script>
-  <script src="include/test2/0AvoidTest.js"></script>
-  <script src="include/test2/0PathTest.js"></script>
-  <script src="include/test2/0FlockTest.js"></script>
-  <script src="include/test2/1isoTransformTest.js"></script>
-  <script src="include/test2/1TileTest.js"></script>
-  <script src="include/test2/1MotionTest.js"></script>
-  <script src="include/test2/1MotionTest2.js"></script>
-  <script src="include/test2/1Collision.js"></script>
-  <script src="include/test2/1graphicsTileTest.js"></script>
-  <script src="include/test2/1maptest.js"></script>
-  <script src="include/test2/2aStar.js"></script>
-  <script src="include/test2/2astarMove.js"></script>
+  <script src="include/index.js" type="module"></script>
 </head>
 
 <body>
@@ -347,9 +283,18 @@
                 <a href="spaceHero.html"><img src="assets/main/spacehero.jpg" alt="太空英雄"></a>
                 <p>像素级碰撞检测</p>
               </li>
+              <li>
+                <hr>
+                <h5>功能测试</h5>
+                <a href="shoot.html">射击游戏</a>
+                <a href="colordrop1.html">魔法方块</a>
+              </li>
             </ul>
             <ul id="pro_con2" class="sk_product" style="display: none;">
+              <hr>
+              <li>
 
+              </li>
             </ul>
           </div>
         </section>
@@ -373,9 +318,9 @@
       </div>
     </main>
     <!-- 弹窗界面-->
-    <div id="container">
+    <div id="containerDiv">
       <!-- 游戏界面 -->
-      <div id="game">
+      <div id="gameDiv">
         <!-- 随舞台缩放 dom-->
         <input type="text" id="inputText" placeholder="请输入姓名">
         <p id="testTxt">CreateJS是基于HTML5开发的一套模块化的库和工具。
@@ -386,7 +331,7 @@
       </div>
       <!-- 不随舞台缩放 dom -->
       <!-- 关闭按钮 -->
-      <a href="#" id="close"></a>
+      <a href="#" id="closeGame"></a>
     </div>
   </div>
 </body>

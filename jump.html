@@ -9,20 +9,16 @@
     <link rel="stylesheet" href="css/game.css">
     <title>jump</title>
     <script src="classes/createjs.min.js"></script>
-    <script src="classes/mc.js"></script>
-    <script src="classes/gframe.js"></script>
-    <script src="classes/GridsMap.js"></script>
-    <!-- 修改 -->
-    <script src="include/2jump.js"></script>
+    <script src="include/2jump.js" type="module"></script>
 </head>
 
 <body>
-    <div id="container">
-        <div id="game">
+    <div id="containerDiv">
+        <div id="gameDiv">
             <canvas id="canvas" width="750" height="1334">
             </canvas>
-            <!-- 随舞台缩放 y=y-stage.canvas.height -->
-            <button id="start" style="position: absolute;display: block;">开始游戏</button>
+             <!-- 随舞台缩放 y=y-stage.canvas.height -->
+            <!-- <button id="start" style="position: absolute;top: 0;left: 0;">开始游戏</button> -->
 
         </div>
         <!-- 不随舞台缩放 dom  -->

@@ -9,19 +9,16 @@
     <link rel="stylesheet" href="css/game.css">
     <title>space hero</title>
     <script src="classes/createjs.min.js"></script>
-    <script src="classes/mc.js"></script>
-    <script src="classes/collision.js"></script>
-    <script src="classes/gframe.js"></script>
     <!-- 修改 -->
-    <script src="include/2spaceHero.js"></script>
+    <script src="include/2spaceHero.js" type="module"></script>
 </head>
 
 <body>
-    <div id="container">
+    <div id="containerDiv">
         <!-- 游戏界面 -->
-        <div id="game">
+        <div id="gameDiv" style="background-image:url(assets/spacehero/bg.png);">
             <!-- 随舞台缩放 dom-->
-            <canvas id="canvas" width="600" height="700" style="background-image:url(assets/spacehero/bg.png) ;">
+            <canvas id="canvas" width="600" height="700" ;">
             </canvas>
         </div>
         <!-- 不随舞台缩放 dom -->

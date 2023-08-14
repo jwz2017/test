@@ -1,9 +1,10 @@
+import { gframe } from "./gframe.js";
 /**
- * *******网格游戏类 需要mc组件**************************************************
+ * *******网格游戏类 **************************************************
  */
-class GridsMap extends ScrollContainer {
-  constructor(x, y, width, height, stepWidth, stepHeight, numCols = 0, numRows = 0) {
-    super(null, x, y, width, height, width, height, false, false);
+class GridsMapGame extends gframe.Game {
+  constructor(titleText,width,height, stepWidth, stepHeight, numCols = 0, numRows = 0) {
+    super(titleText, width, height);
     this.stepWidth = stepWidth;
     this.stepHeight = stepHeight;
     this.width = width;
@@ -12,13 +13,17 @@ class GridsMap extends ScrollContainer {
     this._world = new createjs.Container();
     this.addChild(this._floor);
     this.addChild(this._world);
+    this._numCols = numCols;
+    this._numRows = numRows;
+    this._nodes = [];
+    this._mapleft = 0;
+    this._maptop = 0;
+    this._mapright = this.width;
+    this._mapbottom = this.height;
 
     //a star
     this._startNode = null;
     this._endNode = null;
-    this._nodes = [];
-    this._numCols = numCols;
-    this._numRows = numRows;
     if (this._numCols) {
       for (let i = 0; i < this._numCols; i++) {
         this._nodes[i] = [];
@@ -29,12 +34,9 @@ class GridsMap extends ScrollContainer {
     }
   }
   createGridMap(plan, actorChars, drawGrid, isIso = false) {
-    if (!this._floor.parent) {
-      this.addChild(this._floor);
-      this.addChild(this._world);
-    }
+    this._floor.removeAllChildren();
+    this._world.removeAllChildren();
     this._nodes = [];
-    this.actors = [];
     this._numCols = plan[0].length;
     this._numRows = plan.length;
     for (let y = 0; y < this._numRows; y++) {
@@ -46,7 +48,6 @@ class GridsMap extends ScrollContainer {
         this._nodes[y][x] = new Node(x, y);
         if (Act) {
           let a = new Act(x * this.stepWidth, y * this.stepHeight, ch);
-          this.actors.push(a);
           this.addChildToWorld(a);
           if (a.type === "player") {
             this.player = a;
@@ -94,18 +95,18 @@ class GridsMap extends ScrollContainer {
     let marginw = this.width / 3;
     let marginh = this.height / 3;
     //this viewpot
-    this.mapleft = -this.scrollX,
-      this.mapright = this.mapleft + this.width,
-      this.maptop = -this.scrollY,
-      this.mapbottom = this.maptop + this.height;
-    if (this.player.x < this.mapleft + marginw) {
+    this._mapleft = -this.scrollX;
+    this._mapright = this._mapleft + this.width;
+    this._maptop = -this.scrollY;
+    this._mapbottom = this._maptop + this.height;
+    if (this.player.x < this._mapleft + marginw) {
       this.scrollX = -this.player.x + marginw;
-    } else if (this.player.x > this.mapright - marginw) {
+    } else if (this.player.x > this._mapright - marginw) {
       this.scrollX = -this.player.x - marginw + this.width;
     }
-    if (this.player.y < this.maptop + marginh) {
+    if (this.player.y < this._maptop + marginh) {
       this.scrollY = Math.floor(-this.player.y + marginh);
-    } else if (this.player.y > this.mapbottom - marginh) {
+    } else if (this.player.y > this._mapbottom - marginh) {
       this.scrollY = Math.floor(-this.player.y - marginh + this.height);
     }
   }
@@ -117,7 +118,37 @@ class GridsMap extends ScrollContainer {
    */
   outOfWin(actor) {
     let rect = actor.rect;
-    return rect.x + rect.width < this.mapleft || rect.x > this.mapright || rect.y + rect.height < this.maptop || rect.y > this.mapbottom;
+    return rect.x + rect.width < this._mapleft || rect.x > this._mapright || rect.y + rect.height < this._maptop || rect.y > this._mapbottom;
+  }
+  hasTypeOnWorld(actorType) {
+    return this._world.children.some(function (actor) {
+      return actor.type == actorType;
+    })
+  }
+  hasTypeOnFloor(actorType) {
+    return this._floor.children.some(function (actor) {
+      return actor.type == actorType;
+    })
+  }
+  moveActors() {
+    let actor = this._world.getChildAt(this._world.numChildren - 1)
+    while (actor) {
+      actor.act();
+      let index = this._world.getChildIndex(actor);
+      actor = this._world.getChildAt(index - 1);
+    }
+  }
+  hitActor(actor, rect = actor.rect) {
+    let l = this._world.numChildren;
+    for (var i = 0; i < l; i++) {
+      var other = this._world.getChildAt(i);
+      if (other == actor) {
+        continue;
+      }
+      if (rect.intersects(other.rect)) {
+        return other;
+      }
+    }
   }
   //检测地图与元素碰撞
   hitMap(rect1) {
@@ -148,14 +179,6 @@ class GridsMap extends ScrollContainer {
         }
       }
     }
-  }
-  /**
-   * 关卡结束后清理
-   */
-  clear() {
-    this.removeAllChildren();
-    this._floor.removeAllChildren();
-    this._world.removeAllChildren();
   }
   //a star*************8
   getNode(x, y) {
@@ -310,3 +333,4 @@ class AStar {
     return this._path;
   }
 }
+export { GridsMapGame, AStar };

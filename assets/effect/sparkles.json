@@ -1,0 +1,11 @@
+{
+    "images": [
+        "./assets/effect/spritesheet_sparkle.png"
+    ],
+    "frames": {
+        "width": 21,
+        "height": 23,
+        "regX": 10,
+        "regY": 11
+    }
+}

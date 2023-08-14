@@ -1,7 +1,9 @@
+import { mc } from "./mc.js";
+
 /**
  * 3d相关以及等角游戏类
  */
-class Point3D {
+export class Point3D {
     constructor(x = 0, y = 0, z = 0) {
         this.fl = 250;
         this._vpX = 0;
@@ -56,7 +58,7 @@ class Point3D {
     }
 
 }
-class Triangle {
+export class Triangle {
     constructor(a, b, c, color) {
         this._pointA = a;
         this._pointB = b;
@@ -84,7 +86,7 @@ class Triangle {
         return cax * bcy > cay * bcx;
     }
     getAdjustedColor() {
-        let color = GFrame.parseColor(this._color, true);
+        let color = mc.parseColor(this._color, true);
         let red = color >> 16;
         let green = color >> 8 & 0xff;
         let blue = color & 0xff;
@@ -92,7 +94,7 @@ class Triangle {
         red *= lightFactor;
         green *= lightFactor;
         blue *= lightFactor;
-        return GFrame.parseColor(red << 16 | green << 8 | blue);
+        return mc.parseColor(red << 16 | green << 8 | blue);
     }
     _getLightFactor() {
         let ab = new Object();
@@ -120,7 +122,7 @@ class Triangle {
     }
 
 }
-class Light {
+export class Light {
     constructor(x = -100, y = -100, z = -100, brightness = 1) {
         this.x = x;
         this.y = y;
@@ -138,7 +140,7 @@ class Light {
 }
 
 //**********************************等角世界游戏************************************* */
-class IsoUtils {
+export class IsoUtils {
     //1.2247的精确计算版本
     static Y_CORRECT = Math.cos(-Math.PI / 6) * Math.SQRT2;
     /**
@@ -165,7 +167,7 @@ class IsoUtils {
     }
 }
 
-class IsoObject extends createjs.Container {
+export class IsoObject extends createjs.Container {
     constructor(size) {
         super();
         this._size = size;
@@ -235,7 +237,7 @@ class IsoObject extends createjs.Container {
         return new createjs.Rectangle(this.xpos - this.size / 2, this.zpos - this.size / 2, this.size, this.size);
     }
 }
-class DrawnIsoTile extends IsoObject {
+export class DrawnIsoTile extends IsoObject {
     constructor(size, color, height = 0) {
         super(size);
         this.shape = new createjs.Shape();
@@ -272,19 +274,19 @@ class DrawnIsoTile extends IsoObject {
         return this._color;
     }
 }
-class DrawnIsoBox extends DrawnIsoTile {
+export class DrawnIsoBox extends DrawnIsoTile {
     constructor(size, color, height) {
         super(size, color, height);
 
     }
     drawShape() {
         this.shape.graphics.clear();
-        let color = GFrame.parseColor(this.color, true);
+        let color = mc.parseColor(this.color, true);
         let red = color >> 16;
         let green = color >> 8 & 0xff;
         let blue = color & 0xff;
-        let leftShadow = GFrame.parseColor((red * .5) << 16 | (green * .5) << 8 | (blue * .5));
-        let rightShadow = GFrame.parseColor((red * .75) << 16 | (green * .75) << 8 | (blue * .75));
+        let leftShadow = mc.parseColor((red * .5) << 16 | (green * .5) << 8 | (blue * .5));
+        let rightShadow = mc.parseColor((red * .75) << 16 | (green * .75) << 8 | (blue * .75));
         let h = this._height * IsoUtils.Y_CORRECT;
         //draw top
         this.shape.graphics.beginFill(this._color).
@@ -313,7 +315,7 @@ class DrawnIsoBox extends DrawnIsoTile {
     }
 }
 //使用外部图形类
-class GraphicTile extends IsoObject {
+export class GraphicTile extends IsoObject {
     constructor(size, gfx, xoffset, yoffset) {
         super(size);
         // let gfx = new ClassRef();
@@ -326,7 +328,7 @@ class GraphicTile extends IsoObject {
 /**
  * 等角世界类
  */
-class IsoWorld extends createjs.Container {
+export class IsoWorld extends createjs.Container {
     constructor() {
         super();
         this._floor = new createjs.Container();

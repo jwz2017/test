@@ -41,8 +41,8 @@
                 "6": [17],
                 "7": [18],
                 "8": [19],
-                "label": [19],
-                "9": [20]
+                "9": [20],
+                "score:":[2]
         },
         "texturepacker": [
                 "SmartUpdateHash: $TexturePacker:SmartUpdate:7f9be2bb4e11d804b801b3b3243fc11f$",

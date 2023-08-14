@@ -1,16 +1,63 @@
+import { stage, gframe, game } from "../classes/gframe.js";
+import { ActorTest } from "./test/0Actortext.js";
+import { Graphics } from "./test/0Graphics.js";
+import { LoadBitmap } from "./test/0LoadBitmap.js";
+import { Mctest } from "./test/0mcTest.js";
+import { Chain } from "./test/0chain.js";
+import { Billiard } from "./test/0billiard.js";
+import { Billiard2 } from "./test/0billiard2.js";
+import { Particle } from "./test/0particle.js";
+import { NodeGarden } from "./test/0nodeGarden.js";
+import { RectRotate } from "./test/0rectRotate.js";
+import { SingleSegment } from "./test/1segment.js";
+import { SegmentWalk } from "./test/1segmentWalk.js";
+import { SegmentDrag } from "./test/1segmentDrag.js";
+import { SegmentReach } from "./test/1segmentReach.js";
+import { SegmentCosines } from "./test/1segmentCosines.js";
+import { Perspective1 } from "./test/2perspective1.js";
+import { Velocity3D } from "./test/2Velocity3D.js";
+import { MultiBounce3D } from "./test/2MultiBounce3D.js";
+import { FireWork } from "./test/2FireWork.js";
+import { Trees } from "./test/2Trees.js";
+import { Easing3d } from "./test/2Easing3d.js";
+import { Spring3D } from "./test/2Spring3D.js";
+import { RotateY } from "./test/2RotateY.js";
+import { Collision3D } from "./test/2Collision3D.js";
+import { Lines3D } from "./test/3Lines3D.js";
+import { Square3D } from "./test/3Square3D.js";
+import { Triangles } from "./test/3Triangles.js";
+import { Cube } from "./test/3Cube.js";
+import { Brownian } from "./test/4brownian.js";
+import { Random } from "./test/4random.js";
+import { Random2 } from "./test/4random2.js";
+import { VehiclSeek } from "./test2/0SeekTest.js";
+import { VehiclFlee } from "./test2/0FleeTest.js";
+import { FleeTest1 } from "./test2/0FleeTest1.js";
+import { FleeTest2 } from "./test2/0FleeTest2.js";
+import { VehiclArrive } from "./test2/0ArriveTest.js";
+import { VehiclPursue } from "./test2/0PursueTest.js";
+import { PursueEvade } from "./test2/0PursueEvadeTest.js";
+import { WanderTest } from "./test2/0WanderTest.js";
+import { AvoidTest } from "./test2/0AvoidTest.js";
+import { PathTest } from "./test2/0PathTest.js";
+import { FlockTest } from "./test2/0FlockTest.js";
+import { isoTransformTest } from "./test2/1isoTransformTest.js";
+import { TileTest } from "./test2/1TileTest.js";
+import { MotionTest } from "./test2/1MotionTest.js";
+import { MotionTest2 } from "./test2/1MotionTest2.js";
+import { Collision } from "./test2/1Collision.js";
+import { GraphicsTileTest } from "./test2/1graphicsTileTest.js";
+import { MapTest } from "./test2/1maptest.js";
+import { AStarTest } from "./test2/2aStar.js";
+import { AstarMove } from "./test2/2astarMove.js";
 window.onload = function () {
-    "use strict";
     /*************游戏入口*****/
-    var g = new GFrame('canvas');
-    var close = document.getElementById("close");
+    gframe.init('canvas');
     //关闭按钮点击
-    close.onclick = function (e) {
-        if (g.game) {
-            let a = e.target;
-            a.parentNode.style.display = "none";
-            stage.removeAllEventListeners();
-            stage.removeAllChildren();
-            g.game.clear();
+    closeGame.onclick = function (e) {
+        if (game) {
+            e.target.parentNode.style.display = "none";
+            gframe.clear();
             //应许滚动
             document.getElementsByTagName('body')[0].setAttribute('style', 'position:relative;');
         }
@@ -36,13 +83,12 @@ window.onload = function () {
             e.target.textContent = "更多>";
         }
     }
-    //练习内容点击
-    window.productClick = function (a) {
-        let container = document.getElementById("container");
-        container.style.display = "block";
-        //禁止滚动
-        document.getElementsByTagName('body')[0].setAttribute('style', 'position:fixed; width:100%;');
-        g.preload(eval(a.title));
-        if (!g.fps) g.startFPS();
-    }
+}
+//练习内容点击
+window.productClick = function (a) {
+    containerDiv.style.display = "block";
+    //禁止滚动
+    document.getElementsByTagName('body')[0].setAttribute('style', 'position:fixed; width:100%;');
+    gframe.preload(eval(a.title));
+    if (!gframe.fps) gframe.startFPS();
 }

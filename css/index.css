@@ -229,50 +229,47 @@ nav ul li a p {
   color: #666;
   padding-top: 0;
 }
-#container {
+#containerDiv {
   position: absolute;
+  width: 100%;
   left: 0;
   top: 0;
   height: 100vh;
   overflow: hidden;
   z-index: 1000;
   display: none;
-  background: #c6d6bf;
+  background: #A4AB61;
 }
-#container #game {
-  width: 100%;
+#gameDiv {
+  position: relative;
   margin: 0 auto;
   transform-origin: 0 0;
 }
-#container #game #inputText {
+#inputText {
   display: none;
   width: 170px;
   height: 50px;
   font-size: 30px;
 }
-#container #game #testTxt {
-  visibility: hidden;
-  position: absolute;
+#testTxt {
+  display: none;
   width: 200px;
   height: 300px;
 }
-#container #game canvas {
-  background-color: #9eb195;
-}
-#container #close {
+#closeGame {
   background: #f0efee;
   color: rgba(53, 51, 51, 0.63);
-  border-radius: 12px;
-  line-height: 20px;
+  border-radius: 24px;
+  line-height: 40px;
   text-align: center;
-  height: 20px;
-  width: 20px;
-  font-size: 18px;
+  height: 40px;
+  width: 40px;
+  font-size: 30px;
   padding: 1px;
   right: 2px;
   top: 2px;
   position: absolute;
 }
-#container #close::before {
+#closeGame::before {
   content: "\2716";
 }

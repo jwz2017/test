@@ -1,31 +1,3 @@
-const mc = {};
-mc.style = {
-  //颜色
-  shadowColor: "#888888",
-  borderColor: "#999999",
-  buttonDownColor: "#bbbbbb",
-  buttonOverColor: "#cccccc",
-  buttonUpColor: "#ffffff",
-  labelColor: "#666666",
-  highlightColor: "#eeeeee",
-  fontSize: 12,
-  fontFamily: "regul,Microsoft YaHei,Serif", //"YaHei",
-  strokeStyle: 2,
-  CENTER_MIDDLE: "centermiddle",
-  LEFT_MIDDLE: "leftmiddle",
-  CENTER_BOTTOM: "centerbottom",
-  RIGHT_MIDDLE: "rightmiddle",
-  CENTER_TOP: "centertop",
-  SCROLL_BAR_SIZE: 20,
-  darkStyle: function () {
-    this.shadowColor = "#999999";
-    this.borderColor = "#555555";
-    this.buttonDownColor = "#444444";
-    this.buttonOverColor = "#999999";
-    this.buttonUpColor = "#666666";
-    this.labelColor = "#cccccc";
-  }
-};
 //---------------------------------------------------Graphics---------------------------------------------------------------
 class Rect extends createjs.Graphics {
   constructor() {
@@ -35,17 +7,17 @@ class Rect extends createjs.Graphics {
   drawBorderUp() {
     this.beginFill(mc.style.borderColor).drawShape(0, 0, this.width, this.height);
   }
-  drawBorderDown(){
+  drawBorderDown() {
     this.beginFill(mc.style.shadowColor).drawShape(0, 0, this.width, this.height);
   }
   //face
-  drawFaceDown(color=mc.style.buttonDownColor) {
+  drawFaceDown(color = mc.style.buttonDownColor) {
     this.beginFill(color).drawShape(1.5, 1.5, this.width - 1.5, this.height - 1.5);
   }
   drawFaceUp() {
     this.beginFill(mc.style.buttonUpColor).drawShape(1, 1, this.width - 2, this.height - 2);
   }
-  drawFaceOver(){
+  drawFaceOver() {
     this.beginFill(mc.style.buttonOverColor).drawShape(1, 1, this.width - 2, this.height - 2);
   }
   //selected
@@ -55,58 +27,61 @@ class Rect extends createjs.Graphics {
     this.beginFill(mc.style.buttonDownColor).drawShape(3, 3, this.width - 6, this.height - 6);
   }
   //handle
-  drawHandle(x, y,w) {
+  drawHandle(x, y, w) {
     this.beginFill(mc.style.highlightColor).drawShape(x + 1, y + 1, w - 2, w - 2);
     this.beginFill(mc.style.shadowColor).drawShape(x + 2, y + 2, w - 2, w - 2);
     this.beginFill(mc.style.buttonDownColor).drawShape(x + 2, y + 2, w - 3, w - 3);
   }
-  drawShape(x,y,width,height){
-    this.drawRect(x,y,width,height)
+  drawShape(x, y, width, height) {
+    this.drawRect(x, y, width, height)
   }
 }
+
 //圆形
-class Circle extends Rect{
+class Circle extends Rect {
   constructor() {
     super();
   }
   // drawFaceDown(color=mc.style.buttonDownColor) {
   //   this.beginFill(color).drawShape(1.5, 1.5, this.width - 2);
   // }
-  drawShape(x,y,width){
-    var r=width/2;
-    this.drawCircle(r+x,r+y,r);
+  drawShape(x, y, width) {
+    var r = width / 2;
+    this.drawCircle(r + x, r + y, r);
   }
 }
+
 //圆角矩形
 class RoundRect extends Rect {
   constructor(radius = 5) {
     super();
     this._radius = radius;
   }
-  drawShape(x,y,width,height){
-    this.drawRoundRect(x,y,width,height,this._radius);
+  drawShape(x, y, width, height) {
+    this.drawRoundRect(x, y, width, height, this._radius);
   }
 }
-class Star extends Rect{
+
+class Star extends Rect {
   constructor(sides = 4, pointSize = 0.6, angle = -90) {
     super();
     this._sides = sides;
     this._pointSize = pointSize;
     this._angle = angle;
   }
-  drawShape(x,y,width){
+  drawShape(x, y, width) {
     const r = width / 2;
-    this.drawPolyStar(r+x,r+y,r,this._sides, this._pointSize, this._angle);
+    this.drawPolyStar(r + x, r + y, r, this._sides, this._pointSize, this._angle);
   }
 }
-class Ellipse extends Rect{
-        constructor(){
-            super();
-        }
-        drawShape(x,y,width,height){
-          this.drawEllipse(x,y,width,height);
-        }
-    }
+class Ellipse extends Rect {
+  constructor() {
+    super();
+  }
+  drawShape(x, y, width, height) {
+    this.drawEllipse(x, y, width, height);
+  }
+}
 //自定义
 class Arrow extends Rect {
   /**
@@ -117,7 +92,7 @@ class Arrow extends Rect {
     super();
     this._arrowRotation = rot;
   }
-  drawShape(x,y,width,height){
+  drawShape(x, y, width, height) {
     const mat = new createjs.Matrix2D().translate(width / 2, height / 2).rotate(this._arrowRotation);
     mc.drawPoints(this, mat, this._getPoints(width, height));
   }
@@ -135,9 +110,9 @@ class Arrow extends Rect {
 }
 //---------------------------------------------------图形按钮类-----------------------------------------------------------
 class PushButtonShape extends createjs.Shape {
-  constructor(parent, handle,width = 200, height = 40, GClass = new Rect) {
+  constructor(parent, handle, width = 200, height = 40, GClass = new Rect) {
     super()
-    this.graphics=GClass;
+    this.graphics = GClass;
     if (parent) parent.addChild(this);
     this._handler = handle;
     //状态
@@ -155,7 +130,7 @@ class PushButtonShape extends createjs.Shape {
     this.on("mouseout", this._onMouseOut);
     this.on("mousedown", this._onMouseDown);
     this.on("pressup", this._onPressUp);
-    this.setSize(width,height);
+    this.setSize(width, height);
   }
   _onMouseDown(e) {
     this._down = true;
@@ -221,8 +196,8 @@ class PushButtonShape extends createjs.Shape {
   setSize(width, height) {
     this._width = width;
     this._height = height;
-    this.graphics.width=width;
-    this.graphics.height=height;
+    this.graphics.width = width;
+    this.graphics.height = height;
     this.setBounds(0, 0, this._width, this._height);
     this.redraw();
   }
@@ -244,7 +219,7 @@ class ArrowButtonShape extends PushButtonShape {
 
     }
     const mat = new createjs.Matrix2D().translate(this._width / 2, this._height / 2).rotate(this._arrowRotation);
-    GFrame.drawPoints(this.graphics, mat, [
+    mc.drawPoints(this.graphics, mat, [
       [0, -this.arrowHeight / 2 - 1],
       [this.arrowHeight, this.arrowHeight / 2 - 1],
       [-this.arrowHeight, this.arrowHeight / 2 - 1],
@@ -272,7 +247,7 @@ class CheckBoxShape extends PushButtonShape {
    * @param {*} GClass 
    */
   constructor(parent, handle, selected = false, width = 15, height = 15, GClass) {
-    super(parent, handle,width,height,GClass);
+    super(parent, handle, width, height, GClass);
     this._selected = selected;
     this.toggle = true;
     this.setSize(width, height);
@@ -283,7 +258,7 @@ class CheckBoxShape extends PushButtonShape {
   redraw() {
     this.graphics.clear();
     this.graphics.drawBorderDown();
-    if(this._over) this.graphics.drawFaceOver();
+    if (this._over) this.graphics.drawFaceOver();
     else {
       this.graphics.drawFaceDown(mc.style.buttonUpColor);
     }
@@ -296,7 +271,7 @@ class CheckBoxShape extends PushButtonShape {
 //sliderShape类
 class SliderShape extends PushButtonShape {
   constructor(parent, handle, sliderWidth = 120, sliderHeight = 10, GClass, isVSlider = true) {
-    super(parent, handle,sliderWidth,sliderHeight, GClass);
+    super(parent, handle, sliderWidth, sliderHeight, GClass);
     this._isVSlider = isVSlider;
 
     this.valueLabel = new createjs.Text("0");
@@ -372,7 +347,7 @@ class SliderShape extends PushButtonShape {
       this.graphics.drawFaceDown(mc.style.buttonUpColor);
     }
     //drawhandle
-    this.graphics.drawHandle(posX, posY,this._sliderHeight);
+    this.graphics.drawHandle(posX, posY, this._sliderHeight);
   }
   get value() {
     return this._value;
@@ -390,8 +365,8 @@ class SliderShape extends PushButtonShape {
     this._height = this._isVSlider ? sliderWidth : sliderHeight;
     this.setBounds(0, 0, this._width, this._height);
     this._calculateHandle();
-    this.graphics.width=this._width;
-    this.graphics.height=this._height;
+    this.graphics.width = this._width;
+    this.graphics.height = this._height;
     this.redraw();
   }
   setMmum(max, min) {
@@ -488,7 +463,7 @@ class PushButton extends Component {
   }
   _positionLabel() {
     this._label.x = this.shape.width / 2;
-    this._label.y = this.shape.height / 2;
+    this._label.y = this.shape.height / 2+2;
   }
   get selected() {
     return this.shape.selected;
@@ -524,7 +499,7 @@ class CheckBox extends Component {
 
   _positionLabel() {
     this._label.x = this.shape.width + 8;
-    this._label.y = this.shape.height / 2 ;
+    this._label.y = this.shape.height / 2;
   }
   get selected() {
     return this.shape.selected;
@@ -615,7 +590,7 @@ class Slider extends Component {
       this._valueLabel.x = this.shape.width / 2;
       // this._valueLabel.y = 0;
     } else {
-      this._label.y = this.shape.height / 2 ;
+      this._label.y = this.shape.height / 2;
       this._label.x = -8;
       this._valueLabel.x = this.shape.width + 8;
       this._valueLabel.y = this.shape.height / 2 + 3;
@@ -825,7 +800,7 @@ class ScrollContainer extends createjs.Container {
    * [constructor description]
    * @param {[string]} canvas [stage]
    */
-  constructor(parent, x, y, width = 400, height = 400, containerWidth = 0, containerHeight = 0,isbar=true,mousewheel=true) {
+  constructor(parent, x, y, width = 400, height = 400, containerWidth = 0, containerHeight = 0, isbar = true, mousewheel = true) {
     super();
     if (parent) parent.addChild(this);
     this.x = x;
@@ -849,8 +824,8 @@ class ScrollContainer extends createjs.Container {
       this.dispatchEvent("scroll")
     })
 
-    if(mousewheel){
-      stage.canvas.addEventListener("mousewheel", e => {
+    if (mousewheel) {
+      canvas.addEventListener("mousewheel", e => {
         const h = this.contentSize.height - this.getBounds().height
         const w = this.contentSize.width - this.getBounds().width
         this.scrollY += e.wheelDeltaY
@@ -858,19 +833,22 @@ class ScrollContainer extends createjs.Container {
       })
     }
 
-    if(isbar){
-      this.addChild(this.scrollBarH,this.scrollBarV);
-    } 
-    this.superAddChild = this.addChild
-
+    if (isbar) {
+      this.addChild(this.scrollBarH, this.scrollBarV);
+    }
+    this.superAddChild = this.addChild;
+    this.superAddChildAt=this.addChildAt;
     this.addChild = child => {
       this.container.addChild(child)
     }
-    this.removeAllChildren=()=>{
+    this.removeAllChildren = () => {
       this.container.removeAllChildren();
     }
-    this.removeChild=child=>{
+    this.removeChild = child => {
       this.container.removeChild(child);
+    }
+    this.addChildAt=(child,i)=>{
+      this.container.addChildAt(child,i);
     }
     this.setSize(width, height);
   }
@@ -881,13 +859,13 @@ class ScrollContainer extends createjs.Container {
 
   set scrollX(x) {
     const w = this.contentSize.width - this.getBounds().width
-    this.container.x = Math.min(0, Math.floor(Math.max(x, -w )))
+    this.container.x = Math.min(0, Math.floor(Math.max(x, -w)))
     this.scrollBarH.value = x
     this.dispatchEvent("scroll")
   }
 
   get scrollY() {
-    return  this.container.y
+    return this.container.y
   }
 
   set scrollY(y) {
@@ -904,18 +882,18 @@ class ScrollContainer extends createjs.Container {
     };
   }
   set contentSize(size) {
-    let b=this.getBounds();
-    let w= Math.max(b.width - mc.style.SCROLL_BAR_SIZE, size.width);
-    let h=Math.max(b.height - mc.style.SCROLL_BAR_SIZE, size.height);
+    let b = this.getBounds();
+    let w = Math.max(b.width - mc.style.SCROLL_BAR_SIZE, size.width);
+    let h = Math.max(b.height - mc.style.SCROLL_BAR_SIZE, size.height);
     this.container.setBounds(0, 0, w, h);
     this.scrollBarH.contentLength = size.width
     this.scrollBarV.contentLength = size.height
-    if (size.width <= this.getBounds().width ) {
+    if (size.width <= this.getBounds().width) {
       this.scrollBarH.visible = false;
     } else {
       this.scrollBarH.visible = true;
     }
-    if (size.height <= this.getBounds().height ) {
+    if (size.height <= this.getBounds().height) {
       this.scrollBarV.visible = false;
     } else {
       this.scrollBarV.visible = true;
@@ -933,13 +911,106 @@ class ScrollContainer extends createjs.Container {
     this.container.mask.graphics.beginFill("#efefef").rect(0, 0, width, height);
     this.scrollBarV.x = width - mc.style.SCROLL_BAR_SIZE;
     // this.scrollBarV.setSize(height - mc.style.SCROLL_BAR_SIZE, mc.style.SCROLL_BAR_SIZE);
-    this.scrollBarV.setSize(height , mc.style.SCROLL_BAR_SIZE);
+    this.scrollBarV.setSize(height, mc.style.SCROLL_BAR_SIZE);
     this.scrollBarH.y = height - mc.style.SCROLL_BAR_SIZE;
     this.scrollBarH.setSize(width - mc.style.SCROLL_BAR_SIZE, mc.style.SCROLL_BAR_SIZE);
   }
 }
-
-/*****************************mc****************************** */
-
+const mc = {
+  style: {
+    //颜色
+    shadowColor: "#888888",
+    borderColor: "#999999",
+    buttonDownColor: "#bbbbbb",
+    buttonOverColor: "#cccccc",
+    buttonUpColor: "#ffffff",
+    labelColor: "#666666",
+    highlightColor: "#eeeeee",
+    fontSize: 12,
+    fontFamily: "regul,Microsoft YaHei,Serif", //"YaHei",
+    strokeStyle: 2,
+    CENTER_MIDDLE: "centermiddle",
+    LEFT_MIDDLE: "leftmiddle",
+    CENTER_BOTTOM: "centerbottom",
+    RIGHT_MIDDLE: "rightmiddle",
+    CENTER_TOP: "centertop",
+    SCROLL_BAR_SIZE: 20,
+    darkStyle: function () {
+      this.shadowColor = "#999999";
+      this.borderColor = "#555555";
+      this.buttonDownColor = "#444444";
+      this.buttonOverColor = "#999999";
+      this.buttonUpColor = "#666666";
+      this.labelColor = "#cccccc";
+    }
+  },
+  Rect,
+  Circle,
+  RoundRect,
+  Star,
+  Ellipse,
+  Arrow,
+  /**颜色转换
+ * Returns a color in the format: '#RRGGBB', or as a hex number if specified.
+ * @param {number|string} color
+ * @param {boolean}      toNumber=false  Return color as a hex number.
+ * @return {string|number}
+ */
+  parseColor: function (color, toNumber) {
+    if (toNumber === true) {
+      if (typeof color === 'number') {
+        return (color | 0); //chop off decimal
+      }
+      if (typeof color === 'string' && color[0] === '#') {
+        color = color.slice(1);
+      }
+      return window.parseInt(color, 16);
+    } else {
+      if (typeof color === 'number') {
+        color = '#' + ('00000' + (color | 0).toString(16)).substr(-6); //pad
+      }
+      return color;
+    }
+  },
+  /**
+  * 随机颜色
+  */
+  randomColor: function () {
+    return "rgb(" + Math.floor(Math.random() * 256) + "," +
+      Math.floor(Math.random() * 256) + "," +
+      Math.floor(Math.random() * 256) + ")";
+  },
+  /**
+  * 将点连线 
+  * @param {*} g 
+  * @param {*} mat 
+  * @param {*} points 
+  */
+  drawPoints: function (g, mat, points) {
+    points.forEach((point, i) => {
+      const p = mat.transformPoint(point[0], point[1])
+      p.x = Math.ceil(p.x);
+      p.y = Math.ceil(p.y)
+      if (i == 0) {
+        g.moveTo(p.x, p.y)
+      } else {
+        g.lineTo(p.x, p.y)
+      }
+    });
+  },
+  /**
+  * Array随机排序
+  */
+  randomArray: function (array) {
+    if (!Array.prototype.derangedArray) {
+      Array.prototype.derangedArray = function () {
+        for (var j, x, i = this.length; i; j = parseInt(Math.random() * i), x = this[--i], this[i] = this[j], this[j] = x);
+        return this;
+      };
+    }
+    array = array.derangedArray();
+  }
+};
+export { mc,PushButton,CheckBox,RadioButton,Slider,ScrollBar,ScrollContainer };
 
 
