@@ -76,6 +76,7 @@ class GridsMapGame extends gframe.Game {
         width: this._numCols * this.stepWidth,
         height: this._numRows * this.stepHeight
       }
+      this._floor.cache(0,0,this.contentSize.width,this.contentSize.height)
     }
   }
   addChildToFloor(child) {

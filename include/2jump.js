@@ -72,7 +72,7 @@ export class Jump extends GridsMapGame {
         type: "spritesheet"
     }];
     constructor() {
-        super("Jump1", winWidth, winHeight, step, step);
+        super("Jump2", winWidth, winHeight, step, step);
         this.instructionScreen.title.text = "方向w,a,s,d\n小键盘4567普通攻击，跳跃，技能";
     }
     init() {
@@ -174,7 +174,6 @@ export class Jump extends GridsMapGame {
                 node.costMultiplier = 0.5;
             }
             shape.graphics.beginStroke(color).beginFill(color).drawRect(node.x * step, node.y * step, step, step);
-            shape.cache(node.x * step, node.y * step, step, step);
             this.addChildToFloor(shape);
         });
     }

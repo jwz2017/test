@@ -169,7 +169,7 @@ class Actor extends createjs.Container {
   drawShape(width, height) {
     this.image.graphics.clear().beginFill(this.color).drawRect(-width / 2, -height / 2, width, height);
     this.image.setBounds(-width / 2, -height / 2, width, height);
-    this.image.cache(-width / 2, -height / 2, width, height);
+    // this.image.cache(-width / 2, -height / 2, width, height);
   }
 
   setSpriteData(spriteSheet, animation, scale = 1, rotation = 0) {
