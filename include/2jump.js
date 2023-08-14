@@ -184,7 +184,7 @@ export class Jump extends GridsMapGame {
     }
 
     runGame() {
-        this.sparkle.addSparkles(3, Math.random() * stage.width, 0, 0.1)
+        // this.sparkle.addSparkles(3, Math.random() * stage.width, 0, 0.1)
         // 渲染actors
         this.moveActors();
         //滚动地图
