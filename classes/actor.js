@@ -169,11 +169,12 @@ class Actor extends createjs.Container {
   drawShape(width, height) {
     this.image.graphics.clear().beginFill(this.color).drawRect(-width / 2, -height / 2, width, height);
     this.image.setBounds(-width / 2, -height / 2, width, height);
+    this.image.cache(-width / 2, -height / 2, width, height);
   }
 
   setSpriteData(spriteSheet, animation, scale = 1, rotation = 0) {
     //显示辅助矩形
-    // if(this.image)this.removeChild(this.image);
+    if(this.image)this.removeChild(this.image);
     this.image = new createjs.Sprite(spriteSheet, animation);
     let b = this.image.getBounds();
     if (b.x == 0) {
