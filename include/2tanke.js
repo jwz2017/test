@@ -101,6 +101,7 @@ class Tanke extends GridsMapGame {
         });
     }
     waitComplete() {
+        stage.addChild(this);
     }
     runGame() {
         this.moveActors();
