@@ -178,7 +178,7 @@ export class Jump extends GridsMapGame {
         });
     }
     waitComplete() {
-        this.sparkle.addSparkles(100, 200, 0, 0.1);
+        // this.sparkle.addSparkles(100, 200, 0, 0.1);
         stage.addChild(this,this.sparkle);
         this.scrollPlayerIntoView();
     }
