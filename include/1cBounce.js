@@ -1,9 +1,9 @@
-import {GridsMapGame } from "../classes/GridsMapGame.js";
 import { Actor, BounceActor, CirActor } from "../classes/actor.js";
+import {GridsMapGame, Node } from "../classes/GridsMapGame.js";
 import { game, gframe, pressed, stage } from "../classes/gframe.js";
 
 window.onload = function () {
-    gframe.init('canvas');
+    gframe.buildStage('canvas');
     gframe.preload(Bounce,true);
     gframe.startFPS();
 };
@@ -37,17 +37,17 @@ var bricks,
             "               ",
             "               ",
             "               ",
+            "               ",
             "      @        "
         ]
     ];
 
 class Bounce extends GridsMapGame {
     constructor() {
+        stage.canvas.style.background=gframe.style.SCOREBOARD_COLOR;
         super("弹球06",plans[0][0].length * stepWidth, plans[0].length * stepHeight, stepWidth, stepHeight);
         this.x = stage.width - this.width >> 1;
-        this.y=this.scoreboard.getBounds().height;
-    }
-    init() {
+        this.y=this.scoreboard.height;
         this.maxLevel = plans.length;
         actorChars = {
             "@": Pandle,
@@ -56,7 +56,7 @@ class Bounce extends GridsMapGame {
         }
         this.backshape= new createjs.Shape;
         this.backshape.graphics.clear().beginFill("#fff").drawRect(0, 0, this.width, this.height);
-        this.superAddChildAt(this.backshape,0);
+        this.addChildAt(this.backshape,0);
     }
     createScoreBoard() {
         this.scoreboard = new gframe.ScoreBoard(0,0,true);
@@ -66,16 +66,19 @@ class Bounce extends GridsMapGame {
         this.scoreboard.placeElements();
     }
     newLevel() {
+        this.scoreboard.update("score",this.score);
+        this.scoreboard.update("level",this.level);
+        this.scoreboard.update("lives",this.lives);
         bricks = [];
         let plan = plans[this.level - 1];
         this.createGridMap(plan, actorChars, (ch, node) => {
             if (ch == "w") {
-                node.walkable = false;
+                node.type = Node.NOWALKABLE;
                 let bg = new Actor(node.x * stepWidth, node.y * stepHeight);
                 bg.init(stepWidth, stepHeight);
                 this.addChildToFloor(bg);
             } else if (ch == "x" || ch == "l") {
-                node.walkable = false;
+                node.type = "brick";
                 let fieldType = new Brick(node.x * stepWidth, node.y * stepHeight, ch);
                 node.brick = fieldType;
                 bricks.push(fieldType);
@@ -83,9 +86,6 @@ class Bounce extends GridsMapGame {
             }
         });
         
-    }
-    waitComplete(){
-        stage.addChild(this);
     }
     runGame() {
         // console.time("a");
@@ -133,10 +133,8 @@ class Puck extends CirActor {
     act() {
         this.moveX();
         this.moveY();
-        var actor = game.hitActor(this);
-        if (actor) {
-            this.hitResult(actor);
-        }
+        var actor = this.hitActors(game.world.children);
+        if (actor) this.hitResult(actor);
     }
     moveX() {
         let rect = this.rect.clone();
@@ -144,7 +142,7 @@ class Puck extends CirActor {
         var fieldType = game.hitMap(rect);
         if (!fieldType) {
             this.plus(this.speed.x, 0);
-        } else if (fieldType.brick) {
+        } else if (fieldType.type=="brick") {
             this.speed.x *= -1;
             this.hitBrickResult(fieldType);
         } else {
@@ -158,7 +156,7 @@ class Puck extends CirActor {
         var fieldType = game.hitMap(rect);
         if (!fieldType) {
             this.plus(0, this.speed.y);
-        } else if (fieldType.death == true) {
+        } else if (fieldType.type == Node.DEATH) {
             game.lives--;
             if (game.lives > 0) {
                 this.setPos(this.homePos.x, this.homePos.y);
@@ -166,9 +164,9 @@ class Puck extends CirActor {
                 this.speed.angle = Math.PI / 2;
                 game.scoreboard.update("lives",game.lives);
             } else {
-                this.dispatchEvent(gframe.event.GAME_OVER, true);
+                game.clear(gframe.event.GAME_OVER);
             }
-        } else if (fieldType.brick) {
+        } else if (fieldType.type=="brick") {
             this.speed.y *= -1;
             this.hitBrickResult(fieldType);
         } else {
@@ -205,10 +203,11 @@ class Puck extends CirActor {
             game.scoreboard.update("lives",game.lives);
         }
         bricks.splice(bricks.indexOf(fieldType), 1);
-        fieldType1.walkable = true;
+        fieldType1.type = Node.WALKABLE;
         fieldType.parent.removeChild(fieldType);
+        game.floor.updateCache();
         if (bricks.length == 0) {
-            this.dispatchEvent(gframe.event.LEVEL_UP, true);
+            game.clear(gframe.event.LEVEL_UP);
         }
     }
 
@@ -249,6 +248,7 @@ class AngleBounce extends BounceActor {
     constructor(xpos, ypos) {
         super(xpos, ypos);
         this.init(200, 20);
+        // this.setRotation(30);
     }
 
 }

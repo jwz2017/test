@@ -2,7 +2,7 @@ import { gframe, queue, stage } from "../classes/gframe.js";
 import { mc } from "../classes/mc.js";
 
 window.onload = function () {
-    gframe.init('canvas');
+    gframe.buildStage('canvas');
     gframe.preload(Match);
     gframe.startFPS();
 };
@@ -50,7 +50,6 @@ class Match extends gframe.Game {
         faces = ['garlic', 'onion', 'pepper', 'potato', 'spinach', 'tomato'];
     }
     waitComplete() {
-        stage.addChild(this.scoreboard);
         this.buildCards();
         this.shuffleCards(); //洗牌  
         this.deelCards();
@@ -125,7 +124,7 @@ class Match extends gframe.Game {
     }
     evalGame() {
         if (matches === faces.length) {
-            stage.dispatchEvent(gframe.event.LEVEL_UP);
+            this.clear(gframe.event.LEVEL_UP);
         } else {
             selectedCards = [];
         }
@@ -134,10 +133,11 @@ class Match extends gframe.Game {
     runGame() {
 
     }
-    clear() {
+    clear(e) {
         cards.forEach(element => {
             if (element) element.removeEventListener('click', this._onClick);
         });
+        super.clear(e);
     }
 
 }

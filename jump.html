@@ -1,28 +1,36 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <meta name="viewport"
-        content="width=device-width,initial-scale=1, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="stylesheet" href="css/game.css">
+        content="width=device-width, initial-scale=1.0,minimum-scale=1.0, maximum-scale=1.0,  user-scalable=no">
+    <link rel="stylesheet" href="./css/backsound/iconfont.css">
+    <link rel="stylesheet" href="./css/game.css">
+    <link rel="Preload" href="./assets/fonts/regul-book.woff" as="font" type="font/woff" crossorigin="anonymous">
+    <link rel="Preload" href="./assets/fonts/pf_ronda_seven.ttf" as="font" type="font/ttf" crossorigin="anonymous">
     <title>jump</title>
     <script src="classes/createjs.min.js"></script>
+    <!-- 修改 -->
     <script src="include/2jump.js" type="module"></script>
 </head>
 
 <body>
     <div id="containerDiv">
         <div id="gameDiv">
+            <!-- 主题音乐选框 -->
+            <div class="checkboxcontainer" id="titlemusic">
+                <input type="checkbox" class="checkbox" id="tmusic">
+                <label class="checklabel">主题音乐</label>
+            </div>
+            <!-- 背景音乐图标 -->
+            <span class="iconfont icon-shengyinkai" id="bmusic"></span>
+
             <canvas id="canvas" width="750" height="1334">
             </canvas>
-             <!-- 随舞台缩放 y=y-stage.canvas.height -->
-            <!-- <button id="start" style="position: absolute;top: 0;left: 0;">开始游戏</button> -->
-
         </div>
-        <!-- 不随舞台缩放 dom  -->
-        <p id="a" style="position: absolute;">斯蒂芬热热打发士大夫</p>
+        <!-- 不随舞台缩放 dom -->
+        
 
     </div>
 </body>

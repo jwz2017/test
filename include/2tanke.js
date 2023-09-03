@@ -1,9 +1,9 @@
-import { GridsMapGame } from "../classes/GridsMapGame.js";
+import { GridsMapGame, Node } from "../classes/GridsMapGame.js";
 import { Actor, CirActor } from "../classes/actor.js";
 import { game, gframe, keys, pressed, queue, stage } from "../classes/gframe.js";
 
 window.onload = function () {
-    gframe.init('canvas');
+    gframe.buildStage('canvas');
     gframe.preload(Tanke, true);
     gframe.startFPS();
 };
@@ -39,8 +39,6 @@ class Tanke extends GridsMapGame {
         this.instructionScreen.title.text = "方向w,a,s,d\n小键盘4开火攻击";
         this.x = stage.width - this.width >> 1;
         this.y = stage.height - this.height >> 1;
-    }
-    init() {
         actorChars = {
             "1": SpritePlayer,
             "23": Live,
@@ -71,37 +69,33 @@ class Tanke extends GridsMapGame {
             }
         };
         spriteSheet = new createjs.SpriteSheet(spriteData);
-        
     }
     createScoreBoard() {
         this.scoreboard = new gframe.ScoreBoard(0, 0,true);
-        this.scoreboard.createTextElement("score");
+        this.scoreboard.createTextElement("score","00000");
         this.scoreboard.createTextElement("level");
         this.scoreboard.placeElements();
     }
     newLevel() {
+        this.scoreboard.update("score",this.score);
+        this.scoreboard.update("level",this.level);
         //创建网格
         let plan = plans[this.level - 1];
         bullets = [];
         enemyBullets = [];
         this.createGridMap(plan, actorChars, (ch, node) => {
             var tile = new createjs.Sprite(spriteSheet).set({
-                regX: -step / 2,
-                regY: -step / 2,
-                x: node.x * step,
-                y: node.y * step
+                x: node.x * step+step/2,
+                y: node.y * step+step/2
             });
             if (actorChars[ch] || ch == 0) {
                 tile.gotoAndStop(0);
             } else {
                 tile.gotoAndStop(ch);
-                node.walkable = false;
+                node.type = Node.NOWALKABLE;
             }
             this.addChildToFloor(tile);
         });
-    }
-    waitComplete() {
-        stage.addChild(this);
     }
     runGame() {
         this.moveActors();
@@ -198,9 +192,9 @@ class SpritePlayer extends Actor {
         rect.y += this.speed.y;
         // console.log(game);
         // debugger;
-        var obstacle = game.hitMap(rect);
-        if (!obstacle) {
-            var actor = game.hitActor(this, rect);
+        var node = game.hitMap(rect);
+        if (!node) {
+            var actor = this.hitActors(game.world.children,rect);
             if (!actor || actor.type != "enemy") {
                 this.plus(this.speed.x, this.speed.y);
             }
@@ -239,9 +233,9 @@ class Barrage1 extends CirActor {
         this.setSpriteData(spriteSheet, "barrage")
     }
     act() {
-        let obstacle = game.hitMap(this.rect);
-        if (!obstacle) {
-            let actor = game.hitActor(this);
+        let node = game.hitMap(this.rect);
+        if (!node) {
+            let actor = this.hitActors(game.world.children);
             if (!actor || actor.type != "enemy") {
                 super.act();
             } else if (actor.type == "enemy") {
@@ -260,9 +254,9 @@ class EnemyBarrage extends CirActor {
         this.init(8, 8);
     }
     act() {
-        let obstacle = game.hitMap(this.rect);
-        if (!obstacle) {
-            let actor = game.hitActor(this);
+        let node = game.hitMap(this.rect);
+        if (!node) {
+            let actor = this.hitActors(game.world.children);
             if (!actor || actor.type != "player") {
                 super.act();
             } else if (actor.type == "player") {
@@ -345,9 +339,9 @@ class Enemy extends Actor {
         let rect = this.rect.clone();
         rect.x += this.speed.x;
         rect.y += this.speed.y;
-        var obstacle = game.hitMap(rect);
-        if (!obstacle) {
-            let actor = game.hitActor(this, rect);
+        var node = game.hitMap(rect);
+        if (!node) {
+            let actor = this.hitActors(game.world.children, rect);
             if (!actor || (actor.type != "enemy" && actor.type != "player")) {
                 this.plus(this.speed.x, this.speed.y);
             }

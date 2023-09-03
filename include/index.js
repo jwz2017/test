@@ -1,13 +1,14 @@
-import { stage, gframe, game } from "../classes/gframe.js";
-import { ActorTest } from "./test/0Actortext.js";
+import { stage, gframe, game, queue } from "../classes/gframe.js";
+import { hitTest } from "./test/0hitTest.js";
+import { DomElement } from "./test/0domElement.js";
 import { Graphics } from "./test/0Graphics.js";
 import { LoadBitmap } from "./test/0LoadBitmap.js";
 import { Mctest } from "./test/0mcTest.js";
-import { Chain } from "./test/0chain.js";
-import { Billiard } from "./test/0billiard.js";
-import { Billiard2 } from "./test/0billiard2.js";
-import { Particle } from "./test/0particle.js";
-import { NodeGarden } from "./test/0nodeGarden.js";
+import { Chain } from "./test/1chain.js";
+import { Billiard } from "./test/1billiard.js";
+import { Billiard2 } from "./test/1billiard2.js";
+import { Particle } from "./test/1particle.js";
+import { NodeGarden } from "./test/1nodeGarden.js";
 import { RectRotate } from "./test/0rectRotate.js";
 import { SingleSegment } from "./test/1segment.js";
 import { SegmentWalk } from "./test/1segmentWalk.js";
@@ -50,16 +51,21 @@ import { GraphicsTileTest } from "./test2/1graphicsTileTest.js";
 import { MapTest } from "./test2/1maptest.js";
 import { AStarTest } from "./test2/2aStar.js";
 import { AstarMove } from "./test2/2astarMove.js";
+import { RandomDice } from "./test/0randomDice.js";
+import { ScoreTest } from "./test/0scoreTest.js";
 window.onload = function () {
     /*************游戏入口*****/
-    gframe.init('canvas');
+    gframe.buildStage('canvas');
     //关闭按钮点击
     closeGame.onclick = function (e) {
-        if (game) {
-            e.target.parentNode.style.display = "none";
-            gframe.clear();
-            //应许滚动
-            document.getElementsByTagName('body')[0].setAttribute('style', 'position:relative;');
+        e.target.parentNode.style.display = "none";
+        //应许滚动
+        document.getElementsByTagName('body')[0].setAttribute('style', 'position:relative;');
+        if(queue&&!queue.loaded){
+            queue.removeAllEventListeners();
+            stage.removeAllChildren();
+        } else{
+            game.clear(gframe.event.CLOSE);
         }
     }
     //收缩，展开

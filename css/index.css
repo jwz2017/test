@@ -229,47 +229,11 @@ nav ul li a p {
   color: #666;
   padding-top: 0;
 }
-#containerDiv {
-  position: absolute;
-  width: 100%;
-  left: 0;
-  top: 0;
-  height: 100vh;
-  overflow: hidden;
-  z-index: 1000;
-  display: none;
-  background: #A4AB61;
+@font-face {
+  font-family: "regul";
+  src: url("../assets/fonts/regul-book.woff") format('woff');
 }
-#gameDiv {
-  position: relative;
-  margin: 0 auto;
-  transform-origin: 0 0;
-}
-#inputText {
-  display: none;
-  width: 170px;
-  height: 50px;
-  font-size: 30px;
-}
-#testTxt {
-  display: none;
-  width: 200px;
-  height: 300px;
-}
-#closeGame {
-  background: #f0efee;
-  color: rgba(53, 51, 51, 0.63);
-  border-radius: 24px;
-  line-height: 40px;
-  text-align: center;
-  height: 40px;
-  width: 40px;
-  font-size: 30px;
-  padding: 1px;
-  right: 2px;
-  top: 2px;
-  position: absolute;
-}
-#closeGame::before {
-  content: "\2716";
+@font-face {
+  font-family: "pfrondaseven";
+  src: url("../assets/fonts/pf_ronda_seven.ttf") format('woff');
 }

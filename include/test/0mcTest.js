@@ -4,9 +4,11 @@ export class Mctest extends gframe.Game {
     constructor() {
         super("mc组件测试");
         this.instructionScreen.text = "游戏介绍";
+        mc.style.fontSize=16;
     }
     waitComplete() {
         super.waitComplete();
+        stage.enableMouseOver();
         /**
         * 颜色parseColor
         */
@@ -39,7 +41,7 @@ export class Mctest extends gframe.Game {
         this.scorecontainer = new ScrollContainer(stage, 0, 0, 600, 750, 800, 1400);
         //Rect RoundRect Circle Star Arrow
         this.button = new PushButton(this.scorecontainer, "ok", null, 50, 50);
-        this.button1 = new PushButton(this.scorecontainer, "ok", null, 50, 100, 200, 40, new mc.RoundRect(20));
+        this.button1 = new PushButton(this.scorecontainer, "ok", null, 50, 100, 60, 20, new mc.RoundRect(25));
         this.button2 = new PushButton(this.scorecontainer, "ok", null, 50, 150, 60, 60, new mc.Circle());
         this.button3 = new PushButton(this.scorecontainer, "ok", null, 100, 200, 80, 80, new mc.Star(6, 2.5, 30));
         this.button4 = new PushButton(this.scorecontainer, "ok", null, 200, 200, 80, 40, new mc.Ellipse());
@@ -48,12 +50,12 @@ export class Mctest extends gframe.Game {
         this.checkbox = new CheckBox(this.scorecontainer, "黑色", () => {
             console.log(this.checkbox.selected);
         }, false, 50, 700, 40, 40, new mc.Circle);
-        this.checkbox1 = new CheckBox(this.scorecontainer, "黑色", () => {
-            console.log(this.checkbox1.selected);
-        }, false, 50, 750, 40, 40, new mc.Rect);
-        this.checkbox2 = new CheckBox(this.scorecontainer, "黑色", () => {
-            console.log(this.checkbox2.selected);
-        }, false, 50, 800, 40, 40, new mc.Star);
+        // this.checkbox1 = new CheckBox(this.scorecontainer, "黑色", () => {
+        //     console.log(this.checkbox1.selected);
+        // }, false, 50, 750, 40, 40, new mc.Rect);
+        // this.checkbox2 = new CheckBox(this.scorecontainer, "黑色", () => {
+        //     console.log(this.checkbox2.selected);
+        // }, false, 50, 800, 40, 40, new mc.Star);
         //RadioButton单选框  Rect RoundRect Circle Star
         var radiobutton1 = new RadioButton(this.scorecontainer, "白色", handle, true, 450, 800, 40, 40);
         var radiobutton2 = new RadioButton(this.scorecontainer, "蓝色", handle, false, 450, 850, 40, 40);

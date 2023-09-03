@@ -1,4 +1,4 @@
-import { AStar, GridsMapGame } from "../../classes/GridsMapGame.js";
+import { AStar, GridsMapGame, Node } from "../../classes/GridsMapGame.js";
 import { stage } from "../../classes/gframe.js";
 
 var step = 20,numcols=30,numrows=30,shape;
@@ -16,7 +16,8 @@ export class AStarTest extends GridsMapGame {
         this.addEventListener("click", (e) => {
             let xpos = Math.floor(e.localX / step);
             let ypos = Math.floor(e.localY / step);
-            this.setWalkable(xpos, ypos, !this.getNode(xpos, ypos).walkable);
+            let t=this.getNode(xpos,ypos).type==Node.WALKABLE?Node.NOWALKABLE:Node.WALKABLE;
+            this.setNodeType(xpos, ypos, t);
             this.drawGrid();
             this.findPath();
         });
@@ -36,7 +37,7 @@ export class AStarTest extends GridsMapGame {
         }
     }
     getColor(node) {
-        if (!node.walkable) return "#000";
+        if (node.type!=Node.WALKABLE) return "#000";
         if (node == this.startNode) return "#666666";
         if (node == this.endNode) return "#666666";
         return "#ffffff";

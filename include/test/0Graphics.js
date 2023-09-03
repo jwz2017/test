@@ -6,6 +6,7 @@ export class Graphics extends gframe.Game {
         this.instructionScreen.title.text = "1:画虚线\r2:画扇形\r3:画同心圆";
     }
     waitComplete() {
+        super.waitComplete();
         var shape = stage.addChild(new createjs.Shape());
         //画条形图
         var data = [["a", 30], ["张芳", 32], ["c", 50], ["dd", 14], ["e", 44], ["c", 50], ["dd", 14], ["e", 44]];

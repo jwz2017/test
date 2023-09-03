@@ -1,12 +1,21 @@
-import { stage, queue, keys, pressed, gframe, game } from "../classes/gframe.js";
-import { GridsMapGame } from "../classes/GridsMapGame.js";
+import { stage, keys, pressed, gframe, game, queue } from "../classes/gframe.js";
+import { GridsMapGame, Node } from "../classes/GridsMapGame.js";
 import { Vector, Actor } from "../classes/actor.js";
 import { Sparkles } from "../classes/effect.js";
 window.onload = function () {
     /*************游戏入口*****/
-    gframe.init('canvas');
-    gframe.preload(Jump, true);
-    gframe.startFPS();
+    gframe.buildStage('canvas');
+    gframe.createQueue();
+    queue.loadFile({
+        id: "loaderbar",
+        src: "loaderbar/loaderbar.json",
+        type: "spritesheet"
+    });
+    queue.on("complete", () => {
+        gframe.loaderBar = new LoaderBar1();
+        gframe.preload(Jump);
+        gframe.startFPS();
+    }, null, true);
 };
 //游戏变量;
 var spriteSheet,
@@ -15,54 +24,13 @@ var spriteSheet,
     step = 30,
     winWidth = 750,
     winHeight = 400,
-    plans = [
-        [
-            "                      v      |         x",
-            "                                        ",
-            "                                        ",
-            "  x             = x                     ",
-            "  x      oooooooooooooooooooooooooooo   ",
-            "  x b @  xxyyyyxxxxxxxxxxxxxxxxxxxxxx   ",
-            "  xxxxx            x                    ",
-            "         !!!!!!!!x                      ",
-            "     m   xxxxxxxxx                      ",
-            "      x                                 ",
-            "       x                                ",
-            "         x                              ",
-            "        x                               ",
-            "      x                                 ",
-            "                                        ",
-            "     xxxm                               ",
-            "     xxxxx                              ",
-            "     xxxxx                              ",
-            "     xxxxx                              ",
-            "     xxxxx                              ",
-            "x    xxxxx                              "
-        ],
-        [
-            "                             |                        ",
-            "                                                      ",
-            "                 x   =       x                        ",
-            "  x       o                                           ",
-            "  x          o                    o                   ",
-            "  x  @   xxxxxx  x xx  xx  xxx  x xxxxxxxxxxxxxxxx    ",
-            "  xxxxx           x                                   ",
-            "      x!!!!!!!!!!!x           xxxxxxxxxx              ",
-            "      xxxxxxxxxxxxx                                   ",
-            "                                                      "
-        ]
-    ];
+    plans;
 
 export class Jump extends GridsMapGame {
     static loadItem = [{
-        id: "woody_0",
-        src: "jump/woody_0.png"
-    }, {
-        id: "woody_1",
-        src: "jump/woody_1.png"
-    }, {
-        id: "woody_2",
-        src: "jump/woody_2.png"
+        id: "spritedata",
+        src: "jump/spriteData.json",
+        type: "spritesheet"
     }, {
         id: "guiqizhan",
         src: "jump/guiqizhan.png"
@@ -70,72 +38,22 @@ export class Jump extends GridsMapGame {
         id: "sparkle",
         src: "effect/sparkles.json",
         type: "spritesheet"
+    }, {
+        id: "levels",
+        src: "jump/levels.json"
+    }, {
+        id: "titlesound",
+        src: "sounds/sister.mp3"
     }];
     constructor() {
-        super("Jump2", winWidth, winHeight, step, step);
-        this.instructionScreen.title.text = "方向w,a,s,d\n小键盘4567普通攻击，跳跃，技能";
-    }
-    init() {
-        this.y = stage.height - this.height >> 1;
+        plans = queue.getResult("levels");
+        super("Jump2", winWidth, winHeight, step, step, 0, 0, { titleSoundId: "titlesound", backSoundId: "titlesound" });
+        this.keyboard = true;
+        this.instructionScreen.title.text = "方向w,a,s,d 小键盘 4567普通攻击，跳跃，技能";
         this.maxLevel = plans.length;
-        let spriteData = {
-            images: [queue.getResult("woody_0"), queue.getResult("woody_1"), queue.getResult("woody_2")],
-            frames: {
-                width: 80,
-                height: 80,
-                regX: 40,
-                regY: 40
-            },
-            animations: {
-                stand: [0, 3, "stand", 0.1], //[]表示从0到3帧
-                walk: { //{}表示逐帧
-                    frames: [4, 5, 6, 7, 6, 5],
-                    next: "walk", //next:null就停止在末帧
-                    speed: 0.15
-                },
-                run: {
-                    frames: [20, 21, 22, 21],
-                    next: "run",
-                    speed: 0.1
-                },
-                roll: {
-                    frames: [58, 59, 69, 58, 59, 69],
-                    next: "stand",
-                    speed: 0.2
-                },
-                attack1: [10, 13, "stand", 0.2],
-                attack2: [14, 17, "stand", 0.2],
-                skill1: {
-                    frames: [8, 9, 19],
-                    next: "stand",
-                    speed: 0.14
-                },
-                jump: {
-                    frames: [60, 61, 62],
-                    next: "jumpSky",
-                    speed: 0.3
-                },
-                jumpSky: {
-                    frames: [62],
-                    speed: 0.3
-                },
-                crouch: {
-                    frames: [61],
-                    next: "stand",
-                    speed: 2
-                },
-                runJump: {
-                    frames: [112],
-                    speed: 0.3
-                },
-                fire: {
-                    frames: [140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151],
-                    next: "stand",
-                    speed: 0.3
-                }
-            }
-        };
-        spriteSheet = new createjs.SpriteSheet(spriteData);
+        this.backSound = createjs.Sound.createInstance("titlesound");
+        this.y = stage.height - this.height >> 1;
+        spriteSheet = queue.getResult("spritedata");
         actorChars = {
             "@": JumpPlayer,
             "b": Big,
@@ -146,6 +64,7 @@ export class Jump extends GridsMapGame {
             "m": MoveBrick
         };
         this.sparkle = new Sparkles(queue.getResult("sparkle"), stage.width, 200);
+
     }
     createScoreBoard() {
         this.scoreboard = new gframe.ScoreBoard(0, 0, true);
@@ -153,23 +72,25 @@ export class Jump extends GridsMapGame {
         this.scoreboard.createTextElement(gframe.Game.LEVEL);
         this.scoreboard.createTextElement(gframe.Game.LIVES);
         this.scoreboard.placeElements();
+        // console.log(this.scoreboard.children[0],this.scoreboard.tickChildren);
     }
     newLevel() {
-        // this.level=2;
+        this.scoreboard.update(gframe.Game.SCORE, this.score);
+        this.scoreboard.update(gframe.Game.LEVEL, this.level);
+        this.scoreboard.update(gframe.Game.LIVES, this.lives);
         bullets = [];
         let plan = plans[this.level - 1];
         game.createGridMap(plan, actorChars, (ch, node) => {
             let color = "#555";
             let shape = new createjs.Shape();
             if (ch == "x") {
-                node.walkable = false;
+                node.type = Node.NOWALKABLE;
                 color = "#fff";
             } else if (ch == "!") {
-                node.walkable = false;
-                node.death = true;
+                node.type = Node.DEATH;
                 color = "rgb(255,100,100)";
             } else if (ch == "y") {
-                node.walkable = false;
+                node.type = Node.NOWALKABLE;
                 color = "#666";
                 node.costMultiplier = 0.5;
             }
@@ -178,17 +99,16 @@ export class Jump extends GridsMapGame {
         });
     }
     waitComplete() {
-        // this.sparkle.addSparkles(100, 200, 0, 0.1);
-        stage.addChild(this,this.sparkle);
-        this.scrollPlayerIntoView();
+        stage.addChild(this, this.sparkle);
+        this.scrollPlayerIntoView(this.player);
     }
 
     runGame() {
-        // this.sparkle.addSparkles(3, Math.random() * stage.width, 0, 0.1)
+        this.sparkle.addSparkles(3, Math.random() * stage.width, 0, 0.1)
         // 渲染actors
         this.moveActors();
         //滚动地图
-        this.scrollPlayerIntoView();
+        this.scrollPlayerIntoView(this.player);
     }
 
 }
@@ -203,8 +123,8 @@ class JumpPlayer extends Actor {
         this.gravity = 0.27;
         this.runspeed = 1.8;
         this.mult = 1;
-        this.init(0.8 * 30, 1.5 * 30);
-        this.plus(0, -0.5 * 30);
+        this.init(0.8 * 30, 1.6 * 30);
+        this.plus(0, -0.6 * 30);
         this.setSpriteData(spriteSheet, "stand", 0.6);
     }
     startRoll() {
@@ -219,8 +139,8 @@ class JumpPlayer extends Actor {
     stopRoll() {
         this.rect.y -= this.rect.height;
         this.rect.height *= 2;
-        let obstacle = game.hitMap(this.rect);
-        if (obstacle) {
+        let node = game.hitMap(this.rect);
+        if (node) {
             this.setPos(this.oldPos.x, this.oldPos.y);
         }
     }
@@ -228,15 +148,15 @@ class JumpPlayer extends Actor {
         this.speed.y += this.gravity;
         var newRect = this.rect.clone();
         newRect.y += this.speed.y;
-        var obstacle = game.hitMap(newRect);
-        if (obstacle) {
-            if (obstacle.death) {
-                this.dispatchEvent(gframe.event.GAME_OVER, true);
+        var node = game.hitMap(newRect);
+        if (node) {
+            if (node.type == Node.DEATH) {
+                game.clear(gframe.event.GAME_OVER);
                 return;
             }
-            this.mult = obstacle.costMultiplier;
+            this.mult = node.costMultiplier;
         }
-        if (obstacle || this._hitMove) {
+        if (node || this._hitMove) {
             let status = this.image.currentAnimation;
             let idle = (status == "walk" || status == "stand" || status == "run");
             if (pressed.length == 0) this._roll = false;
@@ -290,63 +210,52 @@ class JumpPlayer extends Actor {
     //玩家移动
     moveX() {
         let status = this.image.currentAnimation;
-        let idle=status=="stand"||status=="walk"||status=="run"||status=="jump"||status=="jumpSky";
+        let idle = status == "stand" || status == "walk" || status == "run" || status == "jump" || status == "jumpSky";
         let key = pressed[pressed.length - 1];
-        if (status == "roll") {}
-        else if(!idle) this.speed.x=0;
-        else if (key == "right") {
+        if (status == "roll") { }
+        else if (key == "right" || key == "left") {
+            let a=key=="right";
             if (status == "stand") {
                 if (keys.rightRun) {
                     this.speed.x = this.runspeed;
                     this.image.gotoAndPlay("run");
-                } else {
-                    this.speed.x = this.walkspeed;
-                    this.image.gotoAndPlay("walk")
-                }
-                keys.rightRun = keys.leftRun = false;
-            } else if (status == "walk") {
-                this.speed.x = this.walkspeed;
-            } else if (status == "run" && this.scaleX < 0) {
-                this.speed.x = this.walkspeed;
-                this.image.gotoAndPlay("walk")
-            }
-            else if (status == "jump" || status == "jumpSky") {
-                this.speed.x = Math.abs(this.speed.x) || this.walkspeed;
-            }
-            this.scaleX = Math.abs(this.scaleX);
-        } else if (key == "left") {
-            if (status == "stand") {
-                if (keys.leftRun) {
+                } else if (keys.leftRun) {
                     this.speed.x = -this.runspeed;
                     this.image.gotoAndPlay("run");
+                } else if (key == "right") {
+                    this.speed.x = this.walkspeed;
+                    this.image.gotoAndPlay("walk")
                 } else {
                     this.speed.x = -this.walkspeed;
                     this.image.gotoAndPlay("walk")
                 }
                 keys.rightRun = keys.leftRun = false;
             } else if (status == "walk") {
-                this.speed.x = -this.walkspeed;
-            } else if (status == "run" && this.scaleX > 0) {
-                this.speed.x = -this.walkspeed;
-                this.image.gotoAndPlay("walk")
+                this.speed.x=a?this.walkspeed:-this.walkspeed;
+            } else if (status == "run") {
+                if (this.scaleX < 0 && key == "right") {
+                    this.speed.x = this.walkspeed;
+                    this.image.gotoAndPlay("walk")
+                } else if (this.scaleX > 0 && key == "left") {
+                    this.speed.x = -this.walkspeed;
+                    this.image.gotoAndPlay("walk")
+                }
             }
             else if (status == "jump" || status == "jumpSky") {
-                this.speed.x = -Math.abs(this.speed.x) || -this.walkspeed;
+                this.speed.x=a?Math.abs(this.speed.x) || this.walkspeed:-Math.abs(this.speed.x) || -this.walkspeed
             }
-            this.scaleX = -Math.abs(this.scaleX);
-        }
-        else {
+            else if (!idle) this.speed.x = 0;
+            this.scaleX = key == "right"? Math.abs(this.scaleX) : -Math.abs(this.scaleX);
+        } else {
             this.speed.x = 0;
-            if (status == "walk" || status == "run") {
-                this.image.gotoAndPlay("stand");
-            }
+            if (status == "walk" || status == "run")this.image.gotoAndPlay("stand");
         }
         var newRect = this.rect.clone();
         newRect.x += this.speed.x;
-        var obstacle = game.hitMap(newRect);
-        if (obstacle) {
-            if (obstacle.death == true) {
-                this.dispatchEvent(gframe.event.GAME_OVER, true);
+        var node = game.hitMap(newRect);
+        if (node) {
+            if (node.type == Node.DEATH) {
+                game.clear(gframe.event.GAME_OVER);
             }
         } else {
             this.plus(this.speed.x * this.mult, 0);
@@ -355,14 +264,15 @@ class JumpPlayer extends Actor {
     act() {
         this.moveY();
         this.moveX();
-        var actor = game.hitActor(this);
+        // var actor = game.hitActor(this);
+        var actor = this.hitActors(game.world.children);
         if (actor) {
             if (actor.type == "coin") {
                 actor.parent.removeChild(actor);
                 game.score += 20;
                 game.scoreboard.update("score", game.score);
-                if (!game.hasTypeOnWorld("coin")) {
-                    this.dispatchEvent(gframe.event.LEVEL_UP, true);
+                if (!game.hasTypeOnContainer("coin")) {
+                    game.clear(gframe.event.LEVEL_UP);
                 }
             } else if (actor.type == "big") {
                 actor.parent.removeChild(actor);
@@ -381,15 +291,15 @@ class JumpPlayer extends Actor {
                     this.act = a;
                 });
             } else if (actor.type == "lava") {
-                this.dispatchEvent(gframe.event.GAME_OVER, true);
+                game.clear(gframe.event.GAME_OVER);
             } else if (actor.type == "move" && this.speed.y >= 0 && this.y < actor.y) {
                 this._hitMove = true;
                 let newRect = this.rect.clone();
                 newRect.x += actor.speed.x;
-                let obstacle = game.hitMap(newRect);
-                if (obstacle) {
-                    if (obstacle.death == true) {
-                        this.dispatchEvent(gframe.event.GAME_OVER, true);
+                let node = game.hitMap(newRect);
+                if (node) {
+                    if (node.type == Node.DEATH) {
+                        game.clear(gframe.event.GAME_OVER);
                     }
                 } else {
                     // this.setPos(this.x + actor.speed.x, actor.rect.y-this.getBounds().height/2*this.scale)
@@ -421,9 +331,9 @@ class Barrage1 extends Actor {
         this.setSpriteData(new createjs.SpriteSheet(skilData), "run", 0.5);
     }
     act() {
-        var obstacle = game.hitMap(this.rect);
-        if (!obstacle) {
-            let actor = game.hitActor(this);
+        var node = game.hitMap(this.rect);
+        if (!node) {
+            let actor = this.hitActors(game.world.children);
             if (actor && actor.type == "lava") {
                 this.recycle();
             } else {
@@ -453,7 +363,6 @@ class Lava extends Actor {
             this.speed.angle = Math.PI / 2;
             this.repeatPos = new Vector(this.x, this.y);
         }
-
     }
     act() {
         var newrect = this.rect.clone();
@@ -497,7 +406,7 @@ class Coin extends Actor {
         this.type = "coin";
         this.color = "rgb(241,229,89)";
         this.init(0.6 * 30, 0.6 * 30);
-        this.y += 0.2 * 30;
+        this.plus(0.2 * 30, 0.2 * 30);
         this.basePos = new Vector(this.x, this.y);
     }
     act() {
@@ -512,6 +421,29 @@ class Big extends Coin {
         super(xpos, ypos);
         this.type = "big";
         this.scaleX = this.scaleY = 0.6;
+    }
+
+}
+class LoaderBar1 extends gframe.LoaderBar {
+    constructor() {
+        super();
+    }
+    createTitle() {
+        this.title = new createjs.Sprite(queue.getResult("loaderbar"), "title");
+        this.title.regY = this.title.getBounds().height;
+        this.title.regX = this.title.getBounds().width / 2;
+        this.addChild(this.title);
+    }
+    createValue() {
+        this.percent = new createjs.BitmapText("0%", queue.getResult("loaderbar"));
+        this.percent.regX = this.percent.getBounds().width / 2;
+        this.percent.x = this.width / 2 - 10;
+        this.percent.y = this.height + 10;
+        this.addChild(this.percent);
+    }
+    startLoad(e) {
+        super.startLoad(e);
+        this.title.x = this.bar.scaleX;
     }
 
 }

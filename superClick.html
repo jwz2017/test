@@ -1,12 +1,13 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport"
-        content="width=device-width,initial-scale=1, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0,minimum-scale=1.0, maximum-scale=1.0,  user-scalable=no">
+    <link rel="stylesheet" href="css/backsound/iconfont.css">
     <link rel="stylesheet" href="css/game.css">
+    <link rel="Preload" href="./assets/fonts/regul-book.woff" as="font" type="font/woff" crossorigin="anonymous">
+    <link rel="Preload" href="./assets/fonts/pf_ronda_seven.ttf" as="font" type="font/ttf" crossorigin="anonymous">
     <title>superclick</title>
     <script src="classes/createjs.min.js"></script>
     <!-- 修改 -->
@@ -15,9 +16,14 @@
 
 <body>
     <div id="containerDiv">
-        <!-- 游戏界面 -->
         <div id="gameDiv">
-            <!-- 随舞台缩放 dom-->
+            <!-- 主题音乐选框 -->
+            <div class="checkboxcontainer" id="titlemusic">
+                <input type="checkbox" class="checkbox" id="tmusic">
+                <label class="checklabel">主题音乐</label>
+            </div>
+            <!-- 背景音乐图标 -->
+            <span class="iconfont icon-shengyin" id="bmusic"></span>
 
             <canvas id="canvas" width="750" height="1334">
             </canvas>
@@ -28,4 +34,3 @@
 </body>
 
 </html>
-

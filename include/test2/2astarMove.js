@@ -1,8 +1,8 @@
-import { AStar, GridsMapGame } from "../../classes/GridsMapGame.js";
+import { AStar, GridsMapGame, Node } from "../../classes/GridsMapGame.js";
 import { CirActor } from "../../classes/actor.js";
 import { stage } from "../../classes/gframe.js";
 
-var player,numCols = 30,numRows = 30, step = 20,
+var player,numCols = 30,numRows = 30, step = 20,astar=new AStar,
     path = [],index = 0,shape;
 export class AstarMove extends GridsMapGame {
     constructor() {
@@ -13,6 +13,7 @@ export class AstarMove extends GridsMapGame {
         this.addChild(shape);
 
     }
+    
     waitComplete(){
         stage.addChild(this);
     }
@@ -27,7 +28,7 @@ export class AstarMove extends GridsMapGame {
         }
     }
     getColor(node) {
-        if (!node.walkable) return "#000";
+        if (node.type!=Node.WALKABLE) return "#000";
         if (node == this.startNode) return "#cccccc";
         if (node == this.endNode) return "#cccccc";
         return "#ffffff";
@@ -41,7 +42,7 @@ export class AstarMove extends GridsMapGame {
         this.addChild(player);
         //makeGrid
         for (let i = 0; i < 200; i++) {
-            this.setWalkable(Math.floor(Math.random() * numCols), Math.floor(Math.random() * numRows), false);
+            this.setNodeType(Math.floor(Math.random() * numCols), Math.floor(Math.random() * numRows), Node.NOWALKABLE);
             this.drawGrid();
         }
 
@@ -57,7 +58,6 @@ export class AstarMove extends GridsMapGame {
         });
     }
     findPath() {
-        let astar = new AStar();
         if (astar.findPath(this)) {
             path = astar.path;
             index = 0;

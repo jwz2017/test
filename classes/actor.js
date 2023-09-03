@@ -119,57 +119,40 @@ class Actor extends createjs.Container {
   static WRAP = "wrap";
   static BOUNCE = "bounce";
   static RECYCLE = "recycle";
-  //相互吸引函数
-  static gravitate(partA, partB) {
-    let dx = partB.x - partA.x,
-      dy = partB.y - partA.y,
-      distSQ = dx * dx + dy * dy,
-      dist = Math.sqrt(distSQ),
-      force = partA.mass * partB.mass / distSQ,
-      ax = force * dx / dist,
-      ay = force * dy / dist;
-    //弹性吸引
-    // let ax=dx*0.012,
-    // ay=dy*0.012;
-    partA.speed.x += ax / partA.mass;
-    partA.speed.y += ay / partA.mass;
-    partB.speed.x -= ax / partB.mass;
-    partB.speed.y -= ay / partB.mass;
-  };
   constructor(xpos = 0, ypos = 0) {
     super();
-    this._rect = new createjs.Rectangle(xpos, ypos);
+    this._rect=new createjs.Rectangle(xpos,ypos);
     this.edgeBehavior = null;
     this.speed = new Vector(0, 0);
     this.maxSpeed = 10;
     this.active = true;
     this.color = "rgb(64,64,64)";
     this.type="actor";
+    this._image=new createjs.Shape();
   }
   init(width, height) {
     this.setBounds(null);
     this.removeAllChildren();
     this.scale = 1;
-    this.image = new createjs.Shape();
-    this.addChild(this.image);
+    this.hit=0;
+    this.image=this._image;
     this.drawShape(width, height);
+    this.addChild(this.image);
     let b = this.getBounds();
     this.setBounds(b.x, b.y, b.width, b.height);
-    this._update();
+    this._update(b);
   }
-  _update() {
-    let b = this.getBounds();
-    if (!this.hit) this.hit = Math.sqrt(b.width * b.width + b.height * b.height) / 2;
-    this._rect.width = b.width;
-    this._rect.height = b.height;
-    this.x = this._rect.x - b.x;
-    this.y = this._rect.y - b.y;
+  _update(b) {
+    this._rect.width=b.width;
+    this._rect.height=b.height;
+    this.x=this._rect.x-b.x;
+    this.y=this._rect.y-b.y;
+    if (!this.hit) this.hit = Math.sqrt(this._rect.width * this._rect.width + this._rect.height * this._rect.height) / 2;
   }
 
   drawShape(width, height) {
     this.image.graphics.clear().beginFill(this.color).drawRect(-width / 2, -height / 2, width, height);
     this.image.setBounds(-width / 2, -height / 2, width, height);
-    // this.image.cache(-width / 2, -height / 2, width, height);
   }
 
   setSpriteData(spriteSheet, animation, scale = 1, rotation = 0) {
@@ -183,15 +166,18 @@ class Actor extends createjs.Container {
     }
     this.image.scale = scale;
     this.image.rotation = rotation;
-    if (!this.getBounds()) {
+    b=this.getBounds();
+    if (!b) {
       this.addChild(this.image);
-      this._update();
+      b=this.getBounds();
+      this._update(b);
     } else {
       this.addChild(this.image);
     }
   }
   get rect() {
     return this._rect;
+    // return this.getTransformedBounds();
   }
   setPos(x, y) {
     this.x = x;
@@ -217,7 +203,7 @@ class Actor extends createjs.Container {
   }
   recycle() {
     this.active = false;
-    this.parent.removeChild(this);
+    if(this.parent)this.parent.removeChild(this);
   }
   //检测 元素之间是否碰撞
   hitActors(actors, rect = this.rect,pixl=false) {
@@ -228,7 +214,9 @@ class Actor extends createjs.Container {
       }
       if (rect.intersects(other.rect)) {
         if(!pixl)return other;
-        else return checkPixelCollision(this.image,other.image);
+        else if (checkPixelCollision(this.image,other.image)){
+          return other;
+        }
       }
     }
   }
@@ -394,8 +382,7 @@ class CirActor extends Actor {
   }
   setSize(scale) {
     this.hit /= this.scale;
-    this.scaleX = scale;
-    this.scaleY = scale;
+    this.scale=scale;
     this._rect.copy(this.getTransformedBounds());
     this.hit *= scale;
   }
@@ -410,16 +397,14 @@ class BounceActor extends Actor {
     this.sin = 0;
   }
   init(width, rotation) {
-    super.init(width, rotation);
-  }
-  drawShape(w, rotation) {
-    this.image.graphics.clear().setStrokeStyle(2).beginStroke(this.color).moveTo(-w / 2, 0).lineTo(w / 2, 0);
-    this.image.setBounds(-w / 2, 0, w, 1);
+    super.init(width, 2);
+    this.setBounds(null);
     this.setRotation(rotation);
   }
   setRotation(val) {
-    this.image.rotation = val;
-    let angle = this.image.rotation * Math.PI / 180;
+    this.rotation=val;
+    this._rect.copy(this.getTransformedBounds());
+    let angle = this.rotation * Math.PI / 180;
     this.cos = Math.cos(angle);
     this.sin = Math.sin(angle);
   }

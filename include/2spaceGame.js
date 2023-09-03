@@ -4,7 +4,7 @@ import { gframe, keys, stage } from "../classes/gframe.js";
 window.onload = function () {
     gframe.style.TITLE_TEXT_COLOR = "#fff";
     canvas.style.backgroundColor = "#000";
-    gframe.init('canvas');
+    gframe.buildStage('canvas');
     gframe.preload(SpaceShip,true);
     gframe.startFPS();
 };
@@ -25,12 +25,14 @@ class SpaceShip extends gframe.Game {
      * 在构造函数内建立
      */
     createScoreBoard() {
-        this.scoreboard = new gframe.ScoreBoard(0, 0, null);
+        this.scoreboard = new gframe.ScoreBoard();
         this.scoreboard.createTextElement("score");
         this.scoreboard.createTextElement("level");
         this.scoreboard.placeElements();
     }
     newLevel() {
+        this.scoreboard.update("score",this.score);
+        this.scoreboard.update("level",this.level);
         nextBullet = nextRock = 0;
         timeToRock = ROCK_TIME;
         bullets = [];
@@ -88,7 +90,7 @@ class SpaceShip extends gframe.Game {
             o.act();
             //石块与飞船碰撞
             if (o.hitRadius(ship)) {
-                stage.dispatchEvent(gframe.event.GAME_OVER);
+                this.clear(gframe.event.GAME_OVER);
                 return;
             }
             //与子弹碰撞

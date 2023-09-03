@@ -2,7 +2,7 @@ import { gframe, stage } from "../classes/gframe.js";
 import { mc } from "../classes/mc.js";
 
 window.onload = function () {
-    gframe.init('canvas');
+    gframe.buildStage('canvas');
     gframe.preload(Colordrop);
     gframe.startFPS(stage);
 };
@@ -69,7 +69,7 @@ class Colordrop extends gframe.Game {
                         y: slot.y
                     }, 200, createjs.Ease.QuadOut).call(() => {
                         if (this.score == 5) {
-                            stage.dispatchEvent(gframe.event.LEVEL_UP);
+                            this.clear(gframe.event.LEVEL_UP);
                         }
                     }, null, this);
                 } else {
@@ -88,7 +88,7 @@ class Colordrop extends gframe.Game {
             i.com.offset++
         }
     }
-    clear() {
+    clear(e) {
         shapes.forEach((element, item) => {
 
             if (shapes[item].hasEventListener("pressmove")) {
@@ -96,6 +96,7 @@ class Colordrop extends gframe.Game {
                 console.log("remove");
             }
         });
+        super.clear(e);
     }
 
 }

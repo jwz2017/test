@@ -8,7 +8,7 @@ var xpos, ypos, zpos, ball, vpX, vpY,
 export class Velocity3D extends gframe.Game {
     constructor() {
         super("3d速度");
-        gframe.keyboard=true;
+        this.keyboard=true;
     }
     waitComplete() {
         xpos = ypos = zpos = 0;

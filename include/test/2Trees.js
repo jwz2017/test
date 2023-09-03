@@ -9,7 +9,7 @@ export class Trees extends gframe.Game {
         stage.canvas.style.background = "#000";
         gframe.style.TITLE_TEXT_COLOR="#fff";
         super("屏幕环绕3d");
-        gframe.keyboard=true;
+        this.keyboard=true;
     }
     waitComplete() {
         vpX = stage.width / 2;

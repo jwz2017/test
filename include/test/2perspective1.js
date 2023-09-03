@@ -6,7 +6,7 @@ var ball, xpos, ypos, zpos, vpX, vpY,
 export class Perspective1 extends gframe.Game {
     constructor() {
         super("透视1");
-        gframe.keyboard=true;
+        this.keyboard=true;
     }
     waitComplete() {
         xpos = ypos = zpos = 0;

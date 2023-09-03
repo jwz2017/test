@@ -1,7 +1,9 @@
+import { GridsMapGame } from "../classes/GridsMapGame.js";
 import { gframe, queue, stage } from "../classes/gframe.js";
+import { mc } from "../classes/mc.js";
 
 window.onload = function () {
-    gframe.init('canvas');
+    gframe.buildStage('canvas');
     gframe.preload(Puzzle);
     gframe.startFPS();
 };
@@ -11,27 +13,61 @@ const PUZZLE_COLUMNS = 5,
 var selectedPieces,
     pieces;
 
-class Puzzle extends gframe.Game {
+class Puzzle extends GridsMapGame {
     static loadItem = [{
         id: "puzzle",
         src: "puzzle/mam.png"
     }];
     constructor() {
-        super("拼图游戏");
+        super("拼图游戏", PUZZLE_SIZE * PUZZLE_COLUMNS, PUZZLE_SIZE * PUZZLE_ROWS, PUZZLE_SIZE, PUZZLE_SIZE, PUZZLE_COLUMNS, PUZZLE_ROWS);
+        this.y = stage.height - this.height >> 1;
     }
     createScoreBoard() {
-        this.scoreboard = new gframe.ScoreBoard(0, 0, null);
+        this.scoreboard = new gframe.ScoreBoard();
         this.scoreboard.createTextElement("level", 320, 14);
     }
 
-    newGame() {
+    init() {
         selectedPieces = [];
         pieces = [];
     }
     newLevel() {
         this.scoreboard.update("level", this.level);
+        // this.drawGrid();
+        // setTimeout(() => {
+        //     for (let k = 0; k < this.nodes.length; k++) {
+        //         const element = this.nodes[k];
+        //         mc.randomArray(element);
+        //     }
+        //     mc.randomArray(this.nodes);
+        //     for (let i = 0; i < this.numCols; i++) {
+        //         for (let j = 0; j < this.numRows; j++) {
+        //             const node=this.getNode(i,j);
+        //             createjs.Tween.get(node.image).to({
+        //                 x:i*this.stepWidth,
+        //                 y:j*this.stepHeight
+        //             },200);
+                    
+        //         }
+        //     }
+        // }, 3000);
     }
+    // drawGrid() {
+    //     for (let i = 0; i < this.numCols; i++) {
+    //         for (let j = 0; j < this.numRows; j++) {
+    //             const node = this.getNode(i, j);
+    //             const piece = new createjs.Bitmap(queue.getResult("puzzle"));
+    //             piece.sourceRect = new createjs.Rectangle(i * this.stepWidth, j * this.stepHeight, this.stepWidth, this.stepHeight);
+    //             piece.x = i * this.stepWidth;
+    //             piece.y = j * this.stepHeight;
+    //             node.image = piece;
+    //             this.addChildToFloor(piece);
+    //         }
+
+    //     }
+    // }
     waitComplete() {
+
         //分割图片
         let l = PUZZLE_COLUMNS * PUZZLE_ROWS;
         for (let i = 0, col = 0, row = 0; i < l; i++) {
@@ -121,18 +157,18 @@ class Puzzle extends gframe.Game {
         }
         if (win) {
             setTimeout(() => {
-                this.clear();
-                this.stage.dispatchEvent(GFrame.event.GAME_OVER);
+                this.clear(GFrame.event.GAME_OVER);
             }, 200);
         }
         selectedPieces = [];
     }
-    clear() {
+    clear(e) {
         pieces.forEach(element => {
             if (element) {
                 element.removeEventListener('click', this.onPieceClick);
             }
         });
+        super.clear(e);
     }
 
 }

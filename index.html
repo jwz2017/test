@@ -5,10 +5,16 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1, user-scalable=no" />
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="css/backsound/iconfont.css">
+  <link rel="stylesheet" href="assets/fonts/font_1wu1p0cqtoj/iconfont.css">
   <link rel="stylesheet" href="css/normlize.css">
   <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="css/game.css">
+  <link rel="Preload" href="assets/fonts/regul-book.woff" as="font" type="font/woff" crossorigin="anonymous">
+  <link rel="Preload" href="assets/fonts/pf_ronda_seven.ttf" as="font" type="font/ttf" crossorigin="anonymous">
   <title>h5Test</title>
   <script src="classes/createjs.min.js"></script>
+
   <script src="classes/ScaleBitmap.js"></script>
   <script src="assets/lib.js"></script>
   <!--04-->
@@ -97,8 +103,10 @@
             <ul class="sk_product">
               <li>
                 <h4>测试</h4>
-                <p>actor测试</p>
-                <a href="#" title="ActorTest" onclick="productClick(this)">ActorTest</a>
+                <p>hitTest测试</p>
+                <a href="#" title="hitTest" onclick="productClick(this)">hitTest</a>
+                <p>dom测试</p>
+                <a href="#" title="DomElement" onclick="productClick(this)">DomElement</a>
                 <p>图形工具</p>
                 <a href="#" title="Graphics" onclick="productClick(this)">Graphics</a>
                 <p>资源加载 </p>
@@ -107,6 +115,19 @@
                 <a href="#" title="Mctest" onclick="productClick(this)">Mctest</a>
               </li>
               <li>
+                <p>旋转矩形碰撞</p>
+                <a href="#" title="RectRotate" onclick="productClick(this)">RectRotate</a>
+                <p>随机骰子</p>
+                <a href="#" title="RandomDice" onclick="productClick(this)">RandomDice</a>
+                <p>分数板测试</p>
+                <a href="#" title="ScoreTest" onclick="productClick(this)">ScoreTest</a>
+              </li>
+            </ul>
+            <!-- 扩展 -->
+            <ul id="pro_con1" class="sk_product" style="display: none;">
+              <li>
+                <hr>
+                <h4>动量运动</h4>
                 <p>链式运动</p>
                 <a href="#" title="Chain" onclick="productClick(this)">Chain</a>
                 <p>单轴碰撞</p>
@@ -117,15 +138,6 @@
                 <a href="#" title="Particle" onclick="productClick(this)">Particle</a>
                 <p>节点花园</p>
                 <a href="#" title="NodeGarden" onclick="productClick(this)">NodeGarden</a>
-              </li>
-              <li>
-                <p>旋转矩形碰撞</p>
-                <a href="#" title="RectRotate" onclick="productClick(this)">RectRotate</a>
-              </li>
-            </ul>
-            <!-- 扩展 -->
-            <ul id="pro_con1" class="sk_product" style="display: none;">
-              <li>
                 <hr />
                 <h4>关节</h4>
                 <p>关节运动</p>
@@ -288,6 +300,7 @@
                 <h5>功能测试</h5>
                 <a href="shoot.html">射击游戏</a>
                 <a href="colordrop1.html">魔法方块</a>
+                <a href="stageGL.html">stageGL测试</a>
               </li>
             </ul>
             <ul id="pro_con2" class="sk_product" style="display: none;">
@@ -318,20 +331,25 @@
       </div>
     </main>
     <!-- 弹窗界面-->
-    <div id="containerDiv">
+    <div id="containerDiv" style="position: absolute;width:100%;z-index:1000;display: none;top:0;left: 0;">
       <!-- 游戏界面 -->
       <div id="gameDiv">
-        <!-- 随舞台缩放 dom-->
-        <input type="text" id="inputText" placeholder="请输入姓名">
-        <p id="testTxt">CreateJS是基于HTML5开发的一套模块化的库和工具。
-          基于这些库，<span style="color: #00ff00;font-size: 20px">可以非常快捷地开发出基于HTML5的游戏</span>、动画和交互应用。
-        </p>
+        <input type="text" id="inputText" placeholder="请输入姓名" style="position: absolute;visibility: hidden;">
+        <!-- 主题音乐选框 -->
+        <div class="checkboxcontainer" id="titlemusic">
+          <input type="checkbox" class="checkbox" id="tmusic">
+          <label class="checklabel">主题音乐</label>
+        </div>
+        <!-- 背景音乐图标 -->
+        <span href="#" class="iconfont icon-shengyin" id="bmusic"></span>
+
         <canvas id="canvas" width="750" height="1334">
         </canvas>
       </div>
       <!-- 不随舞台缩放 dom -->
       <!-- 关闭按钮 -->
-      <a href="#" id="closeGame"></a>
+      <a href="#" class="iconfont icon-cancel-square" id="closeGame"
+        style="font-size: 50px;position: absolute;right: 2px;top: 2px;"></a>
     </div>
   </div>
 </body>

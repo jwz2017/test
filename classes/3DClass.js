@@ -248,7 +248,7 @@ export class DrawnIsoTile extends IsoObject {
     }
     drawShape() {
         this.shape.graphics.clear().
-            setStrokeStyle(0.1).
+            setStrokeStyle(0.5).
             beginStroke("#000").
             beginFill(this.color).
             moveTo(-this.size, 0).
@@ -318,43 +318,9 @@ export class DrawnIsoBox extends DrawnIsoTile {
 export class GraphicTile extends IsoObject {
     constructor(size, gfx, xoffset, yoffset) {
         super(size);
-        // let gfx = new ClassRef();
         gfx.x = -xoffset;
         gfx.y = -yoffset;
         this.addChild(gfx);
     }
 
-}
-/**
- * 等角世界类
- */
-export class IsoWorld extends createjs.Container {
-    constructor() {
-        super();
-        this._floor = new createjs.Container();
-        this._world = new createjs.Container();
-        this.addChild(this._floor, this._world);
-    }
-    addChildToWorld(child) {
-        this._world.addChild(child);
-        this.sortDepth();
-    }
-    addChildToFloor(child) {
-        this._floor.addChild(child);
-    }
-    canMove(obj) {
-        let rect = obj.rect.setValues(obj.rect.x + obj.vx, obj.rect.y + obj.vz, obj.rect.width, obj.rect.height);
-        for (let i = 0; i < this._world.numChildren; i++) {
-            const objB = this._world.getChildAt(i);
-            if (obj != objB && !objB.walkable && rect.intersects(objB.rect)) {
-                return false;
-            }
-        }
-        return true;
-    }
-    sortDepth() {
-        this._world.sortChildren(function (a, b) {
-            return a.depth - b.depth;
-        });
-    }
 }

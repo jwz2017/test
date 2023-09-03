@@ -454,25 +454,105 @@ class PushButton extends Component {
    * @param {[number]} height =40 [高度]
    * @param {[Graphics]} GClass  图形类
    */
-  constructor(parent, label, handler, x, y, width, height, GClass) {
+  constructor(parent, label, handle, x, y, width=60, height=20, GClass=new Rect) {
     super(parent, x, y);
+    this.mouseChildren=false;
     //addChildren
-    this.shape = new PushButtonShape(this, handler, width, height, GClass);
+    this.shape = new createjs.Shape();
+    this.addChild(this.shape);
     this._label = this._createLabel(label, mc.style.CENTER_MIDDLE);
+    this.shape.graphics = GClass;
+    if (parent) parent.addChild(this);
+    this._handler = handle;
+    //状态
+    this.cursor = "pointer"; //手型
+    this._down = false;
+    this._over = false;
+    this._selected = false; //选择状态
+    this.toggle = false; // 设置是否开关状态
+    this._enable = true;
+    //鼠标事件
+    this.on("mouseover", e => {
+      this._over = true;
+      this.redraw();
+    })
+    this.on("mouseout", this._onMouseOut);
+    this.on("mousedown", this._onMouseDown);
+    this.on("pressup", this._onPressUp);
+    this.setSize(width, height);
     this._positionLabel();
   }
   _positionLabel() {
-    this._label.x = this.shape.width / 2;
-    this._label.y = this.shape.height / 2+2;
+    this._label.x = this.width / 2;
+    this._label.y = this.height / 2;
+  }
+  _onMouseDown(e) {
+    this._down = true;
+    this.redraw();
+  }
+  _onMouseOut(e) {
+    this._down = this._selected;
+    this._over = false;
+    this.redraw();
+  }
+  _onPressUp(e) {
+    if (this._over && this._down && this.toggle) {
+      this._selected = !this._selected;
+    }
+    if (this._handler && e.target.hitTest(e.localX, e.localY)) {
+      this._handler();
+    }
+    this._down = this._selected;
+    this.redraw();
+  }
+  redraw() {
+    this.shape.graphics.clear();
+    //drawborder
+    if (this._down) {
+      this.shape.graphics.drawBorderDown();
+    } else {
+      this.shape.graphics.drawBorderUp();
+    }
+    //drawFace
+    if (this._down) {
+      this.shape.graphics.drawFaceDown();
+    } else if (this._over) {
+      this.shape.graphics.drawFaceOver();
+    } else {
+      this.shape.graphics.drawFaceUp();
+    }
+  }
+  get enable() {
+    return this.mouseEnabled;
+  }
+
+  set enable(enable) {
+    this.mouseEnabled = enable;
+  }
+
+  get width() {
+    return this._width;
+  }
+  get height() {
+    return this._height;
   }
   get selected() {
-    return this.shape.selected;
+    return this._selected;
   }
-  get toggle() {
-    return this.shape.toggle;
+  set selected(val) {
+    if (this._selected != val) {
+      this._selected = val;
+      this.redraw();
+    }
   }
-  set toggle(val) {
-    this.shape.toggle = val;
+
+  setSize(width, height) {
+    this._width = width;
+    this._height = height;
+    this.shape.graphics.width = width;
+    this.shape.graphics.height = height;
+    this.setBounds(0, 0, this._width, this._height);
+    this.redraw();
   }
 }
 // checkBox类
@@ -805,7 +885,8 @@ class ScrollContainer extends createjs.Container {
     if (parent) parent.addChild(this);
     this.x = x;
     this.y = y;
-
+    this.width=width;
+    this.height=height;
     this.container = new createjs.Container();
     this.container.setBounds(0, 0, containerWidth, containerHeight);
     this.addChild(this.container)
@@ -847,9 +928,9 @@ class ScrollContainer extends createjs.Container {
     this.removeChild = child => {
       this.container.removeChild(child);
     }
-    this.addChildAt=(child,i)=>{
-      this.container.addChildAt(child,i);
-    }
+    // this.addChildAt=(child,i)=>{
+    //   this.container.addChildAt(child,i);
+    // }
     this.setSize(width, height);
   }
 
@@ -926,8 +1007,8 @@ const mc = {
     buttonUpColor: "#ffffff",
     labelColor: "#666666",
     highlightColor: "#eeeeee",
-    fontSize: 12,
-    fontFamily: "regul,Microsoft YaHei,Serif", //"YaHei",
+    fontSize: 16,
+    fontFamily: "pfrondaseven,regulbook,宋体,Serif",
     strokeStyle: 2,
     CENTER_MIDDLE: "centermiddle",
     LEFT_MIDDLE: "leftmiddle",

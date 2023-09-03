@@ -1,6 +1,6 @@
 import { DrawnIsoBox, DrawnIsoTile, GraphicTile } from "../../classes/3DClass.js";
-import { GridsMapGame } from "../../classes/GridsMapGame.js";
-import { gframe, queue, stage } from "../../classes/gframe.js";
+import { GridsMapGame, Node } from "../../classes/GridsMapGame.js";
+import { queue, stage } from "../../classes/gframe.js";
 import { mc } from "../../classes/mc.js";
 
 var size = 20,
@@ -37,12 +37,12 @@ export class MapTest extends GridsMapGame {
             if (ch == "0") {
                 a = new GraphicTile(size, new createjs.Bitmap(queue.getResult("tile_01")), size, size / 2);
             } else if (ch == "1") {
-                node.walkable = false;
                 a = new GraphicTile(size, new createjs.Bitmap(queue.getResult("tile_02")), size, size * 1.5);
+                node.type = Node.NOWALKABLE;
             } else if (ch == "3") {
                 a = new DrawnIsoTile(size, "#cccccc");
             } else if (ch == "2") {
-                node.walkable = false;
+                node.type = Node.NOWALKABLE;
                 a = new DrawnIsoBox(size, mc.parseColor(Math.random() * 0xffffff, false), size);
             }
             a.xpos = node.x * size;

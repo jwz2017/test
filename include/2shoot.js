@@ -2,8 +2,7 @@ import { Actor, CirActor, Vector } from "../classes/actor.js";
 import { game, gframe, lib, queue, stage } from "../classes/gframe.js";
 
 window.onload = function () {
-    gframe.init('canvas');
-    //gframe.loaderBar=null;
+    gframe.buildStage('canvas');
     gframe.preload(Shoot);
     gframe.startFPS();
 };
@@ -16,9 +15,9 @@ var playerBullets = [],
     //船只
     ships,//出场船只数组
     maxShips = 3,
-    shipStore,//船只仓库
+    shipStore=[],//船只仓库
     //敌机
-    enemys,
+    enemys=[],
     enemyFrameCount,
     enemyWaveDely,
     enemyWaveChance,
@@ -33,18 +32,13 @@ class Shoot extends gframe.Game {
     static loadId = 'DB0F6E8AA40CA64BB67AC23B3362E66C';
     constructor() {
         super("射击游戏");
-
-    }
-    /**建立游戏元素游戏初始化
-     * 在构造函数内建立
-     */
-    init() {
+        this.keyboard=true;
         spriteSheet = new createjs.SpriteSheet(queue.getResult("shoot"));
         //十字光标
         crosshairs = new lib.Cross();
         crosshairs.scale = 0.7;
         this.maxLevel = 50;
-
+        // enemys = [];
     }
     createScoreBoard() {
         this.scoreboard = new gframe.ScoreBoard();
@@ -54,16 +48,17 @@ class Shoot extends gframe.Game {
         this.scoreboard.createTextElement(SHOTS);
         this.scoreboard.placeElements();
     }
-    newGame() {
-        this.level=30;
+    init() {
         //初始化船只仓库
         shipStore = [];
         for (let i = 0; i < maxShips; i++) {
             gframe.Game.getActor(shipStore, Ship);
         }
-        enemys = [];
+        this.level=20;
     }
     newLevel() {
+        this.scoreboard.update("score",this.score);
+        this.scoreboard.update("level",this.level);
         numPlayerBullets = 10 + this.level * 6;
         this.scoreboard.update(SHOTS, numPlayerBullets);
         //初始化出场船只
@@ -83,7 +78,7 @@ class Shoot extends gframe.Game {
         enemyWaveMax = this.level + 1;
     }
     waitComplete() {
-        stage.addChild(this.scoreboard, crosshairs);
+        stage.addChild(crosshairs);
         //隐藏鼠标stage.enableMouseOver必须false
         stage.canvas.style.cursor = "none";
         //鼠标点击发射子弹
@@ -124,12 +119,6 @@ class Shoot extends gframe.Game {
         //创建敌机
         this.createEnemy()
         //渲染敌机
-        // for (let i = enemys.length - 1; i >= 0; i--) {
-        //     const enemy = enemys[i];
-        //     if (enemy.active) {
-        //         enemy.act();
-        //     }
-        // }
         for (const enemy of enemys) {
             if(enemy.active) enemy.act();
         }
@@ -142,16 +131,18 @@ class Shoot extends gframe.Game {
             return enemy.active == true;
         });
         if (numEnemy == maxEnemys && !isenemy) {
-            stage.dispatchEvent(gframe.event.LEVEL_UP);
+            this.clear(gframe.event.LEVEL_UP);
         }
     }
-    clear() {
+    clear(e) {
+        stage.removeAllEventListeners("stagemousedown");
         for (const exploy of exployeds) {
             if (exploy.active) exploy.recycle();
         }
         for (const enemy of enemys) {
             if (enemy.active) enemy.recycle();
         }
+        super.clear(e);
 
     }
     placeShip() {
@@ -244,7 +235,7 @@ class Enemy extends Actor {
             ob.recycle();
             ships.splice(ships.indexOf(ob), 1);
             if (ships.length == 0) {
-                this.dispatchEvent(gframe.event.GAME_OVER, true);
+                game.clear(gframe.event.GAME_OVER);
             }
             this.recycle();
         }

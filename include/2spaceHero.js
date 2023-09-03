@@ -3,7 +3,7 @@ import { gframe, keys, queue, stage } from "../classes/gframe.js";
 
 window.onload = function () {
     gframe.style.TITLE_TEXT_COLOR = "#ffffff";
-    gframe.init('canvas');
+    gframe.buildStage('canvas',true);
     gframe.preload(SpaceHero,true);
     gframe.startFPS();
 };
@@ -39,6 +39,8 @@ class SpaceHero extends gframe.Game {
         this.scoreboard.placeElements();
     }
     newLevel() {
+        this.scoreboard.update("score",this.score);
+        this.scoreboard.update("level",this.level);
         enemys = [];
         bullets = [];
         nextEnemy = nextBullet = 0;

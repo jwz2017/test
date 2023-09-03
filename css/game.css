@@ -1,28 +1,37 @@
 /**
   * Remove the margin in all browsers.
   */
-  *,
-  ::before,
-  ::after{
-    margin: 0;
-    padding: 0;
-    /* 针对移动端 */
-    box-sizing: border-box;
-    -webkit-box-sizing: border-box;
-    -webkit-tap-highlight-color:transparent;
-  }
+*,
+::before,
+::after {
+  margin: 0;
+  padding: 0;
+  /* 针对移动端 */
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
-  font-size: 20px;
+  font-size: 14px;
   color: #333;
   font-family: Arial, Helvetica, sans-serif;
   background: #e5e5e5;
 }
-ul,ol{
+
+a {
+  background-color: transparent;
+  text-decoration: none;
+  color: #333;
+}
+
+ul,
+ol {
   list-style: none;
 }
 
 #containerDiv {
-  height: 100vh; 
+  height: 100vh;
   position: relative;
   overflow: hidden;
   background-color: #333;
@@ -36,9 +45,107 @@ ul,ol{
   border: 3px inset #333;
   background-color: #A4AB61;
 }
+
+/************************** checkbox主题音乐 *********************************/
+.checkboxcontainer{
+  position: absolute;
+  visibility: hidden;
+  font-size: 20px;
+}
+.checkbox {
+  vertical-align: middle;
+  width: 22px;
+  height: 22px;
+  
+}
+.checklabel {
+  user-select: none;
+  vertical-align: middle;
+}
+
+/***********************************背景音乐************************/
+.icon-shengyinjingyin,
+.icon-shengyinkai {
+  position: absolute;
+  visibility: hidden;
+  font-size: 30px;
+  cursor: pointer;
+  color: darkgrey;
+}
+
+/******************************** 按钮 *****************************/
+:root {
+  --clr-neon: hsl(317 100% 54%);
+  --clr-bg: hsl(323 21% 16%);
+}
+
+.game-button {
+  position: absolute;
+  visibility: hidden;
+  cursor: pointer;
+  user-select: none;
+  font-family: "regul";
+  font-weight: bold;
+  top: 0;
+  left: 0;
+  font-size: 2rem;
+  color: var(--clr-neon);
+  border: 0.125em solid var(--clr-neon);
+  padding: 0.05em 1em;
+  border-radius: 0.25em;
+  text-shadow: 0 0 0.125em hsl(0 0% 100%/0.5),
+    0 0 0.45em currentColor;
+  box-shadow: inset 0 0 0.5em 0 var(--clr-neon),
+    0 0 0.3em 0 var(--clr-neon);
+  /* transition: background-color 100ms linear; */
+}
+
+/* .game-button::before{
+  pointer-events: none;
+  content: "";
+  position: absolute;
+  background:var(--clr-neon);
+  top: 100%;
+  left: 0;
+  width: 100%;
+  height: 100%;
+
+  transform: perspective(1em) rotateX(40deg) scale(1, 0.35);
+  filter: blur(1em);
+  opacity: 0.7;
+} */
+.game-button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  box-shadow: 0 0 2em 0.5em var(--clr-neon);
+  opacity: 0;
+  transition: opacity 100ms linear;
+  background: var(--clr-neon);
+  z-index: -1;
+}
+
+.game-button:hover,
+.game-button:focus {
+  background: var(--clr-neon);
+  color: var(--clr-bg);
+  text-shadow: none;
+}
+
+/* .game-button:hover::after{
+  opacity:0.5;
+} */
+/* **********************************字体*************************** */
 @font-face {
   font-family: "regul";
-  src: url("../assets/fonts/regul-book.woff");
-  /* src:url("../assets/fonts/regul-bold.woff"); */
-  font-display: swap;
+  src: url("../assets/fonts/regul-book.woff") format('woff');
+
+}
+
+@font-face {
+  font-family: "pfrondaseven";
+  src: url("../assets/fonts/pf_ronda_seven.ttf")format('woff');
 }

@@ -7,6 +7,7 @@ export class RectRotate extends gframe.Game {
         super("矩形旋转碰撞");
     }
     waitComplete() {
+        super.waitComplete();
         rect0 = new Actor();
         rect0.init(200, 80);
         rect0.mass = 2;
