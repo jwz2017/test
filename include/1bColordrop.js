@@ -11,7 +11,6 @@ var slots, shapes;
 class Colordrop extends gframe.Game {
     constructor() {
         super("Colordrop");
-
         slots = [];
         shapes = [];
         for (let i = 0; i < colors.length; i++) {
@@ -87,16 +86,6 @@ class Colordrop extends gframe.Game {
         for (const i of slots) {
             i.com.offset++
         }
-    }
-    clear(e) {
-        shapes.forEach((element, item) => {
-
-            if (shapes[item].hasEventListener("pressmove")) {
-                shapes[item].removeAllEventListeners();
-                console.log("remove");
-            }
-        });
-        super.clear(e);
     }
 
 }

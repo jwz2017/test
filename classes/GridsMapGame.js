@@ -1,28 +1,29 @@
 import { gframe } from "./gframe.js";
+import { checkPixelCollision } from "./hitTest.js";
 /**
  * *******网格游戏类 **************************************************
  */
 class GridsMapGame extends gframe.Game {
-  constructor(titleText, width, height, stepWidth, stepHeight, numCols = 0, numRows = 0,{titleSoundId,backSoundId}={}) {
-    super(titleText, width, height,{titleSoundId:titleSoundId,backSoundId:backSoundId});
-    this.stepWidth = stepWidth;
-    this.stepHeight = stepHeight;
-    this._floor = new createjs.Container();
-    this._world = new createjs.Container();
-    this.addChild(this._floor);
-    this.addChild(this._world);
+  constructor(titleText, width, height, stepWidth, stepHeight, numCols = 0, numRows = 0, { titleSoundId, backSoundId } = {}) {
+    super(titleText, width, height, { titleSoundId: titleSoundId, backSoundId: backSoundId });
+    this.nodes = [];
+    this.floor = new createjs.Container();
+    this.world = new createjs.Container();
+    this.floorActor = new createjs.Container();
+    this.container.addChild(this.floor, this.floorActor, this.world);
+    this._stepWidth = stepWidth;
+    this._stepHeight = stepHeight;
     this._numCols = numCols;
     this._numRows = numRows;
-    this.nodes = [];
     this._mapleft = 0;
     this._maptop = 0;
     this._mapright = this.width;
     this._mapbottom = this.height;
-    this._tempNode=new Node();
+    this._tempNode = new Node(-1, -1);
     //a star
     this._startNode = null;
     this._endNode = null;
-    //建立网格
+    //创建节点
     if (this._numCols) {
       for (let i = 0; i < this._numCols; i++) {
         this.nodes[i] = [];
@@ -32,7 +33,8 @@ class GridsMapGame extends gframe.Game {
       }
     }
   }
-  createGridMap(plan, actorChars, drawGrid, isIso = false) {
+  //创建网格地图
+  createGridMap(plan, actorChars, drawGrid, floorChars = {}, isIso = false) {
     this.nodes = [];
     this._numCols = plan[0].length;
     this._numRows = plan.length;
@@ -41,13 +43,18 @@ class GridsMapGame extends gframe.Game {
       this.nodes[y] = [];
       for (let x = 0; x < this._numCols; x++) {
         const ch = line[x],
-          Act = actorChars[ch];
+          Act = actorChars[ch] || floorChars[ch];
         this.nodes[y][x] = new Node(x, y);
         if (Act) {
-          let a = new Act(x * this.stepWidth, y * this.stepHeight, ch);
-          this.addChildToWorld(a);
-          if (a.type === "player") {
-            this.player = a;
+          let a = new Act(x * this._stepWidth, y * this._stepHeight, ch);
+          if (Act == actorChars[ch]) {
+            this.addChildToWorld(a);
+            if (a.type === "player") {
+              this.player = a;
+            }
+          } else {
+            this.floorActor.addChild(a);
+            this.nodes[y][x].actor = a;
           }
         }
         drawGrid(ch, this.nodes[y][x]);
@@ -57,44 +64,43 @@ class GridsMapGame extends gframe.Game {
       //等角地图深度排序
       this.sortDepth();
       //设置地图大小
-      let w1 = this._numCols * this.stepWidth + this._numRows * this.stepHeight;
+      let w1 = this._numCols * this._stepWidth + this._numRows * this._stepHeight;
       this.contentSize = {
         width: w1,
         height: w1 / 2
       }
-      this.container.x=this.width/2;
-      this.container.y=this.stepHeight/2;
-      this._floor.cache(-this.contentSize.width/2,-this.stepHeight/2,this.contentSize.width,this.contentSize.height);
+      this.container.x = this.width / 2;
+      this.container.y = this._stepHeight / 2;
+      this.floor.cache(-this.contentSize.width / 2, -this._stepHeight / 2, this.contentSize.width, this.contentSize.height);
     } else {
       this.contentSize = {
-        width: this._numCols * this.stepWidth,
-        height: this._numRows * this.stepHeight
+        width: this._numCols * this._stepWidth,
+        height: this._numRows * this._stepHeight
       }
-      this._floor.cache(0, 0, this.contentSize.width, this.contentSize.height)
+      this.floor.cache(0, 0, this.contentSize.width, this.contentSize.height)
     }
   }
   addChildToFloor(child) {
-    this._floor.addChild(child);
+    this.floor.addChild(child);
   }
   addChildToWorld(child) {
-    this._world.addChild(child);
+    this.world.addChild(child);
   }
-  sortDepth(container = this._floor) {
+  sortDepth(container = this.floor) {
     container.sortChildren(function (a, b) {
       return a.depth - b.depth;
     });
   }
 
-  //屏幕滚动
-  scrollPlayerIntoView(actor) {
-    let a=this.getActorScroll(actor);
-    this.scrollX=a.scrollX;
-    this.scrollY=a.scrollY;
+  //屏幕滚动默认焦点游戏玩家
+  scrollPlayerIntoView(actor = this.player, marginw = this.width / 3, marginh = this.height / 3) {
+    let a = this.getActorScroll(actor, marginw, marginh);
+    this.scrollX = a.scrollX;
+    this.scrollY = a.scrollY;
   }
-  getActorScroll(actor){
-    let marginw = this.width / 3;
-    let marginh = this.height / 3;
-    let scrollX=this.scrollX,scrollY=this.scrollY;
+  //设置摄像焦点对象
+  getActorScroll(actor, marginw = this.width / 2, marginh = this.height / 2) {
+    let scrollX = this.scrollX, scrollY = this.scrollY;
     //this viewpot
     this._mapleft = -scrollX;
     this._mapright = this._mapleft + this.width;
@@ -110,7 +116,7 @@ class GridsMapGame extends gframe.Game {
     } else if (actor.y > this._mapbottom - marginh) {
       scrollY = Math.floor(-actor.y - marginh + this.height);
     }
-    return {scrollX,scrollY};
+    return { scrollX, scrollY };
   }
   /**检测是否出屏幕
    * 
@@ -122,26 +128,12 @@ class GridsMapGame extends gframe.Game {
     let rect = actor.rect;
     return rect.x + rect.width < this._mapleft || rect.x > this._mapright || rect.y + rect.height < this._maptop || rect.y > this._mapbottom;
   }
-  hasTypeOnContainer(actorType,container=this._world) {
-    return container.children.some(function (actor) {
-      return actor.type == actorType;
-    })
-  }
-  moveActors(layer = this._world) {
-    let actor = layer.getChildAt(layer.numChildren - 1)
-    while (actor) {
-      actor.act();
-      let index = layer.getChildIndex(actor);
-      actor = layer.getChildAt(index - 1);
-    }
-  }
-
-  //检测地图与元素碰撞
-  hitMap(rect1) {
-    let x1 = rect1.x / this.stepWidth,
-      y1 = rect1.y / this.stepHeight,
-      w1 = rect1.width / this.stepWidth,
-      h1 = rect1.height / this.stepHeight;
+  // 检测静态地图元素碰撞
+  hitMap(rect1, image = null) {
+    let x1 = rect1.x / this._stepWidth,
+      y1 = rect1.y / this._stepHeight,
+      w1 = rect1.width / this._stepWidth,
+      h1 = rect1.height / this._stepHeight;
     var xStart = Math.floor(x1);
     var xEnd = Math.ceil(x1 + w1);
     var yStart = Math.floor(y1);
@@ -156,12 +148,60 @@ class GridsMapGame extends gframe.Game {
     for (var y = yStart; y < yEnd; y++) {
       for (var x = xStart; x < xEnd; x++) {
         let node = this.nodes[y][x];
-        if (node.type!=Node.WALKABLE) {
-          return node;
+        if (node.type != Node.WALKABLE) {
+          if (!node.actor) return node;
+          else {
+            if (!image || !(node.actor.image instanceof createjs.Sprite)) {
+              if (rect1.intersects(node.actor.rect)) return node;
+            } else {
+              let r = rect1.intersection(node.actor.rect);
+              if (r) {
+                this._transformRect(r);
+                if (checkPixelCollision(image, node.actor.image, r)) {
+                  return node
+                }
+              }
+            }
+          }
         }
       }
     }
   }
+  //检测地图道具元素碰撞
+  hitFloorActor(rect1, image = null) {
+    let x1 = rect1.x / this._stepWidth,
+      y1 = rect1.y / this._stepHeight,
+      w1 = rect1.width / this._stepWidth,
+      h1 = rect1.height / this._stepHeight;
+    var xStart = Math.floor(x1);
+    var xEnd = Math.ceil(x1 + w1);
+    var yStart = Math.floor(y1);
+    var yEnd = Math.ceil(y1 + h1);
+    for (var y = yStart; y < yEnd; y++) {
+      for (var x = xStart; x < xEnd; x++) {
+        let node = this.nodes[y][x];
+        if (node.type == Node.WALKABLE && node.actor) {
+          if (!image || !(node.actor.image instanceof createjs.Sprite)) {
+            if (rect1.intersects(node.actor.rect)) return node;
+          } else {
+            let r = rect1.intersection(node.actor.rect);
+            if (r) {
+              this._transformRect(r)
+              if (checkPixelCollision(image, node.actor.image, r)) {
+                return node
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  _transformRect(r) {
+    let p = this.container.localToGlobal(r.x, r.y);
+    r.x = p.x;
+    r.y = p.y;
+  }
+
   /**
    * 寻找周围相似节点
    * @param {*} node 
@@ -171,8 +211,10 @@ class GridsMapGame extends gframe.Game {
     let nodesToCheck = [], nodesMatched = [], nodesTested = [];
     let typeToMatch = node.type;
     nodesToCheck.push(node);
+    //八方位检测
     // let rowList = [-1, 0, 1, -1, 1, -1, 0, 1],
     //     colList = [-1, -1, -1, 0, 0, 1, 1, 1];
+    //上下左右四方位检测
     let rowList = [0, -1, 1, 0];
     let colList = [-1, 0, 0, 1];
     while (nodesToCheck.length > 0) {
@@ -195,7 +237,7 @@ class GridsMapGame extends gframe.Game {
     }
     return nodesMatched;
   }
-  
+
   //a star*************8
   getNode(x, y) {
     return this.nodes[x][y]
@@ -221,30 +263,36 @@ class GridsMapGame extends gframe.Game {
   get numRows() {
     return this._numRows;
   }
-  get world() {
-    return this._world;
-  }
-  get floor() {
-    return this._floor;
-  }
   _clear() {
-    // this._floor.uncache();
     super._clear();
-    this._floor.removeAllChildren();
-    this._world.removeAllChildren();
+    this.floor.removeAllChildren();
+    this.floorActor.removeAllChildren();
+    //清除world内容元素
+    let l = this.world.children.length - 1;
+    for (let i = l; i >= 0; i--) {
+      const element = this.world.children[i];
+      if (element.active) {
+        element.recycle();
+      } else {
+        this.world.removeChild(element);
+      }
+    };
+    this.container.addChild(this.floor, this.floorActor, this.world);
+
   }
 }
 /**
  * 网格节点
  */
 class Node {
-  static WALKABLE="walkable";
-  static NOWALKABLE="nowalkable";
-  static DEATH="death";
+  static WALKABLE = "walkable";
+  static NOWALKABLE = "nowalkable";
+  static DEATH = "death";
   constructor(xpos, ypos) {
     this.x = xpos;
     this.y = ypos;
     this.type = Node.WALKABLE;
+    this.actor = null;
     this.costMultiplier = 1;
     this.f;
     this.g;
@@ -290,7 +338,7 @@ class AStar {
       for (let i = startX; i <= endX; i++) {
         for (let j = startY; j <= endY; j++) {
           let test = this._grid.getNode(i, j);
-          if (test === node || test.type!=Node.WALKABLE || this._grid.getNode(node.x, test.y).type!=Node.WALKABLE || this._grid.getNode(test.x, node.y).type!=Node.WALKABLE) {
+          if (test === node || test.type != Node.WALKABLE || this._grid.getNode(node.x, test.y).type != Node.WALKABLE || this._grid.getNode(test.x, node.y).type != Node.WALKABLE) {
             continue;
           }
           let cost = this._straightCost;
@@ -361,4 +409,4 @@ class AStar {
   }
 }
 
-export { GridsMapGame,Node, AStar };
+export { GridsMapGame, Node, AStar };

@@ -5,15 +5,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1, user-scalable=no" />
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <link rel="stylesheet" href="css/backsound/iconfont.css">
   <link rel="stylesheet" href="assets/fonts/font_1wu1p0cqtoj/iconfont.css">
   <link rel="stylesheet" href="css/normlize.css">
   <link rel="stylesheet" href="css/index.css">
   <link rel="stylesheet" href="css/game.css">
-  <link rel="Preload" href="assets/fonts/regul-book.woff" as="font" type="font/woff" crossorigin="anonymous">
-  <link rel="Preload" href="assets/fonts/pf_ronda_seven.ttf" as="font" type="font/ttf" crossorigin="anonymous">
+  <!-- <link rel="Preload" href="assets/fonts/regul-book.woff" as="font" type="font/woff" crossorigin="anonymous">
+  <link rel="Preload" href="assets/fonts/pf_ronda_seven.ttf" as="font" type="font/ttf" crossorigin="anonymous"> -->
   <title>h5Test</title>
   <script src="classes/createjs.min.js"></script>
+  <script src="classes/dat.gui.min.js"></script>
 
   <script src="classes/ScaleBitmap.js"></script>
   <script src="assets/lib.js"></script>
@@ -276,7 +276,7 @@
                 <p>拼图游戏</p>
               </li>
               <li>
-                <a href="match.html" target="_blank"><img src="assets/main/match.jpg" alt=""></a>
+                <a href="match.html"><img src="assets/main/match.jpg" alt=""></a>
                 <p>记忆游戏</p>
               </li>
               <li>
@@ -301,12 +301,18 @@
                 <a href="shoot.html">射击游戏</a>
                 <a href="colordrop1.html">魔法方块</a>
                 <a href="stageGL.html">stageGL测试</a>
+                <a href="driveCar.html">DriveCar</a>
+                <a href="tunnel.html">隧道惊魂</a>
+                <a href="worldGame.html">文字游戏</a>
+                <a href="tetris.html">俄罗斯方块</a>
               </li>
             </ul>
             <ul id="pro_con2" class="sk_product" style="display: none;">
               <hr>
+              <h5>小游戏</h5>
               <li>
-
+                <p>floorDown</p>
+                <a href="floordown.html">下100层</a>
               </li>
             </ul>
           </div>
@@ -335,18 +341,14 @@
       <!-- 游戏界面 -->
       <div id="gameDiv">
         <input type="text" id="inputText" placeholder="请输入姓名" style="position: absolute;visibility: hidden;">
-        <!-- 主题音乐选框 -->
-        <div class="checkboxcontainer" id="titlemusic">
-          <input type="checkbox" class="checkbox" id="tmusic">
-          <label class="checklabel">主题音乐</label>
-        </div>
         <!-- 背景音乐图标 -->
         <span href="#" class="iconfont icon-shengyin" id="bmusic"></span>
-
         <canvas id="canvas" width="750" height="1334">
         </canvas>
       </div>
       <!-- 不随舞台缩放 dom -->
+      <div id="gameDom">
+      </div>
       <!-- 关闭按钮 -->
       <a href="#" class="iconfont icon-cancel-square" id="closeGame"
         style="font-size: 50px;position: absolute;right: 2px;top: 2px;"></a>

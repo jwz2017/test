@@ -21,7 +21,7 @@ export class Billiard2 extends gframe.Game {
         ball1.speed.x = Math.random() * 10 - 5;
         ball1.speed.y = Math.random() * 10 - 5;
         stage.addChild(ball0, ball1);
-        ball1.setSize(0.5)
+        ball1.setScale(0.5)
     }
     runGame() {
         ball0.act();

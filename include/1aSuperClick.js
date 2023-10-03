@@ -1,6 +1,4 @@
-import { gframe, stage } from "../classes/gframe.js";
-import { mc } from "../classes/mc.js";
-
+import {gframe, stage } from "../classes/gframe.js";
 window.onload = function () {
     gframe.buildStage('canvas');
     gframe.preload(SuperClick);
@@ -23,38 +21,27 @@ var radius = 8,
     needed = 0,
     achieve = 0,
     balls = [];
-
 export class SuperClick extends gframe.Game {
     constructor() {
         super("super click");
         this.maxLevel = 10;
-        stage.addEventListener('mousedown', (e) => {
-            if (createjs.Ticker.paused) {
-                return;
-            } else if (e.target.type === BAD) {
-                this.clear(gframe.event.GAME_OVER);
-            } else if (e.target.type === GOOD && e.target.first === true) {
-                e.target.clicked = true;
-                e.target.first = false;
-            }
-        })
+        this.setSize(stage.width, stage.height - this.scoreboard.height);
+        this.y = this.scoreboard.height;
     }
     createScoreBoard() {
-        this.scoreboard = new gframe.ScoreBoard(0,0,true,{justifyContent:"space-between"});
+        this.scoreboard = new gframe.ScoreBoard(0, 0, false, { justifyContent: "space-between" });
+        this.scoreboard.x=50;
         this.scoreboard.createTextElement("score");
         this.scoreboard.createTextElement("level");
         this.scoreboard.createTextElement(CLICKS);
         this.scoreboard.createTextElement(NEEDED);
         this.scoreboard.createTextElement(ACHIEVE);
-        this.scoreboard.placeElements();
     }
     newLevel() {
-        this.scoreboard.update("score",this.score);
-        this.scoreboard.update("level",this.level);
-        
+        this.scoreboard.update("score", this.score);
+        this.scoreboard.update("level", this.level);
         clicks = 0;
         achieve = 0;
-        balls=[];
         needed = 14 + this.level * 2;
         if (needed > 90) {
             needed = 90;
@@ -71,117 +58,115 @@ export class SuperClick extends gframe.Game {
     }
     waitComplete(){
         stage.enableMouseOver();
-    }
-    runGame() {
-        this._creatElement();
-        this._update();
-        this._checkBall();
-        this._checkOver();
-        this._checkLevelUp();
-    }
-    _creatElement() {
-        if (balls.length < maxOnScreen && numCreated < numCircles) {
-            let circle;
-            if (Math.random() * 100 < percentBadCircle) {
-                circle = new Ball(BAD, radius);
-                circle.type = BAD;
-            } else {
-                circle = new Ball(GOOD, radius);
-                circle.type = GOOD;
-                numCreated++;
-            }
-            let d=this.scoreboard.height;
-            circle.x = Math.random() * (stage.width - radius * 2 + radius);
-            circle.y = Math.random() * (stage.height - d- radius * 2) + d+ radius;
-            circle.scaleX = circle.scaleY = 0.5;
-            circle.clicked = false;
-            circle.first = true;
-            stage.addChild(circle);
-            balls.push(circle);
-        }
-    }
-    _update() {
-        balls.forEach(function (item) {
-            if (item.scaleX < maxscale) {
-                item.scaleX += growSpeed;
-                item.scaleY += growSpeed;
-            } else {
-                createjs.Tween.get(item).to({
-                    alpha: 0
-                }, 2000);
-            }
-        }, this)
-    }
-    _checkBall() {
-        for (let i = balls.length - 1; i >= 0; i--) {
-            const ball = balls[i];
-            if (ball.alpha <= 0.1) {
-                stage.removeChild(ball);
-                balls.splice(i, 1);
-            } else if (ball.clicked) {
-                let addScore = Math.round(maxScore / ball.scaleX);
-                this.score+=addScore;
+        stage.addEventListener('mousedown', (e) => {
+            if (createjs.Ticker.paused) {
+                return;
+            } else if (e.target.type === BAD) {
+                this.clear(gframe.event.GAME_OVER);
+            } else if (e.target.type === GOOD && e.target.first === true) {
+                let ball = e.target;
+                ball.clicked = true;
+                ball.first = false;
+                let addScore = Math.round(maxScore / ball.scale);
                 clicks++;
+                this.score += addScore;
                 achieve = Math.round(clicks / numCircles * 100);
-                this.scoreboard.update(ACHIEVE, achieve + "%");
-                this.scoreboard.update("score", this.score);
-                this.scoreboard.update(CLICKS, clicks + "/" + numCircles);
-                var txt = new createjs.Text(addScore, 'bold 12px arial', '#ff0000');
-                txt.textAlign = 'center';
-                txt.textBaseline = 'middle';
-                txt.x = ball.x;
-                txt.y = ball.y;
+                this.scoreboard.update(SuperClick.SCORE, this.score);
+                this.scoreboard.update(CLICKS, clicks);
+                this.scoreboard.update(ACHIEVE, achieve);
+                //加入分数文本
+                let txt = new createjs.Text(addScore, "bold 12px,arial", "#ff0000");
+                txt.textAlign = "center";
+                txt.textBaseline = "middle";
+                let p = this.localToGlobal(ball.x, ball.y);
+                txt.x = p.x;
+                txt.y = p.y;
                 stage.addChild(txt);
                 createjs.Tween.get(txt).to({
-                    scaleX: 3,
-                    scaleY: 3,
-                    alpha: 0
-                }, 500).call(this.remove);
-                balls.splice(i, 1);
-                createjs.Tween.get(ball).to({
-                    alpha: 0
-                }, 2000).call(this.remove);
+                    scale: 3
+                }, 500).call(() => {
+                    stage.removeChild(txt);
+                });
             }
+        })
+    }
+    runGame() {
+        this.creatElement();
+        this.moveActors();
+        this.checkOver();
+        this.checkLevelUp();
+    }
+    clear(e){
+        stage.removeAllEventListeners("mousedown");
+        super.clear(e);
+    }
+    creatElement() {
+        if (this.container.children.length < maxOnScreen && numCreated < numCircles) {
+            var circle;
+            if (Math.random() * 100 < percentBadCircle) {
+                circle = SuperClick.getActor(balls, Ball);
+                circle.init(BAD)
+            } else {
+                circle = SuperClick.getActor(balls, Ball);
+                circle.init(GOOD);
+                numCreated++;
+            }
+            circle.x = Math.random() * (this.width - radius * 2 + radius);
+            circle.y = Math.random() * (this.height - radius * 2 + radius);
+            circle.scaleX = circle.scaleY = 0.5;
+            this.addChild(circle);
         }
     }
-    _checkOver() {
-        if (balls.length == 0) {
+    checkOver() {
+        if (numCreated == numCircles && !this.hasTypeOnContainer(GOOD)) {
+            console.log(numCreated,numCircles);
             this.clear(gframe.event.GAME_OVER);
         }
     }
-    _checkLevelUp() {
+    checkLevelUp() {
         if (achieve >= needed) {
             this.clear(gframe.event.LEVEL_UP)
         }
     }
-    remove() {
-        stage.removeChild(this);
-
-    }
-
 }
 class Ball extends createjs.Shape {
     /**
      * @param {[string]} color #ff0000
      * @param {[number]} radius 15
      */
-    constructor(color = "#ff0000", radius = 15) {
+    constructor(radius = 15) {
         super();
-        this.color = color;
         this.cursor = "pointer";
         this.radius = radius;
-        this.vx = this.vy = 0;
+    }
+    init(type) {
+        this.first = true;
+        this.clicked = false;
+        this.scale=1;
+        this.alpha=1;
+        if (type == GOOD) this.type = GOOD;
+        else this.type = BAD;
         this._redraw();
-        this.setBounds(-this.radius - mc.style.strokeStyle, -this.radius - mc.style.strokeStyle, 2 * this.radius + 2 * mc.style.strokeStyle, 2 * this.radius + 2 * mc.style.strokeStyle);
+    }
+    act() {
+        if(this.clicked) this.alpha-=0.01;
+        else if (this.scaleX < maxscale) {
+            this.scale += growSpeed;
+        } else {
+            this.alpha -= 0.01;
+        }
+        if (this.alpha < 0.1) {
+            this.recycle();
+        }
+    }
+    recycle() {
+        this.parent.removeChild(this);
+        this.active = false;
     }
     _redraw() {
         this.graphics.clear();
         this.graphics.setStrokeStyle(1).beginStroke('#ffffff')
-        if (typeof (this.color) == "string") {
-            this.graphics.beginFill(this.color);
-        } else { //渐变
-            this.graphics.beginRadialGradientFill(this.color, [0, 1], 7, -8, 0, 0, 0, this.radius)
-        }
+        this.graphics.beginFill(this.type);
         this.graphics.drawCircle(0, 0, this.radius);
     }
 }

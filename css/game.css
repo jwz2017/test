@@ -36,41 +36,22 @@ ol {
   overflow: hidden;
   background-color: #333;
 }
-
 #gameDiv {
   position: relative;
   overflow: hidden;
   margin: 0 auto;
   transform-origin: 0 0;
   border: 3px inset #333;
-  background-color: #A4AB61;
+  /* align-items: center; */
 }
-
-/************************** checkbox主题音乐 *********************************/
-.checkboxcontainer{
-  position: absolute;
-  visibility: hidden;
-  font-size: 20px;
+#gameDom{
+  margin: 0 auto;
 }
-.checkbox {
-  vertical-align: middle;
-  width: 22px;
-  height: 22px;
-  
+#canvas{
+  background-color: black;
 }
-.checklabel {
-  user-select: none;
-  vertical-align: middle;
-}
-
-/***********************************背景音乐************************/
-.icon-shengyinjingyin,
-.icon-shengyinkai {
-  position: absolute;
-  visibility: hidden;
-  font-size: 30px;
-  cursor: pointer;
-  color: darkgrey;
+.close-button{
+  width: 700px;
 }
 
 /******************************** 按钮 *****************************/
@@ -139,7 +120,7 @@ ol {
   opacity:0.5;
 } */
 /* **********************************字体*************************** */
-@font-face {
+/* @font-face {
   font-family: "regul";
   src: url("../assets/fonts/regul-book.woff") format('woff');
 
@@ -148,4 +129,4 @@ ol {
 @font-face {
   font-family: "pfrondaseven";
   src: url("../assets/fonts/pf_ronda_seven.ttf")format('woff');
-}
+} */

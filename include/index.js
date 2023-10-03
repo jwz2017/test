@@ -56,6 +56,7 @@ import { ScoreTest } from "./test/0scoreTest.js";
 window.onload = function () {
     /*************游戏入口*****/
     gframe.buildStage('canvas');
+    gframe.startFPS();
     //关闭按钮点击
     closeGame.onclick = function (e) {
         e.target.parentNode.style.display = "none";
@@ -96,5 +97,4 @@ window.productClick = function (a) {
     //禁止滚动
     document.getElementsByTagName('body')[0].setAttribute('style', 'position:fixed; width:100%;');
     gframe.preload(eval(a.title));
-    if (!gframe.fps) gframe.startFPS();
 }

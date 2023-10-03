@@ -28,7 +28,7 @@ export class Lines3D extends gframe.Game {
             point.rotateX(angleX);
             point.rotateY(angleY);
         }
-        shape.graphics.clear().beginStroke("#000").
+        shape.graphics.clear().beginStroke("#fff").
             moveTo(points[0].screenX, points[0].screenY);
         for (let i = 1; i < numPoints; i++) {
             shape.graphics.lineTo(points[i].screenX, points[i].screenY);

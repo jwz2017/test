@@ -1,0 +1,33 @@
+{
+"images": ["./assets/drivecar/drivercar.png"],
+"frames": [
+
+    [32, 128, 32, 32], 
+    [0, 160, 32, 32], 
+    [0, 128, 32, 32], 
+    [32, 96, 32, 32], 
+    [0, 96, 32, 32], 
+    [32, 64, 32, 32], 
+    [0, 64, 32, 32], 
+    [32, 32, 32, 32], 
+    [0, 32, 32, 32], 
+    [32, 0, 32, 32], 
+    [0, 0, 32, 32]
+],
+"animations": {
+    
+        "block1":[0], 
+        "block2":[1], 
+        "block3":[2], 
+        "block4":[3], 
+        "block5":[4], 
+        "car":[5,7,"car",0.1], 
+        "clock":[8], 
+        "death":[9], 
+        "hart":[10]
+},
+"texturepacker": [
+        "SmartUpdateHash: $TexturePacker:SmartUpdate:fc7416dcf275a12c876ad39d387cb8df$",
+        "Created with TexturePacker (http://www.texturepacker.com) for EasalJS"
+]
+}

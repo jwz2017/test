@@ -13,9 +13,8 @@ var playerBullets = [],
     numPlayerBullets,//玩家弹药量
     exployeds = [],
     //船只
-    ships,//出场船只数组
-    maxShips = 3,
-    shipStore=[],//船只仓库
+    ships=[],//出场船只数组
+    shipStore=3,
     //敌机
     enemys=[],
     enemyFrameCount,
@@ -46,14 +45,10 @@ class Shoot extends gframe.Game {
         this.scoreboard.createTextElement("level");
         this.scoreboard.createTextElement(NUMENEMY);
         this.scoreboard.createTextElement(SHOTS);
-        this.scoreboard.placeElements();
     }
-    init() {
+    newGame() {
         //初始化船只仓库
-        shipStore = [];
-        for (let i = 0; i < maxShips; i++) {
-            gframe.Game.getActor(shipStore, Ship);
-        }
+        shipStore=3;
         this.level=20;
     }
     newLevel() {
@@ -62,12 +57,8 @@ class Shoot extends gframe.Game {
         numPlayerBullets = 10 + this.level * 6;
         this.scoreboard.update(SHOTS, numPlayerBullets);
         //初始化出场船只
-        ships = [];
-        for (let i = 0; i < shipStore.length; i++) {
-            if (ships.length < maxShips) {
-                const element = shipStore[i];
-                if (element.active) ships.push(element);
-            }
+        for (let i = 0; i <shipStore; i++) {
+            Shoot.getActor(ships,Ship);
         }
         maxEnemys = 10 + this.level * 5;
         this.scoreboard.update(NUMENEMY, maxEnemys);
@@ -99,17 +90,15 @@ class Shoot extends gframe.Game {
             }, dis / shoot.speed.length).call(() => {
                 shoot.recycle();
                 let exploy = gframe.Game.getActor(exployeds, Exploy);
-                exploy.setPos(shoot.x, shoot.y);
+                exploy.x=shoot.x;
+                exploy.y=shoot.y;
+                exploy.updateRect();
                 stage.addChild(exploy);
                 exploy.image.gotoAndPlay("exployed");
             });
         });
         //放置船队位置
         this.placeShip();
-        ships.forEach(element => {
-            stage.addChild(element);
-        });
-
     }
     runGame() {
         //光标位置
@@ -136,23 +125,22 @@ class Shoot extends gframe.Game {
     }
     clear(e) {
         stage.removeAllEventListeners("stagemousedown");
-        for (const exploy of exployeds) {
-            if (exploy.active) exploy.recycle();
-        }
-        for (const enemy of enemys) {
-            if (enemy.active) enemy.recycle();
-        }
         super.clear(e);
 
     }
     placeShip() {
         let l = ships.length;
-        let spacing = stage.width / l;
+        let spacing = stage.width / shipStore;
+        let j=0;
         for (let i = 0; i < l; i++) {
             const ship = ships[i];
-            ship.x = spacing * (i + 1) - spacing / 2;
-            ship.y = stage.height - ship.rect.height / 2;
-            ship.setPos(ship.x, ship.y);
+            if(ship.active){
+                ship.x = spacing * (j + 1) - spacing / 2;
+                ship.y = stage.height - ship.rect.height / 2;
+                ship.updateRect();
+                stage.addChild(ship);
+                j++;
+            }
         }
     }
     createEnemy() {
@@ -171,7 +159,7 @@ class Shoot extends gframe.Game {
                 let enemy = gframe.Game.getActor(enemys, Enemy);
                 enemy.x = Math.random() * (stage.width - enemy.rect.width) + enemy.rect.width / 2;
                 enemy.y = -enemy.rect.height / 2;
-                enemy.setPos(enemy.x, enemy.y);
+                enemy.updateRect();
                 stage.addChild(enemy);
                 numEnemy++;
                 this.scoreboard.update(NUMENEMY, maxEnemys - numEnemy);
@@ -203,7 +191,7 @@ class Exploy extends CirActor {
             this.recycle();
             this.multiple = 0;
         } else {
-            let o = this.hitActors(enemys);
+            let o = this.hitActors(enemys,this.rect,true);
             if (o) {
                 this.multiple++;
                game.score += 10 * this.multiple;
@@ -233,8 +221,8 @@ class Enemy extends Actor {
         let ob = this.hitActors(ships);
         if (ob) {
             ob.recycle();
-            ships.splice(ships.indexOf(ob), 1);
-            if (ships.length == 0) {
+            shipStore--;
+            if (shipStore== 0) {
                 game.clear(gframe.event.GAME_OVER);
             }
             this.recycle();

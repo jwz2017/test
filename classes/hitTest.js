@@ -52,57 +52,27 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-
-
 /**
  * A Pixel Perfect Collision Detection for EaselJS Bitmap-Objects
  * @author olsn, indiegamr.com
  **/
 
 var collisionCanvas = document.createElement('canvas');
-var collisionCtx = collisionCanvas.getContext('2d');
+var collisionCtx = collisionCanvas.getContext('2d', { willReadFrequently: true });
 //collisionCtx.globalCompositeOperation = 'source-in';
 collisionCtx.save();
 
 var collisionCanvas2 = document.createElement('canvas');
-var collisionCtx2 = collisionCanvas2.getContext('2d');
+var collisionCtx2 = collisionCanvas2.getContext('2d', { willReadFrequently: true });
 collisionCtx2.save();
 
 var cachedBAFrames = [];
-
-var checkRectCollision = function (bitmap1, bitmap2) {
-  var b1, b2;
-  b1 = getBounds(bitmap1);
-  b2 = getBounds(bitmap2);
-  return calculateIntersection(b1, b2);
-}
-
-export var checkPixelCollision = function (bitmap1, bitmap2, alphaThreshold, getRect) {
-  //display the intersecting canvases for debugging
-  // if (DEBUG || DEBUG_COLLISION) {
-  //   document.body.appendChild(collisionCanvas);
-  //   document.body.appendChild(collisionCanvas2);
-  // }
-
+export var checkPixelCollision = function (bitmap1, bitmap2, rect, alphaThreshold, getRect) {
   getRect = getRect || false;
 
-  var areObjectsCloseEnough,
-    intersetion,
-    imageData1, imageData2,
+  var imageData1, imageData2,
     pixelIntersection;
-
-  //this is currently not working correctly if one of the objects is rotated
-  //calculating a bounding-box as precheck won't enhance performance here.
-  //areObjectsCloseEnough = _collisionDistancePrecheck(bitmap1,bitmap2);
-  //if ( !areObjectsCloseEnough ) {
-  //  return false;
-  //}
-
-  let intersection = checkRectCollision(bitmap1, bitmap2);
-  if (!intersection) {
-    return false;
-  }
-
+  let intersection = rect;
   alphaThreshold = alphaThreshold || 0;
   alphaThreshold = Math.min(0.99999, alphaThreshold);
 
@@ -112,9 +82,8 @@ export var checkPixelCollision = function (bitmap1, bitmap2, alphaThreshold, get
   collisionCanvas2.width = intersection.width;
   collisionCanvas2.height = intersection.height;
 
-  imageData1 = _intersectingImagePart(intersection, bitmap1, collisionCtx, 1);
-  imageData2 = _intersectingImagePart(intersection, bitmap2, collisionCtx2, 2);
-
+  imageData1 = _intersectingImagePart(intersection, bitmap1, collisionCtx);
+  imageData2 = _intersectingImagePart(intersection, bitmap2, collisionCtx2);
   //compare the alpha values to the threshold and return the result
   // = true if pixels are both > alphaThreshold at one coordinate
   pixelIntersection = _compareAlphaValues(imageData1, imageData2, intersection.width, intersection.height, alphaThreshold, getRect);
@@ -130,39 +99,14 @@ export var checkPixelCollision = function (bitmap1, bitmap2, alphaThreshold, get
 
   return pixelIntersection;
 }
-
-//this is currently not working correctly if one of the objects is rotated
-var _collisionDistancePrecheck = function (bitmap1, bitmap2) {
-  var ir1, ir2, b1, b2;
-
-  b1 = bitmap1.localToGlobal(0, 0);
-  b2 = bitmap2.localToGlobal(0, 0);
-
-  ir1 = bitmap1 instanceof createjs.Bitmap ?
-    {
-      width: bitmap1.image.width,
-      height: bitmap1.image.height
-    } :
-    bitmap1.spriteSheet.getFrame(bitmap1.currentFrame).rect;
-  ir2 = bitmap2 instanceof createjs.Bitmap ?
-    {
-      width: bitmap2.image.width,
-      height: bitmap2.image.height
-    } :
-    bitmap2.spriteSheet.getFrame(bitmap2.currentFrame).rect;
-
-  //precheck if objects are even close enough
-  return (Math.abs(b2.x - b1.x) < ir2.width * bitmap2.scaleX + ir1.width * bitmap1.scaleX &&
-    Math.abs(b2.y - b1.y) < ir2.height * bitmap2.scaleY + ir1.height * bitmap2.scaleY)
-}
-
-var _intersectingImagePart = function (intersetion, bitmap, ctx, i) {
+var _intersectingImagePart = function (intersetion, bitmap, ctx) {
   var bl, image, frameName, sr;
-
+  var regX, regY;
   if (bitmap instanceof createjs.Bitmap) {
     image = bitmap.image;
   } else if (bitmap instanceof createjs.Sprite) {
     let frame = bitmap.spriteSheet.getFrame(bitmap.currentFrame)
+    // console.log(frame);
     frameName = frame.image.src + ':' +
       frame.rect.x + ':' + frame.rect.y + ':' +
       frame.rect.width + ':' + frame.rect.height; // + ':' + frame.rect.regX  + ':' + frame.rect.regY 
@@ -171,6 +115,8 @@ var _intersectingImagePart = function (intersetion, bitmap, ctx, i) {
     } else {
       cachedBAFrames[frameName] = image = createjs.SpriteSheetUtils.extractFrame(bitmap.spriteSheet, bitmap.currentFrame);
     }
+    regX = frame.regX;
+    regY = frame.regY;
   } else if (bitmap instanceof createjs.MovieClip) {
     var mBitmap;
     if (bitmap.instance.instance != undefined) {
@@ -188,14 +134,16 @@ var _intersectingImagePart = function (intersetion, bitmap, ctx, i) {
       cachedBAFrames[frameName] = image = createjs.SpriteSheetUtils.extractFrame(mBitmap.spriteSheet, mBitmap.currentFrame);
     }
   }
-
+  regX = regX || 0;
+  regY = regY || 0;
   bl = bitmap.globalToLocal(intersetion.x, intersetion.y);
   ctx.restore();
   ctx.save();
   //ctx.clearRect(0,0,intersetion.width,intersetion.height);
   ctx.rotate(_getParentalCumulatedProperty(bitmap, 'rotation') * (Math.PI / 180));
   ctx.scale(_getParentalCumulatedProperty(bitmap, 'scaleX', '*'), _getParentalCumulatedProperty(bitmap, 'scaleY', '*'));
-  ctx.translate(-bl.x - intersetion['rect' + i].regX, -bl.y - intersetion['rect' + i].regY);
+  ctx.translate(-bl.x - regX, -bl.y - regY);
+  // ctx.translate(-bl.x - intersetion['rect' + i].regX, -bl.y - intersetion['rect' + i].regY);
   if ((sr = bitmap.sourceRect) != undefined) {
     ctx.drawImage(image, sr.x, sr.y, sr.width, sr.height, 0, 0, sr.width, sr.height);
   } else {
@@ -266,108 +214,4 @@ var _getParentalCumulatedProperty = function (child, propName, operation) {
   return child[propName];
 }
 
-var calculateIntersection = function (rect1, rect2) {
-  // first we have to calculate the
-  // center of each rectangle and half of
-  // width and height
-  var dx, dy, r1 = {},
-    r2 = {};
-  r1.cx = rect1.x + (r1.hw = (rect1.width / 2));
-  r1.cy = rect1.y + (r1.hh = (rect1.height / 2));
-  r2.cx = rect2.x + (r2.hw = (rect2.width / 2));
-  r2.cy = rect2.y + (r2.hh = (rect2.height / 2));
-
-  dx = Math.abs(r1.cx - r2.cx) - (r1.hw + r2.hw);
-  dy = Math.abs(r1.cy - r2.cy) - (r1.hh + r2.hh);
-
-  if (dx < 0 && dy < 0) {
-    dx = Math.min(Math.min(rect1.width, rect2.width), -dx);
-    dy = Math.min(Math.min(rect1.height, rect2.height), -dy);
-    return {
-      x: Math.max(rect1.x, rect2.x),
-      y: Math.max(rect1.y, rect2.y),
-      width: dx,
-      height: dy,
-      rect1: rect1,
-      rect2: rect2
-    };
-  } else {
-    return null;
-  }
-}
-
-var getBounds = function (obj) {
-  var bounds = {
-    x: Infinity,
-    y: Infinity,
-    width: 0,
-    height: 0
-  };
-  if (obj instanceof createjs.Container) {
-    bounds.x2 = -Infinity;
-    bounds.y2 = -Infinity;
-    var children = obj.children,
-      l = children.length,
-      cbounds, c;
-    for (c = 0; c < l; c++) {
-      cbounds = getBounds(children[c]);
-      if (cbounds.x < bounds.x) bounds.x = cbounds.x;
-      if (cbounds.y < bounds.y) bounds.y = cbounds.y;
-      if (cbounds.x + cbounds.width > bounds.x2) bounds.x2 = cbounds.x + cbounds.width;
-      if (cbounds.y + cbounds.height > bounds.y2) bounds.y2 = cbounds.y + cbounds.height;
-      //if ( cbounds.x - bounds.x + cbounds.width  > bounds.width  ) bounds.width  = cbounds.x - bounds.x + cbounds.width;
-      //if ( cbounds.y - bounds.y + cbounds.height > bounds.height ) bounds.height = cbounds.y - bounds.y + cbounds.height;
-    }
-    if (bounds.x == Infinity) bounds.x = 0;
-    if (bounds.y == Infinity) bounds.y = 0;
-    if (bounds.x2 == Infinity) bounds.x2 = 0;
-    if (bounds.y2 == Infinity) bounds.y2 = 0;
-
-    bounds.width = bounds.x2 - bounds.x;
-    bounds.height = bounds.y2 - bounds.y;
-    delete bounds.x2;
-    delete bounds.y2;
-  } else {
-    var gp, gp2, gp3, gp4, imgr = {},
-      sr;
-    if (obj instanceof createjs.Bitmap) {
-      sr = obj.sourceRect || obj.image;
-
-      imgr.width = sr.width;
-      imgr.height = sr.height;
-    } else if (obj instanceof createjs.Sprite) {
-      if (obj.spriteSheet._frames && obj.spriteSheet._frames[obj.currentFrame] && obj.spriteSheet._frames[obj.currentFrame].image) {
-        var cframe = obj.spriteSheet.getFrame(obj.currentFrame);
-        imgr.width = cframe.rect.width;
-        imgr.height = cframe.rect.height;
-        imgr.regX = cframe.regX;
-        imgr.regY = cframe.regY;
-      } else {
-        bounds.x = obj.x || 0;
-        bounds.y = obj.y || 0;
-      }
-    } else {
-      bounds.x = obj.x || 0;
-      bounds.y = obj.y || 0;
-    }
-
-    imgr.regX = imgr.regX || 0;
-    imgr.width = imgr.width || 0;
-    imgr.regY = imgr.regY || 0;
-    imgr.height = imgr.height || 0;
-    bounds.regX = imgr.regX;
-    bounds.regY = imgr.regY;
-
-    gp = obj.localToGlobal(0 - imgr.regX, 0 - imgr.regY);
-    gp2 = obj.localToGlobal(imgr.width - imgr.regX, imgr.height - imgr.regY);
-    gp3 = obj.localToGlobal(imgr.width - imgr.regX, 0 - imgr.regY);
-    gp4 = obj.localToGlobal(0 - imgr.regX, imgr.height - imgr.regY);
-
-    bounds.x = Math.min(Math.min(Math.min(gp.x, gp2.x), gp3.x), gp4.x);
-    bounds.y = Math.min(Math.min(Math.min(gp.y, gp2.y), gp3.y), gp4.y);
-    bounds.width = Math.max(Math.max(Math.max(gp.x, gp2.x), gp3.x), gp4.x) - bounds.x;
-    bounds.height = Math.max(Math.max(Math.max(gp.y, gp2.y), gp3.y), gp4.y) - bounds.y;
-  }
-  return bounds;
-}
 

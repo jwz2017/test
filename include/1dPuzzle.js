@@ -27,7 +27,7 @@ class Puzzle extends GridsMapGame {
         this.scoreboard.createTextElement("level", 320, 14);
     }
 
-    init() {
+    newGame() {
         selectedPieces = [];
         pieces = [];
     }

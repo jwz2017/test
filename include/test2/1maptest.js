@@ -28,9 +28,9 @@ export class MapTest extends GridsMapGame {
         super("MapTest", 750, 350, size, size);
         this.y = 100;
     }
-    waitComplete(){
-        stage.addChild(this);
-    }
+    // waitComplete(){
+    //     stage.addChild(this);
+    // }
     newLevel() {
         this.createGridMap(plan, {}, (ch, node) => {
             let a;
@@ -48,7 +48,7 @@ export class MapTest extends GridsMapGame {
             a.xpos = node.x * size;
             a.zpos = node.y * size;
             this.addChildToFloor(a);
-        }, true)
+        },{}, true)
     }
 
 }

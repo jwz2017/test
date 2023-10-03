@@ -52,7 +52,7 @@ export class Collision extends GridsMapGame {
         let rect=box.rect.clone();
         rect.x+=box.vx;
         rect.y+=box.vz;
-        if (!this.hitActor(box,rect)) {
+        if (!box.hitActors(this.world.children,rect)) {
             box.xpos += box.vx;
             box.ypos += box.vy;
             box.zpos += box.vz;

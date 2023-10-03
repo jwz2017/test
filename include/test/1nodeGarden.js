@@ -11,7 +11,6 @@ export class NodeGarden extends gframe.Game {
     }
     waitComplete() {
         particles = [];
-        stage.canvas.style.background = "#000";
         shape = new createjs.Shape();
         stage.addChild(shape);
         for (let i = 0; i < numParticles; i++) {

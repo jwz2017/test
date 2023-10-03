@@ -7,7 +7,7 @@ window.onload = function () {
     gframe.preload(Tanke, true);
     gframe.startFPS();
 };
-var spriteData, spriteSheet, actorChars, bullets, enemyBullets,
+var spriteData, spriteSheet, actorChars,floorChars, bullets, enemyBullets,
     step = 32,
     plans = [
         [
@@ -36,16 +36,19 @@ class Tanke extends GridsMapGame {
     }];
     constructor() {
         super("坦克大战",plans[0][0].length*step,plans[0].length*step,step,step);
-        this.instructionScreen.title.text = "方向w,a,s,d\n小键盘4开火攻击";
+        stage.canvas.style.backgroundColor="#A4AB61";
+        this.instructionScreen.updateTitle("方向w,a,s,d<br>小键盘4开火攻击");
         this.x = stage.width - this.width >> 1;
         this.y = stage.height - this.height >> 1;
         actorChars = {
             "1": SpritePlayer,
+            "9": Enemy
+        };
+        floorChars={
             "23": Live,
             "20": Bullet,
-            "22": Tank,
-            "9": Enemy
-        }
+            "22": Tank
+        };
         spriteData = {
             images: [queue.getResult("tanke")],
             frames: {
@@ -74,7 +77,7 @@ class Tanke extends GridsMapGame {
         this.scoreboard = new gframe.ScoreBoard(0, 0,true);
         this.scoreboard.createTextElement("score","00000");
         this.scoreboard.createTextElement("level");
-        this.scoreboard.placeElements();
+        // this.scoreboard.placeElements();
     }
     newLevel() {
         this.scoreboard.update("score",this.score);
@@ -88,17 +91,17 @@ class Tanke extends GridsMapGame {
                 x: node.x * step+step/2,
                 y: node.y * step+step/2
             });
-            if (actorChars[ch] || ch == 0) {
+            if (actorChars[ch]||floorChars[ch] || ch == 0) {
                 tile.gotoAndStop(0);
             } else {
                 tile.gotoAndStop(ch);
                 node.type = Node.NOWALKABLE;
             }
             this.addChildToFloor(tile);
-        });
+        },floorChars);
     }
     runGame() {
-        this.moveActors();
+        this.moveActors(this.world);
     }
     
     // setGrid(ch, x, y) {
@@ -151,6 +154,22 @@ class SpritePlayer extends Actor {
     }
     act() {
         this.move();
+        let node=game.hitFloorActor(this.rect,this.image);
+        if (node) {
+            switch (node.actor.type) {
+                case "live":
+                    console.log("live");
+                    break;
+                case "tank":
+                    console.log("tank");
+                    break;
+                case "bullet":
+                    console.log("bullet");
+                    break;
+                default:
+                    break;
+            }
+        }
     }
     move() {
         this.speed.x = this.speed.y = 0;
@@ -190,29 +209,13 @@ class SpritePlayer extends Actor {
         let rect = this.rect.clone();
         rect.x += this.speed.x;
         rect.y += this.speed.y;
-        // console.log(game);
-        // debugger;
         var node = game.hitMap(rect);
         if (!node) {
             var actor = this.hitActors(game.world.children,rect);
-            if (!actor || actor.type != "enemy") {
+            if (!actor) {
                 this.plus(this.speed.x, this.speed.y);
             }
-            if (actor) {
-                switch (actor.type) {
-                    case "enemy":
-                        console.log("enemy");
-                        break;
-                    case "tank":
-                        console.log("tank");
-                        break;
-                    case "bullet":
-                        console.log("bullet");
-                        break;
-                    default:
-                        break;
-                }
-            }
+            
         }
     }
     createBullet() {
@@ -221,7 +224,7 @@ class SpritePlayer extends Actor {
         bullet.speed.angle = angle;
         bullet.x = this.x + Math.cos(angle) * this.hit;
         bullet.y = this.y + Math.sin(angle) * this.hit;
-        bullet.setPos(bullet.x, bullet.y);
+        bullet.updateRect();
         game.addChildToWorld(bullet);
     }
 }
@@ -281,6 +284,7 @@ class Bullet extends Actor {
         super(xpos, ypos);
         this.type = "bullet";
         this.init(0.3 * step, 0.7 * step);
+        this.plus(0.35*step,0.15*step)
         this.setSpriteData(spriteSheet, "buttle");
     }
 }
@@ -288,6 +292,7 @@ class Tank extends Actor {
     constructor(xpos, ypos) {
         super(xpos, ypos);
         this.init(0.6 * step, 0.6 * step);
+        this.plus(0.2*step,0.2*step);
         this.setSpriteData(spriteSheet, "tanke");
         this.type = "tank";
     }
@@ -356,7 +361,7 @@ class Enemy extends Actor {
         bullet.speed.angle = angle;
         bullet.x = this.x + Math.cos(angle) * this.hit;
         bullet.y = this.y + Math.sin(angle) * this.hit;
-        bullet.setPos(bullet.x, bullet.y);
+        bullet.updateRect();
         game.addChildToWorld(bullet);
     }
 

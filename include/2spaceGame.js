@@ -2,7 +2,7 @@ import { Actor, SteeredActor, Vector } from "../classes/actor.js";
 import { gframe, keys, stage } from "../classes/gframe.js";
 
 window.onload = function () {
-    gframe.style.TITLE_TEXT_COLOR = "#fff";
+    gframe.style.TEXT_COLOR = "#fff";
     canvas.style.backgroundColor = "#000";
     gframe.buildStage('canvas');
     gframe.preload(SpaceShip,true);
@@ -28,7 +28,6 @@ class SpaceShip extends gframe.Game {
         this.scoreboard = new gframe.ScoreBoard();
         this.scoreboard.createTextElement("score");
         this.scoreboard.createTextElement("level");
-        this.scoreboard.placeElements();
     }
     newLevel() {
         this.scoreboard.update("score",this.score);
@@ -41,7 +40,9 @@ class SpaceShip extends gframe.Game {
     }
     waitComplete() {
         stage.addChild(ship);
-        ship.setPos(stage.width / 2, stage.height / 2);
+        ship.x=stage.width/2;
+        ship.y=stage.height/2;
+        ship.updateRect();
     }
     runGame() {
         // 控制飞船
@@ -63,7 +64,7 @@ class SpaceShip extends gframe.Game {
                 bullet.speed.angle = bullet.rotation * Math.PI / 180;
                 bullet.x = ship.x + ship.hit * Math.cos(bullet.speed.angle);
                 bullet.y = ship.y + ship.hit * Math.sin(bullet.speed.angle);
-                bullet.setPos(bullet.x, bullet.y);
+                bullet.updateRect();
                 stage.addChild(bullet);
             }
         } else {
@@ -122,7 +123,9 @@ class SpaceShip extends gframe.Game {
                             index.init(newSize);
                             stage.addChild(index);
                             offset = (Math.random() * rect.width * 2) - rect.width;
-                            index.setPos(o.x + offset, o.y + offset);
+                            index.x=o.x;
+                            index.y=o.y+offset;
+                            index.updateRect();
                         }
                     }
                     o.recycle();
@@ -160,6 +163,7 @@ class Ship extends SteeredActor {
         this.mass = 4;
         this.maxForce = 0.2;
         this.init(15);
+
     }
     act() {
         this.steeringForce.truncate(this.maxForce);
@@ -262,7 +266,7 @@ class SpaceRock extends Actor {
                 this.x = Math.random() * width * 0.5 + 0.5 * width;
             }
         }
-        this.setPos(this.x, this.y);
+        this.updateRect();
     }
     act() {
         super.act();

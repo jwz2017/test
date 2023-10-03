@@ -10,6 +10,7 @@ export class DomElement extends gframe.Game {
         element.style.left=0;
         element.style.width="200px";
         element.style.textIndent="2em";
+        element.style.color="#fff"
         element.innerHTML="CreateJS是基于HTML5开发的一套模块化的库和工具。基于这些库，可以非常快捷地开发出基于HTML5的游戏动画和交互应用。"
         gameDiv.appendChild(element);
         domElement=new createjs.DOMElement(element);

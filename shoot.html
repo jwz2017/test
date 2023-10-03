@@ -4,13 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0,minimum-scale=1.0, maximum-scale=1.0,  user-scalable=no">
-    <link rel="stylesheet" href="css/backsound/iconfont.css">
     <link rel="stylesheet" href="css/game.css">
     <title>shoot</title>
     <script src="classes/createjs.min.js"></script>
+    <script src="classes/dat.gui.min.js"></script>
     <script src="./assets/shoot/cross.js"></script>
-    <link rel="Preload" href="./assets/fonts/regul-book.woff" as="font" type="font/woff" crossorigin="anonymous">
-    <link rel="Preload" href="./assets/fonts/pf_ronda_seven.ttf" as="font" type="font/ttf" crossorigin="anonymous">
     <!-- 修改 -->
     <script src="include/2shoot.js" type="module"></script>
 </head>
@@ -18,19 +16,12 @@
 <body>
     <div id="containerDiv">
         <div id="gameDiv" style="background-color: rgb(0, 67, 171);">
-            <!-- 主题音乐选框 -->
-            <div class="checkboxcontainer" id="titlemusic">
-                <input type="checkbox" class="checkbox" id="tmusic">
-                <label class="checklabel">主题音乐</label>
-            </div>
-            <!-- 背景音乐图标 -->
-            <span class="iconfont icon-shengyin" id="bmusic"></span>
-
             <canvas id="canvas" width="750" height="1334">
             </canvas>
         </div>
         <!-- 不随舞台缩放 dom -->
-
+        <div id="gameDom">
+        </div>
     </div>
 </body>
 

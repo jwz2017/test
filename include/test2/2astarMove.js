@@ -13,10 +13,6 @@ export class AstarMove extends GridsMapGame {
         this.addChild(shape);
 
     }
-    
-    waitComplete(){
-        stage.addChild(this);
-    }
     drawGrid() {
         shape.graphics.clear();
         for (let i = 0; i < numCols; i++) {

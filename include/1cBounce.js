@@ -63,7 +63,6 @@ class Bounce extends GridsMapGame {
         this.scoreboard.createTextElement("score");
         this.scoreboard.createTextElement("level");
         this.scoreboard.createTextElement("lives");
-        this.scoreboard.placeElements();
     }
     newLevel() {
         this.scoreboard.update("score",this.score);
@@ -76,20 +75,22 @@ class Bounce extends GridsMapGame {
                 node.type = Node.NOWALKABLE;
                 let bg = new Actor(node.x * stepWidth, node.y * stepHeight);
                 bg.init(stepWidth, stepHeight);
-                this.addChildToFloor(bg);
+                // this.addChildToFloor(bg);
+                this.floorActor.addChild(bg)
             } else if (ch == "x" || ch == "l") {
-                node.type = "brick";
+                node.type = Node.NOWALKABLE;
                 let fieldType = new Brick(node.x * stepWidth, node.y * stepHeight, ch);
                 node.brick = fieldType;
                 bricks.push(fieldType);
-                this.addChildToFloor(fieldType);
+                // this.addChildToFloor(fieldType);
+                this.floorActor.addChild(fieldType)
             }
         });
         
     }
     runGame() {
         // console.time("a");
-        this.moveActors();
+        this.moveActors(this.world);
         // console.timeEnd("a");
     }
 }
@@ -142,7 +143,7 @@ class Puck extends CirActor {
         var fieldType = game.hitMap(rect);
         if (!fieldType) {
             this.plus(this.speed.x, 0);
-        } else if (fieldType.type=="brick") {
+        } else if (fieldType.brick) {
             this.speed.x *= -1;
             this.hitBrickResult(fieldType);
         } else {
@@ -166,7 +167,7 @@ class Puck extends CirActor {
             } else {
                 game.clear(gframe.event.GAME_OVER);
             }
-        } else if (fieldType.type=="brick") {
+        } else if (fieldType.brick) {
             this.speed.y *= -1;
             this.hitBrickResult(fieldType);
         } else {
@@ -205,7 +206,7 @@ class Puck extends CirActor {
         bricks.splice(bricks.indexOf(fieldType), 1);
         fieldType1.type = Node.WALKABLE;
         fieldType.parent.removeChild(fieldType);
-        game.floor.updateCache();
+        // game.floor.updateCache();
         if (bricks.length == 0) {
             game.clear(gframe.event.LEVEL_UP);
         }

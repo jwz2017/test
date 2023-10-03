@@ -13,7 +13,7 @@ export class RandomDice extends gframe.Game {
 
     }
     //初始化游戏数据
-    init() {
+    newGame() {
         this.sprite=new createjs.Sprite(queue.getResult("dice"),"die");
         this.sprite.paused=true;
     }

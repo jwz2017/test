@@ -21,7 +21,7 @@ export class isoTransformTest extends gframe.Game {
         tile.y = 200;
         stage.addChild(tile);
 
-        tile.graphics.beginStroke("#000").
+        tile.graphics.beginStroke("#fff").
             moveTo(sp0.x, sp0.y).
             lineTo(sp1.x, sp1.y).
             lineTo(sp2.x, sp2.y).

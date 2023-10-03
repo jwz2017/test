@@ -1,17 +1,19 @@
 import { AStar, GridsMapGame, Node } from "../../classes/GridsMapGame.js";
 import { stage } from "../../classes/gframe.js";
 
-var step = 20,numcols=30,numrows=30,shape;
+var step = 20,numcols=30,numrows=30,shape,astar=new AStar();
 export class AStarTest extends GridsMapGame {
     //static loadItem = null;
     constructor() {
         super("AStarTest",numcols*step,numrows*step,step,step,numcols,numrows);
         this.x=stage.width-this.width>>1;
         this.y=stage.height-this.height>>1;
-        shape = new createjs.Shape;
+        shape = new createjs.Shape();
         this.addChild(shape);
     }
     newLevel() {
+        this.setStartNode(0, 2);
+        this.setEndNode(26, 28);
         this.drawGrid();
         this.addEventListener("click", (e) => {
             let xpos = Math.floor(e.localX / step);
@@ -21,11 +23,6 @@ export class AStarTest extends GridsMapGame {
             this.drawGrid();
             this.findPath();
         });
-    }
-    waitComplete() {
-        stage.addChild(this);
-        this.setStartNode(0, 2);
-        this.setEndNode(26, 28);
     }
     drawGrid() {
         shape.graphics.clear();
@@ -43,7 +40,6 @@ export class AStarTest extends GridsMapGame {
         return "#ffffff";
     }
     findPath() {
-        let astar = new AStar();
         if (astar.findPath(this)) {
             this.showVisited(astar);
             this.showPath(astar);
@@ -58,7 +54,7 @@ export class AStarTest extends GridsMapGame {
     showPath(astar) {
         let path = astar.path;
         for (let i = 0; i < path.length; i++) {
-            shape.graphics.setStrokeStyle(0).beginFill("#fff").drawCircle(path[i].x * step + step / 2, path[i].y * step + step / 2, step / 3);
+            shape.graphics.beginFill("#fff").drawCircle(path[i].x * step + step / 2, path[i].y * step + step / 2, step / 3);
 
         }
     }

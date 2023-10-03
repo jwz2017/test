@@ -3,7 +3,7 @@ import { gframe, keys, queue, stage } from "../classes/gframe.js";
 
 window.onload = function () {
     gframe.style.TITLE_TEXT_COLOR = "#ffffff";
-    gframe.buildStage('canvas',true);
+    gframe.buildStage('canvas',false);
     gframe.preload(SpaceHero,true);
     gframe.startFPS();
 };
@@ -20,14 +20,19 @@ class SpaceHero extends gframe.Game {
         id: "all",
         src: "spacehero/all.json",
         type: "spritesheet"
+    },{
+        id:"back",
+        src:"spacehero/bg.png"
     }];
     constructor() {
+        gframe.style.TEXT_COLOR="#fff";
         super();
         let title = new createjs.Sprite(queue.getResult("all"), "title");
         this.titleScreen.addChild(title);
         title.x = 100;
         title.y = 100;
         this.instructionScreen.title.text = "方向：w,a,s,d\n攻击：小键盘4";
+        this.background=new createjs.Bitmap(queue.getResult("back"));
     }
     /**建立游戏元素游戏初始化
      * 在构造函数内建立
@@ -36,7 +41,6 @@ class SpaceHero extends gframe.Game {
         this.scoreboard = new gframe.ScoreBoard(0, 0, null);
         this.scoreboard.createTextElement("score");
         this.scoreboard.createTextElement("level");
-        this.scoreboard.placeElements();
     }
     newLevel() {
         this.scoreboard.update("score",this.score);
@@ -49,7 +53,7 @@ class SpaceHero extends gframe.Game {
     }
     waitComplete() {
         this.player = new Ship();
-        this.player.setPos(stage.width / 2, stage.height - this.player.rect.height / 2);
+        this.player.setPos(stage.width / 2-this.player.rect.width/2, stage.height - this.player.rect.height);
         stage.addChild(this.player);
 
     }
@@ -61,7 +65,9 @@ class SpaceHero extends gframe.Game {
                 nextBullet = BULLET_TIME;
                 let bullet = gframe.Game.getActor(bullets, Bullet);
                 bullet.speed.angle = -Math.PI / 2;
-                bullet.setPos(this.player.x, this.player.y)
+                bullet.x=this.player.x;
+                bullet.y=this.player.y;
+                bullet.updateRect();
                 stage.addChild(bullet);
                 console.log(bullets.length);
             }
@@ -84,12 +90,12 @@ class SpaceHero extends gframe.Game {
             enemy.floatOnScreen(stage.width, stage.height);
             nextEnemy = timeToEnemy + timeToEnemy * Math.random();
         } else {
-            nextEnemy--;
+            // nextEnemy--;
         }
         for (const enemy of enemys) {
             if (enemy.active) {
-                enemy.act();
-                // enemy.setPos(200,200);
+                // enemy.act();
+                enemy.setPos(200,200);
             }
         }
         //飞船与敌机矩形碰撞
@@ -131,7 +137,7 @@ class Ship extends Actor {
 class Enemy extends Actor {
     constructor(xpos, ypos) {
         super(xpos, ypos);
-        this.setSpriteData(queue.getResult("all"), "enemy1Idle", 1);
+        this.setSpriteData(queue.getResult("all"), "enemy1Idle", 0.8);
     }
     activate() {
         this.speed.length = Math.random() * 2 + 2;
@@ -145,7 +151,7 @@ class Enemy extends Actor {
         } else {
             this.x = Math.random() * width * 0.5 + 0.5 * width;
         }
-        this.setPos(this.x, this.y);
+        this.updateRect();
     }
 }
 class Bullet extends Actor {

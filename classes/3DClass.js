@@ -186,7 +186,19 @@ export class IsoObject extends createjs.Container {
         this.x = screenPos.x;
         this.y = screenPos.y;
     }
+    //检测 元素之间是否碰撞
+    hitActors(actors, rect = this.rect) {
+        for (var i = 0; i < actors.length; i++) {
+            var other = actors[i];
+            if (other == this) {
+                continue;
+            }
+            if (rect.intersects(other.rect)) {
+                return other;
 
+            }
+        }
+    }
     set xpos(value) {
         this._position.x = value;
         this.updateScreenPosition();

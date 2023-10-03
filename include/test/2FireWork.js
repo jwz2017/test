@@ -10,8 +10,6 @@ var balls, vpX, vpY,
     bounce = -0.6;
 export class FireWork extends gframe.Game {
     constructor() {
-        stage.canvas.style.background = "#000";
-        gframe.style.TITLE_TEXT_COLOR="#fff";
         super("烟火");
     }
     waitComplete() {

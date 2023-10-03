@@ -1,8 +1,8 @@
 import { mc, PushButton, ScrollContainer } from "./mc.js";
-var _systemFunction, _lastSystemState, _nextSystemState, _currentSystemState,levelupevent,overevent;
+import { ShapeBackground } from "./other.js";
+var _systemFunction, _lastSystemState, _nextSystemState, _currentSystemState, levelupevent, overevent;
 var stage, game, queue, lib, keys = Object.create(null), pressed = [];
 var screenPosY = 0;
-
 //选择游戏状态
 function _switchSystemState(stateval) {
   _lastSystemState = _currentSystemState;
@@ -62,7 +62,7 @@ function _systemNewGame() {
   game.score = 0;
   game.level = 0;
   game.lives = 3;
-  game.init();
+  game.newGame();
   _switchSystemState(gframe.state.STATE_NEW_LEVEL);
 };
 //设置新等级状态
@@ -70,11 +70,12 @@ function _systemNewLevel() {
   game.level++;
   game.newLevel();
   game.levelInScreen.updateTitle("level: " + game.level);
-  overevent=game.on(gframe.event.GAME_OVER, () => {
+  _switchSystemState(gframe.state.STATE_LEVEL_IN);
+  overevent = game.on(gframe.event.GAME_OVER, () => {
     _nextSystemState = gframe.state.STATE_GAME_OVER;
     _switchSystemState(gframe.state.STATE_WAIT);
   });
-  levelupevent=game.on(gframe.event.LEVEL_UP, () => {
+  levelupevent = game.on(gframe.event.LEVEL_UP, () => {
     if (game.level >= game.maxLevel) {
       _nextSystemState = gframe.state.STATE_LEVEL_OUT;
     } else {
@@ -82,7 +83,6 @@ function _systemNewLevel() {
     }
     _switchSystemState(gframe.state.STATE_WAIT);
   });
-  _switchSystemState(gframe.state.STATE_LEVEL_IN);
 };
 //新等级界面状态
 function _systemLevelIn() {
@@ -116,13 +116,8 @@ function _systemWaitForClose() {
         game.titleScreen.y -= 1;
       }
       break;
-    case gframe.state.STATE_INSTRUCTION:
-      if (game.instructionScreen.y > screenPosY) {
-        game.instructionScreen.y -= 1;
-      }
-      break;
     case gframe.state.STATE_LEVEL_IN:
-      // if(!stage.isWebGL)game.levelInScreen.updateWaitBg();
+      if (!stage.isWebGL) game.levelInScreen.updateWaitBg();
       break;
     case gframe.state.STATE_LEVEL_OUT:
       if (game.levelOutScreen.y > screenPosY) {
@@ -148,9 +143,6 @@ function _systemWait() {
         game._waitComplete();
         _switchSystemState(gframe.state.STATE_GAME_PLAY);
       });
-      // setTimeout(() => {
-
-      // }, 1000);
       break;
     //游戏结束或升级或通关
     case gframe.state.STATE_GAME_PLAY:
@@ -167,6 +159,7 @@ function _systemWait() {
 /**
  * **************自适应**********************************
  */
+var stageScale=1;
 function _adapt() {
   stage.width = stage.canvas.width;
   stage.height = stage.canvas.height;
@@ -177,13 +170,14 @@ function _adapt() {
   //宽度自适应
   if (stageWidth <= stage.canvas.width) {
     if (stageWidth <= 320) stageWidth = 320;
-    let stageScale = (stageWidth / stage.width)//.toFixed(2);//四舍五入
+    stageScale = (stageWidth / stage.width)//.toFixed(2);//四舍五入
     let h = stageHeight / stageScale;
     stage.height = h > stage.canvas.height ? stage.canvas.height : h;
     gameDiv.style.transform = 'scale(' + stageScale + ')';
   }
   gameDiv.style.height = stage.height + "px";
   screenPosY = stage.height - stage.canvas.height >> 1;
+  gameDom.style.width = stage.width * stageScale-6 + "px";
 };
 /**
  * 初始化游戏
@@ -210,14 +204,23 @@ function _initGame(GClass, keydown) {
 function _onkeydown() {
   var pressAtime = 0, releaseAtime = 0, presseDtime = 0, releaseDtime = 0;
   var pressInterval = 90;
+  keys.step=30;
+  keys.stepindex=0;
   document.onkeydown = (e) => {
     let c = Game.codes[e.keyCode];
     if (_currentSystemState == gframe.state.STATE_GAME_PLAY && Game.codes.hasOwnProperty(e.keyCode) && !keys[c]) {
       keys[c] = true;
       if (c == "pause") {
         createjs.Ticker.paused = !createjs.Ticker.paused;
-        _systemFunction = createjs.Ticker.paused ? _systemWaitForClose : _systemGamePlay;
-        if (game.backSound) game.backSound.paused = !game.backSound.paused;
+        // _systemFunction = createjs.Ticker.paused ? _systemWaitForClose : _systemGamePlay;
+        if(createjs.Ticker.paused){
+          game.addChild(game.pauseScreen);
+          _systemFunction=_systemWaitForClose;
+        }else{
+          game.removeChild(game.pauseScreen);
+          _systemFunction=_systemGamePlay;
+        }
+        if (game.sound) game.sound.paused = !game.sound.paused;
       } else if (c == "left" || c == "right" || c == "up" || c == "down") {
         pressed.push(c);
         if (c == "left") {
@@ -245,6 +248,7 @@ function _onkeydown() {
     if (Game.codes.hasOwnProperty(e.keyCode)) {
       let c = Game.codes[e.keyCode];
       keys[c] = false;
+      keys.stepindex=0;
       if (c == "left" || c == "right" || c == "up" || c == "down") {
         pressed.splice(pressed.indexOf(c), 1);
         if (c == "left") {
@@ -278,66 +282,19 @@ class Okbutton extends createjs.Event {
     this.id = id;
   }
 }
-//--------------------------------------------------进度条----------------------------------------------------------------------
-class LoaderBar extends createjs.Container {
-  constructor(width = 500, height = 20) {
-    super();
-    this.width = width;
-    this.height = height;
-    this.createTitle();
-    this.createBar();
-    this.createValue();
-  }
-  createTitle() {
-    let titleText = new createjs.Text('loading...', '36px Stylus BT', '#ffffff')
-    titleText.textAlign = "center";
-    titleText.x = this.width / 2;
-    titleText.y = -titleText.getBounds().height - 10;
-    this.addChild(titleText);
-  }
-  createBar() {
-    let loaderColor = createjs.Graphics.getRGB(247, 247, 247);
-    let bgBar = new createjs.Shape();
-    let padding = 3;
-    bgBar.graphics.setStrokeStyle(1).beginStroke(loaderColor).drawRect(-padding / 2, -padding / 2, this.width + padding, this.height + padding);
-    this.bar = new createjs.Shape();
-    this.bar.graphics.beginFill(loaderColor).drawRect(0, 0, 1, this.height);
-    this.addChild(bgBar, this.bar)
-  }
-  createValue() {
-    this.percent = new createjs.Text("0%", '32px Microsoft YaHei', "#ffffff");
-    this.percent.textAlign = "center";
-    this.percent.x = this.width / 2;
-    this.percent.y = this.height + 10;
-    this.addChild(this.percent);
-  }
-  /**
-   * 开始加载
-   */
-  startLoad(e) {
-    this.bar.scaleX = e.progress * this.width;
-    this.percent.text = Math.floor(e.progress * 100) + "%";
-  }
-}
 
 /*****************************************游戏界面**************************** */
-
 class BasicScreen extends createjs.Container {
-  constructor(text = null, titlexpos = stage.canvas.width / 2, titleypos = stage.canvas.height / 3) {
+  constructor(title = null, width = stage.canvas.width, height = stage.canvas.height, { font = gframe.style.titleFont } = {}) {
     super();
+    this._width = width;
+    this._height = height;
     this.sound = null;
     this.firstPlay = false;
-    if (text) {
-      this.title = new createjs.Text(text);
-      this.title.text = text;
-      this.title.x = titlexpos;
-      this.title.y = titleypos;
-      this.title.textAlign = "center";
-      this.title.lineWidth = 500;
-      this.title.font = 'bold ' + gframe.style.textSize + 'px ' + gframe.style.fontFamily;
-      this.title.color = gframe.style.TITLE_TEXT_COLOR;
-      this.addChild(this.title);
-      if (stage.isWebGL) this._cacheTitle();
+    if (title) {
+      this.title = this.createText(title, { font: font });
+      this.title.x = width - this.title.htmlElement.clientWidth >> 1;
+      this.title.y = height / 3;
     }
     this.addEventListener("added", () => {
       this.children.forEach(element => {
@@ -356,41 +313,64 @@ class BasicScreen extends createjs.Container {
           element.htmlElement.style.visibility = "hidden";
         }
       });
+      this.firstPlay=false;
       if (this.sound) this.sound.stop();
     });
   }
-  createDOMcheckbox(label, { top, left, right, bottom, parent = null }) {
-    let div = document.createElement("div");
-    gameDiv.appendChild(div);
-    div.setAttribute("class", "checkboxcontainer");
-    div.style.top = top + "px";
-    div.style.left = left + "px";
-    div.style.right = right + "px";
-    div.style.bottom = bottom + "px";
+  createDom(element) {
+    let e = document.createElement(element);
+    e.style.position = "absolute";
+    e.style.visibility = "hidden";
+    e.style.top = 0;
+    e.style.left = 0;
+    gameDiv.appendChild(e);
+    let a = new createjs.DOMElement(e);
+    return a;
+  }
+  createText(text, { font = gframe.style.textFont, color = gframe.style.TEXT_COLOR, parent = this } = {}) {
+    let txt = this.createDom("span");
+    txt.htmlElement.innerHTML = text;
+    txt.htmlElement.style.font = font;
+    txt.htmlElement.style.color = color;
+    txt.htmlElement.style.userSelect = "none";
+    if (parent) parent.addChild(txt);
+    else this.children.push(txt)
+    return txt;
+  }
+  createDOMcheckbox(label, { top = null, left = null, right = null, bottom = null }) {
+    let div = this.createDom("div");
+    let style = div.htmlElement.style;
+    style.top = top;
+    style.left = left;
+    style.right = right;
+    style.bottom = bottom;
+    style.fontSize = "20px";
+    this.children.push(div);
+
     let input = document.createElement("input");
     input.setAttribute("type", "checkbox");
-    input.setAttribute("class", "checkbox");
+    div.htmlElement.appendChild(input);
+    input.style.verticalAlign = "middle";
+    input.style.width = "22px";
+    input.style.height = "22px";
+    input.style.cursor = "pointer";
 
     let lab = document.createElement("label");
     lab.innerHTML = label;
-    lab.setAttribute("class", "checklabel")
-    div.appendChild(input);
-    div.appendChild(lab);
-    let checkbox = new createjs.DOMElement(div);
-    if (parent) this.addChild(checkbox);
-    else this.children.push(checkbox);
+    div.htmlElement.appendChild(lab);
+    lab.style.userSelect = "none";
+    lab.style.verticalAlign = "middle";
+    lab.style.fontSize = "20px";
+
     return input;
   }
-  createDOMbutton(label, id = null,className="game-button") {
-    let dom = document.createElement("span");
-    gameDiv.appendChild(dom);
-    dom.setAttribute("class",className);
-    dom.innerHTML = label;
-    let button = new createjs.DOMElement(dom);
+  createDOMbutton(label, id = null, className = "game-button") {
+    let button = this.createDom("span");
+    button.htmlElement.setAttribute("class", className);
+    button.htmlElement.innerHTML = label;
     this.addChild(button);
     button.id = id;
-
-    dom.onclick = () => {
+    button.htmlElement.onclick = () => {
       this.dispatchEvent(new Okbutton(id));
     }
     return button;
@@ -418,23 +398,61 @@ class BasicScreen extends createjs.Container {
       }
     })
   }
-  _cacheTitle() {
-    let b = this.title.getBounds();
-    this.title.cache(b.x, b.y, b.width, b.height + gframe.style.textSize / 4);
-  }
   updateTitle(text) {
-    this.title.text = text;
-    if (this.title.bitmapCache) {
-      this.title.uncache()
-      this._cacheTitle();
-    }
+    this.title.htmlElement.innerHTML = text;
+    this.title.x = this._width - this.title.htmlElement.offsetWidth >> 1;
+  }
+  get width() {
+    return this._width;
+  }
+  get height() {
+    return this._height;
+  }
+}
+//--------------------------------------------------进度条----------------------------------------------------------------------
+class LoaderBar extends BasicScreen {
+  constructor(title = "loading...", width = 500, height = 30, { font = gframe.style.laoderFont } = {}) {
+    super(title, width, height, { font });
+    if (this.title) this.title.y = -this.title.htmlElement.offsetHeight - 8;
+    this.createBar();
+    this.createValue();
+  }
+  createBar() {
+    this.bar = this.createDom("progress");
+    this.addChild(this.bar);
+    this.bar.htmlElement.value = 0;
+    this.bar.htmlElement.max = 100;
+
+    let style = this.bar.htmlElement.style;
+    style.width = this.width + "px";
+    style.height = this.height + "px";
+    style.backgroundColor = "blue";
+  }
+  createValue() {
+    this.value = this.createDom("span");
+    this.value.htmlElement.innerHTML = "000%";
+    this.addChild(this.value);
+
+    let style = this.value.htmlElement.style;
+    style.font = gframe.style.laoderFont;
+    style.color=gframe.style.TEXT_COLOR;
+
+    this.value.x = this.width - this.value.htmlElement.offsetWidth >> 1;
+    this.value.y = this.height;
+  }
+  /**
+   * 开始加载
+   */
+  startLoad(e) {
+    this.bar.htmlElement.value = e.progress * 100;
+    this.value.htmlElement.innerHTML = Math.floor(e.progress * 100).toString() + "%";
   }
 }
 
 class LevelInScreen extends BasicScreen {
-  constructor(text = "level:0", xpos = 0, ypos = 0) {
-    super(text, xpos, ypos);
-    // this.bg = new ShapeBackground(stage.width / 2, stage.height / 2);
+  constructor(text = "level:0", width, height) {
+    super(text, width, height);
+    if (!stage.isWebGL) this.bg = new ShapeBackground(stage.width / 2, stage.height / 2);
     this.addChild(this.bg);
   }
   updateWaitBg() {
@@ -444,37 +462,23 @@ class LevelInScreen extends BasicScreen {
     this.bg.clearBg();
   }
 }
-
-class ScoreBoard extends createjs.Container {
-  constructor(xpos = 0, ypos = 0, backgroundColor = false, { width = stage.width, height, justifyContent = "space-around" } = {}) {
-    super();
-    this.div = document.createElement("div");
-    this.div.style.display = "flex";
-    this.div.style.flexWrap = "wrap";
-    this.div.style.visibility = "hidden";
-    this.div.style.justifyContent = justifyContent;
-    this.div.style.userSelect = "none";
-    this.div.style.top = 0;
-    this.div.style.left = 0;
-    this.div.style.width = width + "px";
-    this.div.style.width = width + "px";
-    gameDiv.appendChild(this.div);
-    let a = new createjs.DOMElement(this.div);
-    this.addChild(a);
+class ScoreBoard extends BasicScreen {
+  constructor(xpos = 0, ypos = 0, isBackgoundColor = false, { title = null, font = gframe.style.scoreFont, width = stage.width, height = null, justifyContent = "space-around" } = {}) {
+    super(title, 0, 0, { font });
+    this.div = this.createDom("div");
+    let div = this.div.htmlElement.style;
+    div.display = "flex";
+    div.flexWrap = "wrap";
+    div.justifyContent = justifyContent;
+    div.alignItems="center";
+    div.userSelect = "none";
+    div.width = width + "px";
+    if (height) div.height = height + "px";
+    if (isBackgoundColor) div.backgroundColor = gframe.style.SCOREBOARD_COLOR;
+    this.addChild(this.div);
     this.x = xpos;
     this.y = ypos;
-    if (height) this.div.style.height = height + "px";
-    if (backgroundColor) this.div.style.backgroundColor = gframe.style.SCOREBOARD_COLOR;
     this._textElements = new Map();
-    this.on('added', () => {
-      this.div.style.visibility = "visible";
-      a.visible = true;
-    });
-    this.on('removed', () => {
-      a._oldStage = null;
-      this.div.style.visibility = "hidden";
-      a.visible = false;
-    });
   }
   createTextElement(key, val, xpos = 0, ypos = 0, { image, border } = {}) {
     let c = document.createElement('div');
@@ -483,11 +487,11 @@ class ScoreBoard extends createjs.Container {
       c.style.left = xpos + "px";
       c.style.top = ypos + "px";
     } else {
-      if (this.div.style.justifyContent == "space-between") c.style.flex = "30%";
+      if (this.div.htmlElement.style.justifyContent == "space-between") c.style.flex = "30%";
       c.style.margin = "0 10px";
     }
     if (border) c.style.border = border;
-    c.style.font = gframe.style.SCORE_TEXT_SIZE + "px " + gframe.style.fontFamily;
+    c.style.font = gframe.style.scoreFont;
     c.style.color = gframe.style.SCORE_TEXT_COLOR;
     let title;
     if (image) {
@@ -502,22 +506,20 @@ class ScoreBoard extends createjs.Container {
     value.innerHTML = val;
     value.style.marginLeft = "8px";
     c.appendChild(value);
-    this.div.appendChild(c);
+    this.div.htmlElement.appendChild(c);
     this._textElements.set(key, value);
-  }
-  placeElements() {
-
-  }
-  get height() {
-    return this.div.clientHeight;
-  }
-  get width() {
-    return this.div.clientWidth;
   }
   update(label, val) {
     this._textElements.get(label).innerHTML = val;
   }
+  get width() {
+    return this.div.htmlElement.clientWidth;
+  }
+  get height() {
+    return this.div.htmlElement.clientHeight;
+  }
 }
+
 /***************************************游戏基类****************************** */
 class Game extends ScrollContainer {
   static SCORE = "score";
@@ -543,6 +545,7 @@ class Game extends ScrollContainer {
     while (i <= len) {
       if (!array[i]) {
         array[i] = new Actor();
+        array[i].active = true;
         break;
       } else if (!array[i].active) {
         array[i].active = true;
@@ -565,24 +568,13 @@ class Game extends ScrollContainer {
     this.createLevelInScreen();
     this.createGameOverScreen();
     this.createLevelOutScreen();
+    this.createPauseScreen();
     this.createScoreBoard();
     //背景音乐
     if (backSoundId) {
-      let dom = document.getElementById("bmusic");
-      this._sound = new createjs.DOMElement(dom);
-      this.superAddChild(this._sound);
-      this._sound.x = this.width - 40;
-      this._sound.y = this.height - 40;
       this.sound = createjs.Sound.createInstance(backSoundId);
       this.sound.loop = -1;
-      dom.onclick = () => {
-        if (dom.classList.contains("icon-shengyinjingyin")) {
-          dom.setAttribute("class", "iconfont icon-shengyinkai")
-        } else {
-          dom.setAttribute("class", "iconfont icon-shengyinjingyin")
-        }
-        this.sound.muted = !this.sound.muted;
-      }
+      this.sound.volume=gframe.guiProps.背景音量;
     }
   }
 
@@ -603,37 +595,26 @@ class Game extends ScrollContainer {
     }
     //主题声音
     if (soundId) {
-      this.titleScreen.sound = createjs.Sound.createInstance("titlesound");
-      this.titleScreen.sound.loop = -1;
+      let sound=this.titleScreen.sound = createjs.Sound.createInstance("titlesound");
+      sound.loop = -1;
+      sound.muted=true;
+      sound.volume=gframe.guiProps.主题音量;
       this.titleScreen.firstPlay = true;
-      let titlemusic = new createjs.DOMElement(document.getElementById("titlemusic"));
-      this.titleScreen.children.push(titlemusic);
-      titlemusic.htmlElement.style.right = 0;
-      titlemusic.htmlElement.style.bottom = 0;
-      tmusic.onchange = () => {
-        if (this.titleScreen.firstPlay) {
-          this.titleScreen.sound.play();
-          this.titleScreen.firstPlay = false;
-          return
-        }
-        this.titleScreen.sound.muted = !this.titleScreen.sound.muted;
-      }
     }
   }
   createInstructionScreen() {
-    this.instructionScreen = new BasicScreen('说明界面');
+    this.instructionScreen = new BasicScreen('说明界面', stage.width, stage.height, { font: gframe.style.textFont });
     if (!stage.isWebGL) {
-      this.instructionScreen.title.font = "40px " + gframe.style.fontFamily;
-      this.instructionScreen.title.lineHeight = 40;
-      this.instructionScreen.createOkButton((stage.canvas.width - 150) / 2, stage.canvas.height * 0.6, null, { label: '返回', width: 150, height: 150, graphics: new mc.Star(6, 0.35) });
+      this.instructionScreen.createOkButton((this.instructionScreen.width - 150) / 2, this.instructionScreen.height * 0.6, null, { label: '返回', width: 150, height: 150, graphics: new mc.Star(6, 0.35) });
     } else {
       let b = this.instructionScreen.createDOMbutton("返回");
       b.x = stage.width - b.htmlElement.clientWidth >> 1;
-      b.y = stage.canvas.height * 0.6;
+      b.y = this.instructionScreen.height * 0.6;
     }
   }
   createLevelInScreen() {
-    this.levelInScreen = new LevelInScreen('level:0', stage.width / 2, stage.height / 2);
+    this.levelInScreen = new LevelInScreen('level:0', stage.width, stage.height);
+    this.levelInScreen.title.y = this.levelInScreen.height / 2 - this.levelInScreen.title.htmlElement.offsetHeight / 2;
   }
   createGameOverScreen() {
     this.gameOverScreen = new BasicScreen('game over');
@@ -646,19 +627,23 @@ class Game extends ScrollContainer {
     }
   }
   createLevelOutScreen() {
-    this.levelOutScreen = new BasicScreen('you win', stage.canvas.width / 2, stage.canvas.height / 3);
+    this.levelOutScreen = new BasicScreen('you win');
     if (!stage.isWebGL) {
       this.levelOutScreen.createOkButton((stage.canvas.width - 150) / 2, stage.canvas.height * 0.6, null, { label: '通关', width: 150, height: 150, graphics: new mc.Star(6, 0.35) });
     } else {
-      let b = this.gameOverScreen.createDOMbutton("通关");
+      let b = this.levelOutScreen.createDOMbutton("通关");
       b.x = stage.width - b.htmlElement.clientWidth >> 1;
       b.y = stage.canvas.height * 0.6;
     }
   }
+  createPauseScreen(){
+    this.pauseScreen=new BasicScreen("pause",this.width,this.height);
+    this.pauseScreen.title.y=this.height-this.pauseScreen.title.htmlElement.offsetHeight>>1;
+  }
   createScoreBoard() {
 
   }
-  init() {
+  newGame() {
 
   }
   newLevel() {
@@ -666,15 +651,9 @@ class Game extends ScrollContainer {
   }
   _waitComplete() {
     stage.removeChild(this.levelInScreen);
-    // game.levelInScreen.clearBg();
+    if (!stage.isWebGL) game.levelInScreen.clearBg();
     stage.enableMouseOver(0);
     stage.addChild(this);
-    this.children.forEach(element => {
-      if (element.htmlElement) {
-        element.visible = true;
-        element.htmlElement.style.visibility = "visible";
-      }
-    });
     stage.children.forEach(element => {
       if (element.htmlElement) {
         element.visible = true;
@@ -691,31 +670,57 @@ class Game extends ScrollContainer {
   runGame() {
 
   }
+  hasTypeOnContainer(actorType, container = this.container) {
+    return container.children.some(function (actor) {
+      return actor.type == actorType;
+    })
+  }
+  /**
+   * 更新actor
+   * @param {*} layer this.container
+   */
+  moveActors(layer = this.container) {
+    let actor = layer.getChildAt(layer.numChildren - 1)
+    while (actor) {
+      actor.act();
+      let index = layer.getChildIndex(actor);
+      actor = layer.getChildAt(index - 1);
+    }
+  }
   clear(e) {
     this.dispatchEvent(e);
     if (this.sound) this.sound.stop();
-    this.off(gframe.event.GAME_OVER,overevent);
-    this.off(gframe.event.LEVEL_UP,levelupevent);
+    this.off(gframe.event.GAME_OVER, overevent);
+    this.off(gframe.event.LEVEL_UP, levelupevent);
   }
   _clear() {
     stage.alpha = 1;
     createjs.Tween.removeAllTweens();
     stage.enableMouseOver();
-    this.children.forEach(element => {
+    //清除游戏内容元素
+    let l = this.container.children.length - 1;
+    for (let i = l; i >= 0; i--) {
+      const element = this.container.children[i];
+      if (element.active) {
+        element.recycle();
+      } else {
+        this.removeChild(element);
+      }
+    };
+    //清除舞台元素
+    l = stage.children.length - 1;
+    for (let i = l; i >= 0; i--) {
+      const element = stage.children[i];
       if (element.htmlElement) {
         element._oldStage = null;
         element.visible = false;
         element.htmlElement.style.visibility = "hidden";
+      } else if (element.active) {
+        element.recycle();
+      } else {
+        stage.removeChild(element);
       }
-    });
-    stage.children.forEach(element => {
-      if (element.htmlElement) {
-        element._oldStage = null;
-        element.visible = false;
-        element.htmlElement.style.visibility = "hidden";
-      }
-    });
-    stage.removeAllChildren();
+    };
   }
   get keyboard() {
     if (document.onkeydown) return true;
@@ -729,14 +734,23 @@ class Game extends ScrollContainer {
       document.onkeyup = null;
     }
   };
+  get background() {
+    return this._background;
+  }
+  set background(obj) {
+    this._background = obj;
+    if(obj instanceof createjs.DisplayObject)this.addChildAt(this._background, 0);
+  }
 };
+var _fontFamily = "regul,pfrondaseven,Arial,宋体";
 var gframe = {
   style: {
-    textSize: 60,
-    fontFamily: "regul,pfrondaseven,Arial,宋体",
-    TITLE_TEXT_COLOR: "#000000",
+    titleFont: "bold " + "60px " + _fontFamily,
+    textFont: "40px " + _fontFamily,
+    laoderFont: "bold 40px Arial,宋体",
+    TEXT_COLOR: "#fff",
     //分数板样式
-    SCORE_TEXT_SIZE: 30,
+    scoreFont: "30px " + _fontFamily,
     SCORE_TEXT_COLOR: "#FFFFFF",
     SCOREBOARD_COLOR: "#555"
   },
@@ -759,12 +773,28 @@ var gframe = {
     STATE_LEVEL_OUT: "statelevelout",
     STATE_WAIT: "statewait"
   },
+  loadItem: [{
+    src: "fonts/regul-book.woff",
+    type: "font",
+  }, {
+    src: "fonts/pf_ronda_seven.ttf",
+    type: "font"
+  }, {
+    src: "fonts/regul-bold.woff",
+    type: "font"
+  }],
   loaderBar: null,
   LoaderBar,
   BasicScreen,
   LevelInScreen,
   ScoreBoard,
   Game,
+  guiProps : {
+    主题音乐:false,
+    主题音量:0.5,
+    背景音乐:true,
+    背景音量:0.5,
+  },
   //初始化舞台
   buildStage(canvasId, isGL = false) {
     _systemFunction = _systemWaitForClose;
@@ -772,7 +802,8 @@ var gframe = {
     if (!isGL) stage = new createjs.Stage(canvasId);
     else {
       stage = new createjs.StageGL(canvasId);
-      stage.setClearColor(0xA4AB61ff);
+      stage.setClearColor(0x00000000);
+      // stage.setClearColor(0xA4AB61ff);
     }
     // createjs.DisplayObject._hitTestContext = stage.canvas.getContext("2d",{willReadFrequently: true});
     //开启鼠标经过事件
@@ -800,6 +831,43 @@ var gframe = {
       _systemFunction();
       stage.update(e);
     });
+    //自适应
+    _adapt();
+    //创建设置面板
+    dat.GUI.TEXT_OPEN="选项设置";
+    dat.GUI.TEXT_CLOSED="关闭";
+    let gui=this.gui = new dat.GUI({width:245,autoPlace:false,closeOnTop:false});
+    gameDom.appendChild(gui.domElement);
+    gui.domElement.style.position="absolute";
+    gui.domElement.style.bottom="26px";
+    gui.closed=true;
+    gui.__closeButton.onclick=()=>{
+      if(gui.closed){
+        gui.width=70;
+      }
+      else {
+        gui.width=245
+      }
+    }
+    gui.add(this.guiProps, "主题音乐").onChange((val)=>{
+      let sound=game.titleScreen.sound;
+      if(sound){
+        if(game.titleScreen.firstPlay&&game.titleScreen.stage){
+          game.titleScreen.firstPlay=false;
+          sound.play();
+          sound.muted=false;
+        }else sound.muted=!val;
+      }
+    });
+    gui.add(this.guiProps,"主题音量",0,1).onChange((val)=>{
+      if(game.titleScreen.sound)game.titleScreen.sound.volume=val;
+    });
+    gui.add(this.guiProps,"背景音乐").onChange((val)=>{
+      if(game.sound) game.sound.muted=!val;
+    });
+    gui.add(this.guiProps,"背景音量",0,1).onChange((val)=>{
+      if(game.sound) game.sound.volume=val;
+    });
   },
   createQueue() {
     queue = new createjs.LoadQueue(true, "./assets/");
@@ -812,15 +880,18 @@ var gframe = {
   * @param {*} compid 
   */
   preload(GClass, widthKeyDown) {
-    _adapt();//自适应
     if (queue != null) queue.close();
-    if (!GClass.loadItem && !GClass.loadId) _initGame(GClass, widthKeyDown);
+    if (!this.loadItem && !GClass.loadItem && !GClass.loadId) _initGame(GClass, widthKeyDown);
     else {
       this.createQueue();
       this.loaderBar = this.loaderBar || new LoaderBar();
       stage.addChild(this.loaderBar);
       this.loaderBar.x = stage.width - this.loaderBar.width >> 1;
       this.loaderBar.y = stage.height - this.loaderBar.height >> 1;
+      if (this.loadItem) {
+        let manifest = JSON.parse(JSON.stringify(this.loadItem));
+        queue.loadManifest(manifest);
+      }
       if (GClass.loadId) {
         let comp = AdobeAn.getComposition(GClass.loadId);
         queue.on('fileload', (evt) => {
@@ -853,16 +924,15 @@ var gframe = {
   },
   //fps
   startFPS() {
-    this.fps = document.createElement('span');
-    containerDiv.appendChild(this.fps);
-    this.fps.style.color = "#fff";
-    this.fps.style.font = "20px " + gframe.style.fontFamily;
-    this.fps.style.position = "absolute";
-    this.fps.style.top = "10px";
-    this.fps.style.left = "10px";
+    let fps = document.createElement('span');
+    gameDom.appendChild(fps);
+    fps.style.color = "#fff";
+    fps.style.font = "20px " + gframe.style.fontFamily;
+    fps.style.position = "absolute";
+    fps.style.top = "8px";
     createjs.Ticker.addEventListener("tick", () => {
-      this.fps.innerHTML = Math.round(createjs.Ticker.getMeasuredFPS()) + "fps";
+      fps.innerHTML = Math.round(createjs.Ticker.getMeasuredFPS()) + "fps";
     });
   }
 };
-export { stage, game, queue, lib, keys, pressed, gframe };
+export { stage, game,queue, lib, keys, pressed, gframe };

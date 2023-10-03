@@ -801,7 +801,7 @@ class ScrollBar extends createjs.Container {
       .clear()
       .beginFill(mc.style.shadowColor)
       .rect(0, 0, this.width, this.height)
-      .beginFill(mc.style.buttonOverColor)
+      .beginFill(mc.style.buttonUpColor)
       .rect(1, 1, this.width - 2, this.height - 2)
     this._drawArrows()
     this._drawHandle()
@@ -840,11 +840,11 @@ class ScrollBar extends createjs.Container {
   _handleRedraw() {
     this.handle.graphics.clear();
     if (this.handle.down) {
-      this.handle.graphics.beginFill(mc.style.highlightColor);
+      this.handle.graphics.beginFill(mc.style.buttonDownColor);
     } else if (this.handle.over) {
-      this.handle.graphics.beginFill(mc.style.buttonUpColor);
+      this.handle.graphics.beginFill(mc.style.buttonOverColor);
     } else {
-      this.handle.graphics.beginFill(mc.style.buttonUpColor);
+      this.handle.graphics.beginFill(mc.style.shadowColor);
     }
     this.handle.graphics.drawRect(0, 0, this.handle.width, this.handle.height);
   }
@@ -885,8 +885,6 @@ class ScrollContainer extends createjs.Container {
     if (parent) parent.addChild(this);
     this.x = x;
     this.y = y;
-    this.width=width;
-    this.height=height;
     this.container = new createjs.Container();
     this.container.setBounds(0, 0, containerWidth, containerHeight);
     this.addChild(this.container)
@@ -918,16 +916,16 @@ class ScrollContainer extends createjs.Container {
       this.addChild(this.scrollBarH, this.scrollBarV);
     }
     this.superAddChild = this.addChild;
-    this.superAddChildAt=this.addChildAt;
+    // this.superAddChildAt=this.addChildAt;
     this.addChild = child => {
       this.container.addChild(child)
-    }
-    this.removeAllChildren = () => {
-      this.container.removeAllChildren();
     }
     this.removeChild = child => {
       this.container.removeChild(child);
     }
+    // this.removeAllChildren = () => {
+    //   this.container.removeAllChildren();
+    // }
     // this.addChildAt=(child,i)=>{
     //   this.container.addChildAt(child,i);
     // }
@@ -982,12 +980,13 @@ class ScrollContainer extends createjs.Container {
   }
 
   setSize(width, height) {
+    this.width=width;
+    this.height=height;
     this.setBounds(0, 0, width, height);
     this.contentSize = {
       width: Math.max(width - mc.style.SCROLL_BAR_SIZE, this.container.getBounds().width),
       height: Math.max(height - mc.style.SCROLL_BAR_SIZE, this.container.getBounds().height)
     };
-
     this.container.mask = new createjs.Shape;
     this.container.mask.graphics.beginFill("#efefef").rect(0, 0, width, height);
     this.scrollBarV.x = width - mc.style.SCROLL_BAR_SIZE;
@@ -1090,7 +1089,15 @@ const mc = {
       };
     }
     array = array.derangedArray();
-  }
+  },
+  getRandom:function(min, max) {
+    const randomBuffer = new Uint32Array(1);
+    window.crypto.getRandomValues(randomBuffer);
+    let randomNumber = randomBuffer[0] / (0xffffffff + 1);
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(randomNumber * (max - min + 1)) + min;
+}
 };
 export { mc,PushButton,CheckBox,RadioButton,Slider,ScrollBar,ScrollContainer };
 

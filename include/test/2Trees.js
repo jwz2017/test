@@ -6,8 +6,6 @@ var trees, vpX, vpY,
     vx = 0, vy = 0, vz = 0, ax = 0, ay = 0, az = 0, gravity = 0.3;
 export class Trees extends gframe.Game {
     constructor() {
-        stage.canvas.style.background = "#000";
-        gframe.style.TITLE_TEXT_COLOR="#fff";
         super("屏幕环绕3d");
         this.keyboard=true;
     }
@@ -22,7 +20,7 @@ export class Trees extends gframe.Game {
             tree.pos.x = Math.random() * 2000 - 1000;
             tree.pos.y = floor;
             tree.pos.z = Math.random() * 10000;
-            stage.addChild(tree);
+            this.addChild(tree);
         }
     }
     runGame() {
@@ -56,7 +54,7 @@ export class Trees extends gframe.Game {
         vx *= friction;
         vy *= friction;
         //排序
-        stage.sortChildren(function (a, b) {
+        this.container.sortChildren(function (a, b) {
             return b.pos.z - a.pos.z;
         })
     }

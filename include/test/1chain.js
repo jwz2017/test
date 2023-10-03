@@ -20,7 +20,7 @@ export class Chain extends gframe.Game {
     runGame() {
         let g = chainShape.graphics;
         g.clear();
-        g.setStrokeStyle(2).beginStroke('#000000').moveTo(stage.mouseX, stage.mouseY);
+        g.setStrokeStyle(2).beginStroke('#fff').moveTo(stage.mouseX, stage.mouseY);
         this.moveBall(balls[0], stage.mouseX, stage.mouseY);
         g.lineTo(balls[0].x, balls[0].y);
         for (let i = 1; i < balls.length; i++) {

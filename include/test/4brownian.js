@@ -8,9 +8,8 @@ export class Brownian extends gframe.Game {
     }
     waitComplete() {
         shape = new createjs.Shape();
-        shape.graphics.beginStroke("#00000055")
+        shape.graphics.beginStroke("#ffffff55")
         stage.addChild(shape);
-        stage.canvas.style.background = "#fff";
         dots = [];
         for (let i = 0; i < numDots; i++) {
             const dot = new CirActor();

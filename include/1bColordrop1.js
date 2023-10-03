@@ -1,14 +1,17 @@
 import { stage, gframe, queue } from "../classes/gframe.js";
 import { GridsMapGame } from "../classes/GridsMapGame.js";
+import { getFXBitmap } from "../classes/other.js";
 window.onload = function () {
     /*************游戏入口*****/
     //gframe.loaderBar=null;
-    gframe.buildStage('canvas');
+    gframe.buildStage('canvas',true);
+    stage.setClearColor(0x00000000);
     gframe.preload(ColorDrop);
     gframe.startFPS();
 };
 //游戏变量;
 var space = 7;
+var step = 30, numcols = 15, numrows = 15;
 class ColorDrop extends GridsMapGame {
     static loadItem = [{
         id: "color",
@@ -20,9 +23,8 @@ class ColorDrop extends GridsMapGame {
     static SCORE_BOARD_THRESHOLD = "threshold";
     static SCORE_BOARD_LEVEL_SCORE = "levelScore";
     constructor() {
-        gframe.style.TITLE_TEXT_COLOR = "#fff";
+        gframe.style.TEXT_COLOR = "#fff";
         stage.canvas.style.background = "#000";
-        var step = 30, numcols = 15, numrows = 15;
         super("魔法方块", step * numcols + (numcols + 1) * space, step * numrows + (numrows + 1) * space, step, step, numcols, numrows);
         this.instructionScreen.title.text = "10步内超过500分过关";
         this.maxLevel = 10;
@@ -31,13 +33,12 @@ class ColorDrop extends GridsMapGame {
         this.difficultyLevel = 7;
     }
     createScoreBoard() {
-        this.scoreboard = new gframe.ScoreBoard(0,0,false,{justifyContent:"space-between"});
+        this.scoreboard = new gframe.ScoreBoard(60,0,false,{justifyContent:"space-between"});
         this.scoreboard.createTextElement(ColorDrop.SCORE);
         this.scoreboard.createTextElement(ColorDrop.LEVEL);
         this.scoreboard.createTextElement(ColorDrop.SCORE_BOARD_PLAYS);
         this.scoreboard.createTextElement(ColorDrop.SCORE_BOARD_THRESHOLD);
         this.scoreboard.createTextElement(ColorDrop.SCORE_BOARD_LEVEL_SCORE);
-        this.scoreboard.placeElements();
     }
     newLevel() {
         this.scoreboard.update("score",this.score);
@@ -111,18 +112,18 @@ class ColorDrop extends GridsMapGame {
     //创建方块
     createTile(i, j) {
         let color = Math.floor(Math.random() * this.currentLevel);
-        let ypos = this.stepHeight * j + space * (j + 1);
+        let ypos = step * j + space * (j + 1);
         let tile = new Block(queue.getResult("color"), j, i);
         tile.gotoAndStop(color);
-        tile.x = this.stepWidth * i + space * (i + 1);
-        tile.y = -this.stepHeight;
+        tile.x = step * i + space * (i + 1);
+        tile.y = -step*(this.numRows-j)-space*(this.numRows-j+1);
         let node = this.getNode(i, j);
         node.tile = tile;
         node.type = tile.currentFrame;
         this.addChildToFloor(tile);
-        createjs.Tween.get(tile).to({
+        createjs.Tween.get(tile).wait(500).to({
             y: ypos
-        }, ypos * 2).call(() => {
+        }, 800).call(() => {
             tile.isFalling = false;
             tile.cursor = "pointer";
         });
@@ -161,8 +162,8 @@ class ColorDrop extends GridsMapGame {
                         node = this.getNode(i, tile.row);
                         node.tile = tile;
                         node.type = tile.currentFrame;
-                        createjs.Tween.get(tile).to({
-                            y: this.stepWidth * tile.row + space * (tile.row + 1)
+                        createjs.Tween.get(tile).wait(500).to({
+                            y: step * tile.row + space * (tile.row + 1)
                         }, 300).call(() => {
                             tile.isFalling = false;
                         });
@@ -180,16 +181,27 @@ class ColorDrop extends GridsMapGame {
 /**
  * 方块类
  */
-class Block extends createjs.Sprite {
+class Block extends createjs.Container {
     constructor(spriteSheet, row, col) {
-        super(spriteSheet);
+        super();
+        this.mouseChildren=false;
+        this.sprite=new createjs.Sprite(spriteSheet);
         this.isFalling = true;
         this.row = row;
         this.col = col;
+        this.addChild(this.sprite);
     }
     makeBlockClicked() {
-        this.filters = [new createjs.ColorFilter(0.5, 0.5, 0.5, 1, 0, 0, 0, 0)];
         let b = this.getBounds();
-        this.cache(b.x, b.y, b.width, b.height);
+        let filters = [new createjs.BlurFilter(7,7,1),new createjs.ColorFilter(0, 0, 0, 1.5, 255, 255,255, 0)];
+        let fx=getFXBitmap(this.sprite,filters,0,0,b.width,b.height);
+        createjs.Tween.get(fx, {loop:false}).to({alpha:0}, 2000);
+        this.addChildAt(fx,0);
+    }
+    gotoAndStop(val){
+        this.sprite.gotoAndStop(val);
+    }
+    get currentFrame(){
+        return this.sprite.currentFrame;
     }
 }

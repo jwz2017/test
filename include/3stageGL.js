@@ -21,8 +21,8 @@ export class StageGL extends gframe.Game {
         this.scoreboard.createTextElement(StageGL.LIVES);
     }
     //初始化游戏数据
-    init() {
-
+    newGame() {
+        
     }
     newLevel() {
         this.scoreboard.update(StageGL.SCORE,this.score);

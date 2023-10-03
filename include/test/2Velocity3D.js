@@ -8,6 +8,7 @@ var xpos, ypos, zpos, ball, vpX, vpY,
 export class Velocity3D extends gframe.Game {
     constructor() {
         super("3d速度");
+        this.instructionScreen.updateTitle(wasd,shift,ctrl)
         this.keyboard=true;
     }
     waitComplete() {
