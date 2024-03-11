@@ -1,25 +1,16 @@
-import { gframe, stage } from "../../classes/gframe.js";
+import { stage } from "../../classes/gframe.js";
 import {Vector,Actor } from "../../classes/actor.js";
 import { OBB, detectorOBBvsOBB } from "../../classes/hitTest.js";
+import { Game } from "../../classes/Game.js";
 var rect0, rect1;
-export class RectRotate extends gframe.Game {
+export class RectRotate extends Game {
     constructor() {
         super("矩形旋转碰撞");
     }
     waitComplete() {
-        super.waitComplete();
-        rect0 = new Actor();
-        rect0.init(200, 80);
-        rect0.mass = 2;
-        rect0.setReg(-50, -20);
-        rect0.setPos(350, 440);
-
-        rect1 = new Actor();
-        rect1.init(200, 50);
-        rect1.mass = 1;
-        rect1.setPos(350, 580);
+        rect0 = new Actor(350,400,200,80);
+        rect1 = new Actor(350,580,200,50);
         stage.addChild(rect0, rect1);
-
     }
     runGame() {
         rect0.rotation += 1;

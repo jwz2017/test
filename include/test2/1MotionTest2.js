@@ -1,10 +1,10 @@
 import { DrawnIsoBox, DrawnIsoTile, Point3D } from "../../classes/3DClass.js";
-import { GridsMapGame } from "../../classes/GridsMapGame.js";
+import { Game } from "../../classes/Game.js";
 import { stage } from "../../classes/gframe.js";
 
 var box, shadow, filter,
     gravity = 2, friction = 0.95, bounce = -0.9;
-export class MotionTest2 extends GridsMapGame {
+export class MotionTest2 extends Game {
     constructor() {
         super("移动测试2");
     }
@@ -16,20 +16,20 @@ export class MotionTest2 extends GridsMapGame {
             for (let j = 0; j < 20; j++) {
                 let tile = new DrawnIsoTile(20, "#cccccc");
                 tile.position = new Point3D(i * 20, 0, j * 20);
-                this.addChildToFloor(tile);
+                this.addToFloor(tile);
             }
         }
         box = new DrawnIsoBox(20, "#ff0000", 20);
         box.xpos = 200;
         box.zpos = 200;
-        this.addChildToWorld(box);
+        this.addToPlayer(box);
 
         shadow = new DrawnIsoTile(20, 0);
         shadow.alpha = .5;
-        this.addChildToFloor(shadow);
+        this.addToFloor(shadow);
 
         filter = new createjs.BlurFilter();
-        this.floor.addEventListener("mousedown", () => {
+        this.floorLayer.addEventListener("mousedown", () => {
             box.vx = Math.random() * 20 - 10;
             box.vy = -Math.random() * 40;
             box.vz = Math.random() * 20 - 10;

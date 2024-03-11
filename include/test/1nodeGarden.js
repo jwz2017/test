@@ -1,11 +1,12 @@
-import { gframe, stage } from "../../classes/gframe.js";
+import { stage } from "../../classes/gframe.js";
 import { Actor,CirActor } from "../../classes/actor.js";
+import { Game } from "../../classes/Game.js";
 var numParticles = 40,
     particles,
     minDist = 100,
     springAmount = 0.012,
     shape;
-export class NodeGarden extends gframe.Game {
+export class NodeGarden extends Game {
     constructor() {
         super("节点花园");
     }
@@ -14,11 +15,9 @@ export class NodeGarden extends gframe.Game {
         shape = new createjs.Shape();
         stage.addChild(shape);
         for (let i = 0; i < numParticles; i++) {
-            const particle = new CirActor();
-            particle.edgeBehavior = Actor.WRAP;
             let size = Math.random() * 20 + 4;
-            particle.init(size);
-            particle.setPos(Math.random() * stage.width, Math.random() * stage.height);
+            const particle = new CirActor(Math.random() * stage.width, Math.random() * stage.height,size/2);
+            particle.edgeBehavior = Actor.WRAP;
 
             particle.speed.setValues(Math.random() * 6 - 3, Math.random() * 6 - 3);
             particle.mass = size;

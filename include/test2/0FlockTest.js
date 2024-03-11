@@ -1,8 +1,9 @@
+import { Game } from "../../classes/Game.js";
 import { Actor, SteeredActor } from "../../classes/actor.js";
-import { gframe, stage } from "../../classes/gframe.js";
+import { stage } from "../../classes/gframe.js";
 
 var vehicles, numVehicles = 30;
-export class FlockTest extends gframe.Game {
+export class FlockTest extends Game{
     constructor() {
         super("群落测试");
     }
@@ -10,7 +11,6 @@ export class FlockTest extends gframe.Game {
         vehicles = [];
         for (let i = 0; i < numVehicles; i++) {
             const vehicle = new SteeredActor();
-            vehicle.init(15);
             vehicle.setPos(Math.random() *stage.width, Math.random() * stage.height);
             vehicle.speed.setValues(Math.random() * 20 - 10, Math.random() * 20 - 10);
             vehicle.edgeBehavior = Actor.BOUNCE;

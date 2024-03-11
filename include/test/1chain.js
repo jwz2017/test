@@ -1,18 +1,17 @@
-import { gframe,stage } from "../../classes/gframe.js";
+import { stage } from "../../classes/gframe.js";
 import { CirActor } from "../../classes/actor.js";
+import { Game } from "../../classes/Game.js";
 var chainShape, balls;
-export class Chain extends gframe.Game {
+export class Chain extends Game{
     constructor() {
         super("链式运动");
     }
     waitComplete() {
-        super.waitComplete();
         balls = [];
         chainShape = new createjs.Shape();
         stage.addChild(chainShape);
         for (let i = 0; i < 7; i++) {
-            const ball = new CirActor();
-            ball.init(20, 20);
+            const ball = new CirActor(0,0,10);
             stage.addChild(ball);
             balls.push(ball);
         }

@@ -1,10 +1,11 @@
+import { Game } from "../../classes/Game.js";
 import { CirActor } from "../../classes/actor.js";
-import { gframe, stage } from "../../classes/gframe.js";
+import { stage } from "../../classes/gframe.js";
 
 var balls, vpX, vpY, numBalls = 50, fl = 250,
     top = -100, bottom = 100, left = -100, right = 100,
     front = 100, back = -100;
-export class MultiBounce3D extends gframe.Game {
+export class MultiBounce3D extends Game {
     constructor() {
         super("多球反弹");
     }
@@ -13,8 +14,7 @@ export class MultiBounce3D extends gframe.Game {
         vpX = stage.width / 2;
         vpY =stage.height / 2;
         for (let i = 0; i < numBalls; i++) {
-            const ball = new CirActor();
-            ball.init(30, 30);
+            const ball = new CirActor(0,0,15);
             ball.speed.x = Math.random() * 10 - 5;
             ball.speed.y = Math.random() * 10 - 5;
             ball.speed.z = Math.random() * 10 - 5;

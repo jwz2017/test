@@ -1,8 +1,9 @@
+import { Game } from "../../classes/Game.js";
 import { CirActor } from "../../classes/actor.js";
-import { gframe, stage } from "../../classes/gframe.js";
+import { stage } from "../../classes/gframe.js";
 
 var numDots = 50, friction = 0.95, dots, shape;
-export class Brownian extends gframe.Game {
+export class Brownian extends Game {
     constructor() {
         super("布朗运动");
     }
@@ -12,8 +13,7 @@ export class Brownian extends gframe.Game {
         stage.addChild(shape);
         dots = [];
         for (let i = 0; i < numDots; i++) {
-            const dot = new CirActor();
-            dot.init(2, 2);
+            const dot = new CirActor(0,0,1);
             dot.x = Math.random() * stage.width;
             dot.y = Math.random() * stage.height;
             dots.push(dot);

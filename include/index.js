@@ -53,48 +53,74 @@ import { AStarTest } from "./test2/2aStar.js";
 import { AstarMove } from "./test2/2astarMove.js";
 import { RandomDice } from "./test/0randomDice.js";
 import { ScoreTest } from "./test/0scoreTest.js";
-window.onload = function () {
-    /*************游戏入口*****/
-    gframe.buildStage('canvas');
-    gframe.startFPS();
-    //关闭按钮点击
-    closeGame.onclick = function (e) {
-        e.target.parentNode.style.display = "none";
-        //应许滚动
-        document.getElementsByTagName('body')[0].setAttribute('style', 'position:relative;');
-        if(queue&&!queue.loaded){
-            queue.removeAllEventListeners();
-            stage.removeAllChildren();
-        } else{
-            game.clear(gframe.event.CLOSE);
-        }
-    }
-    //收缩，展开
-    var genduo1 = document.getElementById("genduo1"),
-        genduo2 = document.getElementById("genduo2"),
-        pro_con1 = document.getElementById("pro_con1"),
-        pro_con2 = document.getElementById("pro_con2");
-    genduo1.onclick = function (e) {
-        genduo(e, pro_con1);
+import { DestroyFixture } from "./box2d/4destroyFixture.js";
+import { ApplyForce } from "./box2d/4ApplyForce.js";
+import { ApplyImpulse } from "./box2d/4ApplyImpulse.js";
+import { ApplyTorque } from "./box2d/4ApplyTorque.js";
+import { GetMass } from "./box2d/4GetMass.js";
+import { SetMassData } from "./box2d/4SetMassData.js";
+import { QueryAABB } from "./box2d/4QueryAABB.js";
+import { RayCast } from "./box2d/4RayCast.js";
+import { Gravition } from "./box2d/4Gravition.js";
+import { NomalImpulse } from "./box2d/4NomalImpulse.js";
+import { OneWayWall } from "./box2d/4OneWaywall.js";
+import { AniGravityAttach } from "./box2d/4AntiGravityAttach.js";
+import { MouseJoint } from "./box2d/6MouseJoint.js";
+import { PrimaticJoint } from "./box2d/6PrimaticJoint.js";
+import { RevoluteJoint } from "./box2d/6RevoluteJoint.js";
+import { Filter } from "./box2d/4Filter.js";
+import { DistanceJoint } from "./box2d/6DistanceJoint.js";
+import { WeldJoint } from "./box2d/6WeldJoint.js";
+import { PulleyJoint } from "./box2d/6PulleyJoint.js";
+import { FrictionJoint } from "./box2d/6FrictionJoint.js";
+import { GearJoint } from "./box2d/6GearJoint.js";
+import { WheelJoint } from "./box2d/6WheelJoint.js";
+Box2D().then(function (r) {
+    Box2D = r;
+    using(Box2D, 'b2.+');
+    window.onload = function () {
+        /*************游戏入口*****/
+        gframe.buildStage('canvas');
     };
-    genduo2.onclick = function (e) {
-        genduo(e, pro_con2);
-    }
-
-    function genduo(e, pro_con1) {
-        if (pro_con1.style.display === "none") {
-            pro_con1.style.display = "block";
-            e.target.textContent = "收缩>"
-        } else {
-            pro_con1.style.display = "none";
-            e.target.textContent = "更多>";
-        }
+});
+//关闭按钮点击
+closeGame.onclick = function (e) {
+    e.target.parentNode.style.display = "none";
+    //应许滚动
+    document.getElementsByTagName('body')[0].setAttribute('style', 'position:relative;');
+    if (queue && !queue.loaded) {
+        queue.removeAllEventListeners();
+        stage.removeAllChildren();
+    } else {
+        gframe.reset();
     }
 }
+//收缩，展开
+var genduo1 = document.getElementById("genduo1"),
+    genduo2 = document.getElementById("genduo2"),
+    pro_con1 = document.getElementById("pro_con1"),
+    pro_con2 = document.getElementById("pro_con2");
+genduo1.onclick = function (e) {
+    genduo(e, pro_con1);
+};
+genduo2.onclick = function (e) {
+    genduo(e, pro_con2);
+}
+
+function genduo(e, pro_con1) {
+    if (pro_con1.style.display === "none") {
+        pro_con1.style.display = "block";
+        e.target.textContent = "收缩>"
+    } else {
+        pro_con1.style.display = "none";
+        e.target.textContent = "更多>";
+    }
+}
+
 //练习内容点击
 window.productClick = function (a) {
     containerDiv.style.display = "block";
     //禁止滚动
     document.getElementsByTagName('body')[0].setAttribute('style', 'position:fixed; width:100%;');
-    gframe.preload(eval(a.title));
+    gframe.preload(eval(a.title),true);
 }

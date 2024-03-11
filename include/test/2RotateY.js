@@ -1,11 +1,12 @@
 import { Point3D } from "../../classes/3DClass.js";
+import { Game } from "../../classes/Game.js";
 import { CirActor, Vector } from "../../classes/actor.js";
-import { gframe, stage } from "../../classes/gframe.js";
+import { stage } from "../../classes/gframe.js";
 
 var balls, vpX, vpY,
     numBalls = 50,
     fl = 250;
-export class RotateY extends gframe.Game {
+export class RotateY extends Game {
     constructor() {
         super("绕Y轴旋转");
     }
@@ -15,8 +16,7 @@ export class RotateY extends gframe.Game {
         vpY =stage.height / 2;
         balls = [];
         for (let i = 0; i < numBalls; i++) {
-            const ball = new CirActor();
-            ball.init(30, 30);
+            const ball = new CirActor(0,0,15);
             ball.speed.z = 0;
             ball.pos = new Point3D();
             ball.pos.x = Math.random() * 200 - 100;

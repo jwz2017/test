@@ -1,13 +1,13 @@
+import { Game, ScoreBoard } from "../classes/Game.js";
 import { gframe, queue, stage } from "../classes/gframe.js";
 import { mc } from "../classes/mc.js";
 
 window.onload = function () {
     gframe.buildStage('canvas');
     gframe.preload(Match);
-    gframe.startFPS();
 };
 var faces, cards, selectedCards, matches;
-class Match extends gframe.Game {
+class Match extends Game {
     static loadItem = [{
         id: "back",
         src: "match/back.png",
@@ -38,11 +38,11 @@ class Match extends gframe.Game {
 
     }
     createScoreBoard() {
-        this.scoreboard = new gframe.ScoreBoard(0, 0, null);
-        this.scoreboard.createTextElement(gframe.Game.LEVEL, 320, 14);
+        this.scoreboard = new ScoreBoard(0, 0, null);
+        this.scoreboard.createTextElement(Game.LEVEL,0, 320, 14);
     }
     newLevel() {
-        this.scoreboard.update(gframe.Game.LEVEL, this.level);
+        this.scoreboard.update(Game.LEVEL, this.level);
         selectedCards = [];
         matches = 0;
         faces = [];
@@ -124,20 +124,17 @@ class Match extends gframe.Game {
     }
     evalGame() {
         if (matches === faces.length) {
-            this.clear(gframe.event.LEVEL_UP);
+            this.levelUp=true;
         } else {
             selectedCards = [];
         }
 
     }
-    runGame() {
-
-    }
-    clear(e) {
+    clear() {
         cards.forEach(element => {
             if (element) element.removeEventListener('click', this._onClick);
         });
-        super.clear(e);
+        super.clear();
     }
 
 }

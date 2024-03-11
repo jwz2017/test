@@ -1,12 +1,10 @@
 import { stage, gframe, keys, pressed } from "../classes/gframe.js";
 import { Actor } from "../classes/actor.js";
-import { GridsMapGame } from "../classes/GridsMapGame.js";
+import { Game, ScoreBoard } from "../classes/Game.js";
 window.onload = function () {
     /*************游戏入口*****/
     gframe.buildStage('canvas',true);
-    //stage.setClearColor(0x00000000);
     gframe.preload(Tetris, true);
-    gframe.startFPS();
 };
 //游戏变量;
 var sheet;
@@ -15,7 +13,7 @@ var step = 30;
 var nextBox, nowBox, pointBox = new createjs.Point();
 var nextLayer = new createjs.Container(), nextLayerLIst = [];
 var speedIndex = 0, speed = 30,maxSpeed=10;
-export class Tetris extends GridsMapGame {
+export class Tetris extends Game {
     static LINES="lines";
     //static loadItem = null;
     //static loadId = null;
@@ -65,7 +63,7 @@ export class Tetris extends GridsMapGame {
 
     }
     createScoreBoard() {
-        this.scoreboard = new gframe.ScoreBoard();
+        this.scoreboard = new ScoreBoard();
         this.scoreboard.createTextElement(Tetris.SCORE,0,600,250);
         this.scoreboard.createTextElement(Tetris.LEVEL,1,600,300);
         this.scoreboard.createTextElement(Tetris.LINES,0,600,350);
@@ -96,7 +94,7 @@ export class Tetris extends GridsMapGame {
         ];
 
         speedIndex = 0;
-        this.createGridMap(map, {}, (ch, node) => {
+        this.createGridMap(map,(ch, node) => {
             switch (ch) {
                 case 0:
                     node.actor = new Actor(node.x * step, node.y * step);
@@ -160,8 +158,7 @@ export class Tetris extends GridsMapGame {
                 this.plusBox();
                 this.removeBox();
                 if (pointBox.y < 0) {
-                    this.clear(gframe.event.GAME_OVER);
-                    return;
+                    this.gameOver=true;
                 }
                 this.getNewBox();
             }

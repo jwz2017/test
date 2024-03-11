@@ -1,22 +1,19 @@
+import { Game, ScoreBoard } from "../classes/Game.js";
 import { Actor, SteeredActor, Vector } from "../classes/actor.js";
 import { gframe, keys, stage } from "../classes/gframe.js";
 
 window.onload = function () {
-    gframe.style.TEXT_COLOR = "#fff";
-    canvas.style.backgroundColor = "#000";
     gframe.buildStage('canvas');
     gframe.preload(SpaceShip,true);
-    gframe.startFPS();
 };
 var TURN_FACTOR = 6,
-    BULLET_TIME = 20,
     ROCK_TIME = 500,
     SUB_ROCK_COUNT = 3,
     DIFFICULTY = 2;
 
-var nextBullet, nextRock, rockBelt, timeToRock, bullets, ship;
+var  nextRock, rockBelt, timeToRock, bullets;
 var ship;
-class SpaceShip extends gframe.Game {
+class SpaceShip extends Game{
     constructor() {
         super("飞机游戏");
         ship = new Ship();
@@ -25,14 +22,14 @@ class SpaceShip extends gframe.Game {
      * 在构造函数内建立
      */
     createScoreBoard() {
-        this.scoreboard = new gframe.ScoreBoard();
+        this.scoreboard = new ScoreBoard();
         this.scoreboard.createTextElement("score");
         this.scoreboard.createTextElement("level");
     }
     newLevel() {
         this.scoreboard.update("score",this.score);
         this.scoreboard.update("level",this.level);
-        nextBullet = nextRock = 0;
+        nextRock=0;
         timeToRock = ROCK_TIME;
         bullets = [];
         rockBelt = [];
@@ -46,36 +43,15 @@ class SpaceShip extends gframe.Game {
     }
     runGame() {
         // 控制飞船
-        if (keys.left) {
-            ship.rotation -= TURN_FACTOR;
-        } else if (keys.right) {
-            ship.rotation += TURN_FACTOR;
-        }
-        if (keys.up) {
-            ship.accelerate();
-        }
         ship.act();
         // 开火
-        if (nextBullet <= 0) {
-            if (keys.attack) {
-                nextBullet = BULLET_TIME;
-                const bullet = gframe.Game.getActor(bullets, Bullet);
-                bullet.rotation = ship.rotation;
-                bullet.speed.angle = bullet.rotation * Math.PI / 180;
-                bullet.x = ship.x + ship.hit * Math.cos(bullet.speed.angle);
-                bullet.y = ship.y + ship.hit * Math.sin(bullet.speed.angle);
-                bullet.updateRect();
-                stage.addChild(bullet);
-            }
-        } else {
-            nextBullet--;
-        }
+        if(keys.attack) ship.fire(bullets,Bullet,stage);
+        else ship.fireIndex--;
 
-        //石块
+        // //石块
         if (nextRock <= 0) {
             timeToRock -= DIFFICULTY;
-            // let index = this.getSpackRock(SpaceRock.LRG_ROCK);
-            let index = gframe.Game.getActor(rockBelt, SpaceRock);
+            let index = Game.getActor(rockBelt, SpaceRock);
             index.init(SpaceRock.LRG_ROCK);
             stage.addChild(index);
             index.floatOnScreen(stage.width, stage.height);
@@ -91,8 +67,7 @@ class SpaceShip extends gframe.Game {
             o.act();
             //石块与飞船碰撞
             if (o.hitRadius(ship)) {
-                this.clear(gframe.event.GAME_OVER);
-                return;
+                this.gameOver=true;
             }
             //与子弹碰撞
             for (let i = bullets.length - 1; i >= 0; i--) {
@@ -119,9 +94,9 @@ class SpaceShip extends gframe.Game {
                         let index;
                         let offset;
                         for (i = 0; i < SUB_ROCK_COUNT; i++) {
-                            index = gframe.Game.getActor(rockBelt, SpaceRock);
-                            index.init(newSize);
+                            index = Game.getActor(rockBelt, SpaceRock);
                             stage.addChild(index);
+                            index.init(newSize,newSize);
                             offset = (Math.random() * rect.width * 2) - rect.width;
                             index.x=o.x;
                             index.y=o.y+offset;
@@ -144,14 +119,10 @@ class SpaceShip extends gframe.Game {
 }
 
 class Bullet extends Actor {
-    constructor(pos) {
-        super(pos);
+    constructor(xpos,ypos) {
+        super(xpos,ypos,6,2);
         this.speed.length = 5;
-        this.init(6, 1);
-    }
-    drawShape(width, height) {
-        this.image.graphics.clear().beginStroke("#ffffff").moveTo(-width / 2, 0).lineTo(width / 2, 0);
-        this.image.setBounds(-width / 2, -height / 2, width, height);
+        this.color="#fff";
     }
 }
 class Ship extends SteeredActor {
@@ -162,25 +133,22 @@ class Ship extends SteeredActor {
         this.toggle = 60;
         this.mass = 4;
         this.maxForce = 0.2;
-        this.init(15);
-
+        this.fireStep=20;
     }
     act() {
-        this.steeringForce.truncate(this.maxForce);
-        this.steeringForce = this.steeringForce.divide(this.mass);
-        this.speed.add(this.steeringForce);
-        this.steeringForce.setValues(0, 0);
-        this.speed.truncate(this.maxSpeed);
-        this.plus(this.speed.x, this.speed.y);
-        if (this.edgeBehavior == Actor.WRAP) {
-            this.placeInBounds();
-        } else if (this.edgeBehavior == Actor.BOUNCE) {
-            this.rebounds();
-        } else if (this.edgeBehavior == Actor.RECYCLE) {
-            if (this.outOfBounds()) {
-                this.recycle();
-            }
+        let r=this.rotation;
+        super.act();
+        if (keys.left) {
+            this.rotation =r- TURN_FACTOR;
+        } else if (keys.right) {
+            this.rotation =r+ TURN_FACTOR;
+        }else{
+            this.rotation=r;
         }
+        if (keys.up) {
+            ship.accelerate();
+        }
+
         if (this.thrust > 0) {
             this.timeout++;
             this.shipFlame.alpha = 1;
@@ -211,11 +179,11 @@ class SpaceRock extends Actor {
     static MED_ROCK = 40;
     static SML_ROCK = 20;
     constructor(xpos, ypos) {
-        super(xpos, ypos);
+        super(xpos, ypos,0,0,false);
         this.edgeBehavior = Actor.WRAP;
     }
-    init(size) {
-        super.init(size);
+    init(width,height) {
+        super.init(width,height);
         let angle = Math.random() * (Math.PI * 2);
         this.speed.length = Math.sin(angle) * (2 + 20 / this.hit);
         this.speed.angle = angle;
@@ -223,6 +191,7 @@ class SpaceRock extends Actor {
         this.score = Math.floor((5 + this.getBounds().width / 10) * 100);
     }
     drawShape(width) {
+        this.image.graphics.clear();
         this.hit = width / 2;
         let angle = 0,
             size = width / 2,

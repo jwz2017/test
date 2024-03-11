@@ -1,14 +1,14 @@
+import { Game } from "../../classes/Game.js";
 import { SteeredActor, Vector } from "../../classes/actor.js";
-import { gframe, stage } from "../../classes/gframe.js";
+import { stage } from "../../classes/gframe.js";
 
 var vehicle;
-export class VehiclSeek extends gframe.Game {
+export class VehiclSeek extends Game {
     constructor() {
         super("机车追寻测试");
     }
     waitComplete() {
         vehicle = new SteeredActor();
-        vehicle.init(20);
         stage.addChild(vehicle);
     }
     runGame() {

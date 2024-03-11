@@ -1,16 +1,15 @@
-import { gframe, stage } from "../../classes/gframe.js";
+import { Game } from "../../classes/Game.js";
+import { stage } from "../../classes/gframe.js";
 import { Segment } from "../../classes/shape.js";
 
 var segment0, segment1;
-export class SegmentCosines extends gframe.Game {
+export class SegmentCosines extends Game {
     constructor() {
         super("余弦定理");
     }
     waitComplete() {
-        segment0 = new Segment();
-        segment0.init(100, 20);
-        segment1 = new Segment();
-        segment1.init(100, 20);
+        segment0 = new Segment(0,0,100,20);
+        segment1 = new Segment(0,0,100,20);
         segment1.x = stage.width / 2;
         segment1.y = stage.height / 2;
         stage.addChild(segment0, segment1);

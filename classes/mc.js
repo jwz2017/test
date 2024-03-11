@@ -916,13 +916,13 @@ class ScrollContainer extends createjs.Container {
       this.addChild(this.scrollBarH, this.scrollBarV);
     }
     this.superAddChild = this.addChild;
-    // this.superAddChildAt=this.addChildAt;
     this.addChild = child => {
       this.container.addChild(child)
     }
-    this.removeChild = child => {
-      this.container.removeChild(child);
-    }
+    // this.superAddChildAt=this.addChildAt;
+    // this.removeChild = child => {
+    //   this.container.removeChild(child);
+    // }
     // this.removeAllChildren = () => {
     //   this.container.removeAllChildren();
     // }
@@ -962,8 +962,10 @@ class ScrollContainer extends createjs.Container {
   }
   set contentSize(size) {
     let b = this.getBounds();
-    let w = Math.max(b.width - mc.style.SCROLL_BAR_SIZE, size.width);
-    let h = Math.max(b.height - mc.style.SCROLL_BAR_SIZE, size.height);
+    // let w = Math.max(b.width - mc.style.SCROLL_BAR_SIZE, size.width);
+    // let h = Math.max(b.height - mc.style.SCROLL_BAR_SIZE, size.height);
+    let w = Math.max(b.width , size.width);
+    let h = Math.max(b.height , size.height);
     this.container.setBounds(0, 0, w, h);
     this.scrollBarH.contentLength = size.width
     this.scrollBarV.contentLength = size.height
@@ -983,9 +985,13 @@ class ScrollContainer extends createjs.Container {
     this.width=width;
     this.height=height;
     this.setBounds(0, 0, width, height);
+    // this.contentSize = {
+    //   width: Math.max(width - mc.style.SCROLL_BAR_SIZE, this.container.getBounds().width),
+    //   height: Math.max(height - mc.style.SCROLL_BAR_SIZE, this.container.getBounds().height)
+    // };
     this.contentSize = {
-      width: Math.max(width - mc.style.SCROLL_BAR_SIZE, this.container.getBounds().width),
-      height: Math.max(height - mc.style.SCROLL_BAR_SIZE, this.container.getBounds().height)
+      width: Math.max(width, this.container.getBounds().width),
+      height: Math.max(height, this.container.getBounds().height)
     };
     this.container.mask = new createjs.Shape;
     this.container.mask.graphics.beginFill("#efefef").rect(0, 0, width, height);
@@ -1006,7 +1012,7 @@ const mc = {
     buttonUpColor: "#ffffff",
     labelColor: "#666666",
     highlightColor: "#eeeeee",
-    fontSize: 16,
+    fontSize: 32,
     fontFamily: "pfrondaseven,regulbook,宋体,Serif",
     strokeStyle: 2,
     CENTER_MIDDLE: "centermiddle",

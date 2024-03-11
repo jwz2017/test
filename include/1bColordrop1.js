@@ -1,18 +1,16 @@
+import { Game, ScoreBoard } from "../classes/Game.js";
 import { stage, gframe, queue } from "../classes/gframe.js";
-import { GridsMapGame } from "../classes/GridsMapGame.js";
 import { getFXBitmap } from "../classes/other.js";
 window.onload = function () {
     /*************游戏入口*****/
     //gframe.loaderBar=null;
-    gframe.buildStage('canvas',true);
-    stage.setClearColor(0x00000000);
+    gframe.buildStage('canvas',false);
     gframe.preload(ColorDrop);
-    gframe.startFPS();
 };
 //游戏变量;
 var space = 7;
 var step = 30, numcols = 15, numrows = 15;
-class ColorDrop extends GridsMapGame {
+class ColorDrop extends Game {
     static loadItem = [{
         id: "color",
         src: "colordrop1/color.json",
@@ -23,17 +21,17 @@ class ColorDrop extends GridsMapGame {
     static SCORE_BOARD_THRESHOLD = "threshold";
     static SCORE_BOARD_LEVEL_SCORE = "levelScore";
     constructor() {
-        gframe.style.TEXT_COLOR = "#fff";
         stage.canvas.style.background = "#000";
-        super("魔法方块", step * numcols + (numcols + 1) * space, step * numrows + (numrows + 1) * space, step, step, numcols, numrows);
+        super("魔法方块", step * numcols + (numcols + 1) * space, step * numrows + (numrows + 1) * space, step, step);
         this.instructionScreen.title.text = "10步内超过500分过关";
         this.maxLevel = 10;
         this.x = stage.width - this.width >> 1;
         this.y = stage.height - this.height >> 1;
         this.difficultyLevel = 7;
+        this.createGrid(15,15);
     }
     createScoreBoard() {
-        this.scoreboard = new gframe.ScoreBoard(60,0,false,{justifyContent:"space-between"});
+        this.scoreboard = new ScoreBoard(60,0,false,{justifyContent:"space-between"});
         this.scoreboard.createTextElement(ColorDrop.SCORE);
         this.scoreboard.createTextElement(ColorDrop.LEVEL);
         this.scoreboard.createTextElement(ColorDrop.SCORE_BOARD_PLAYS);
@@ -65,7 +63,7 @@ class ColorDrop extends GridsMapGame {
             }
         }
         //鼠标点击事件
-        this.floor.on("mousedown", e => {
+        this.on("mousedown", e => {
             if (!this.checkForFallingTiles()) {//全部方块移动完毕
                 let actor = e.target;
                 let node = this.getNode(actor.col, actor.row);
@@ -73,6 +71,7 @@ class ColorDrop extends GridsMapGame {
                 //跟新分数版
                 let i = 0;
                 this.plays--;
+                if(this.plays<=0)this.gameOver=true;
                 this.scoreboard.update(ColorDrop.SCORE_BOARD_PLAYS, this.plays);
                 likeNode.forEach(node => {
                     node.type = null;
@@ -80,12 +79,13 @@ class ColorDrop extends GridsMapGame {
                     let score = i * 3;
                     this.score += score;
                     this.levelScore += score;
+                    if(this.levelScore>=this.threshold) this.levelUp=true;
                     this.scoreboard.update("score", this.score);
                     this.scoreboard.update(ColorDrop.SCORE_BOARD_LEVEL_SCORE, this.levelScore);
                     let tile = node.tile;
                     tile.cursor = null;
                     tile.makeBlockClicked();
-                    this.addChildToWorld(tile);
+                    this.addToProp(tile);
                     //设置选中节点的方块为空
                     //方块移动回收移除
                     createjs.Tween.get(tile).to({
@@ -97,15 +97,6 @@ class ColorDrop extends GridsMapGame {
                 });
                 //方块落下
                 this.moveTileDown();
-                //检测游戏是否结束或升级
-                if (this.levelScore >= this.threshold) {
-                    this.clear(gframe.event.LEVEL_UP);
-                    this.floor.removeAllEventListeners("mousedown");
-                }
-                else if (this.plays <= 0){
-                    this.clear(gframe.event.GAME_OVER);
-                    this.floor.removeAllEventListeners("mousedown");
-                } 
             }
         })
     }
@@ -120,7 +111,7 @@ class ColorDrop extends GridsMapGame {
         let node = this.getNode(i, j);
         node.tile = tile;
         node.type = tile.currentFrame;
-        this.addChildToFloor(tile);
+        this.addToPlayer(tile);
         createjs.Tween.get(tile).wait(500).to({
             y: ypos
         }, 800).call(() => {
@@ -128,9 +119,13 @@ class ColorDrop extends GridsMapGame {
             tile.cursor = "pointer";
         });
     }
+    clear(){
+        super.clear();
+        this.removeAllEventListeners("mousedown")
+    }
     //检测全部方块移是否移动完毕
     checkForFallingTiles() {
-        return this.floor.children.some(function (actor) {
+        return this.container.children.some(function (actor) {
             return actor.isFalling == true;
         })
     }
@@ -195,7 +190,7 @@ class Block extends createjs.Container {
         let b = this.getBounds();
         let filters = [new createjs.BlurFilter(7,7,1),new createjs.ColorFilter(0, 0, 0, 1.5, 255, 255,255, 0)];
         let fx=getFXBitmap(this.sprite,filters,0,0,b.width,b.height);
-        createjs.Tween.get(fx, {loop:false}).to({alpha:0}, 2000);
+        createjs.Tween.get(fx, {loop:false}).to({alpha:0.01}, 2000);
         this.addChildAt(fx,0);
     }
     gotoAndStop(val){

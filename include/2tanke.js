@@ -1,14 +1,15 @@
-import { GridsMapGame, Node } from "../classes/GridsMapGame.js";
-import { Actor, CirActor } from "../classes/actor.js";
+import { ScoreBoard, ScrollMapGame } from "../classes/Game.js";
+import { Node } from "../classes/Node.js";
+import { Actor, CirActor, Tank } from "../classes/actor.js";
 import { game, gframe, keys, pressed, queue, stage } from "../classes/gframe.js";
 
 window.onload = function () {
     gframe.buildStage('canvas');
     gframe.preload(Tanke, true);
-    gframe.startFPS();
 };
-var spriteData, spriteSheet, actorChars,floorChars, bullets, enemyBullets,
-    step = 32,
+var spriteData, spriteSheet;
+var bullets, enemyBullets;
+var step = 32,
     plans = [
         [
             [30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30],
@@ -29,26 +30,28 @@ var spriteData, spriteSheet, actorChars,floorChars, bullets, enemyBullets,
         ]
     ];
 
-class Tanke extends GridsMapGame {
+class Tanke extends ScrollMapGame {
     static loadItem = [{
         id: "tanke",
         src: "tanke/q.png"
     }];
     constructor() {
-        super("坦克大战",plans[0][0].length*step,plans[0].length*step,step,step);
-        stage.canvas.style.backgroundColor="#A4AB61";
+        super("坦克大战", plans[0][0].length * step, plans[0].length * step, step, step);
+        stage.canvas.style.backgroundColor = "#A4AB61";
+        this.x=stage.width-this.width>>1;
+        this.y=stage.height-this.height>>1;
         this.instructionScreen.updateTitle("方向w,a,s,d<br>小键盘4开火攻击");
-        this.x = stage.width - this.width >> 1;
-        this.y = stage.height - this.height >> 1;
-        actorChars = {
-            "1": SpritePlayer,
-            "9": Enemy
+        this.playerChars = {
+            "1": Player,
         };
-        floorChars={
+        this.propChars = {
             "23": Live,
             "20": Bullet,
-            "22": Tank
+            "22": TankLive
         };
+        this.enemyChars = {
+            "9": Enemy
+        }
         spriteData = {
             images: [queue.getResult("tanke")],
             frames: {
@@ -74,36 +77,36 @@ class Tanke extends GridsMapGame {
         spriteSheet = new createjs.SpriteSheet(spriteData);
     }
     createScoreBoard() {
-        this.scoreboard = new gframe.ScoreBoard(0, 0,true);
-        this.scoreboard.createTextElement("score","00000");
+        this.scoreboard = new ScoreBoard(0, 0, true);
+        this.scoreboard.createTextElement("score", "00000");
         this.scoreboard.createTextElement("level");
-        // this.scoreboard.placeElements();
     }
     newLevel() {
-        this.scoreboard.update("score",this.score);
-        this.scoreboard.update("level",this.level);
+        this.scoreboard.update("score", this.score);
+        this.scoreboard.update("level", this.level);
         //创建网格
         let plan = plans[this.level - 1];
         bullets = [];
         enemyBullets = [];
-        this.createGridMap(plan, actorChars, (ch, node) => {
+        this.createGridMap(plan, (ch, node) => {
             var tile = new createjs.Sprite(spriteSheet).set({
-                x: node.x * step+step/2,
-                y: node.y * step+step/2
+                x: node.x * step + step / 2,
+                y: node.y * step + step / 2
             });
-            if (actorChars[ch]||floorChars[ch] || ch == 0) {
+            if (this.playerChars[ch] || this.propChars[ch] || this.enemyChars[ch] || ch == 0) {
                 tile.gotoAndStop(0);
             } else {
                 tile.gotoAndStop(ch);
                 node.type = Node.NOWALKABLE;
             }
-            this.addChildToFloor(tile);
-        },floorChars);
+            this.addToFloor(tile);
+        });
     }
     runGame() {
-        this.moveActors(this.world);
+        this.moveActors(this.playerLayer);
+        this.moveActors(this.enemyLayer);
     }
-    
+
     // setGrid(ch, x, y) {
     //     var fieldType = null;
     //     var xpos = x * stepWidth,
@@ -141,20 +144,22 @@ class Tanke extends GridsMapGame {
     // }
 }
 
-class SpritePlayer extends Actor {
+class Player extends Tank {
     constructor(xpos, ypos) {
-        super(xpos, ypos);
+        super(xpos, ypos,0.8*step,0.8*step);
         this.type = "player";
-        this.speedRate = 1;
-        this.init(0.8 * step, 0.8 * step);
-        this.setSpriteData(spriteSheet, "player");
+        this.setSpriteData(spriteSheet, "player",1,90);
         this.image.paused = true;
-        this.nextBullet = 0;
-        this.BULLET_TIME = 40;
+        this.rotation = -90;
     }
     act() {
-        this.move();
-        let node=game.hitFloorActor(this.rect,this.image);
+        //移动
+        this.move(pressed[pressed.length - 1]);
+        //开火
+        if (keys.attack) this.fire(bullets, PlayerBullet, game.playerLayer);
+        else this.fireIndex--;
+        //与道具层碰撞
+        let node = game.hitMapWithProp(this.rect, this.image);
         if (node) {
             switch (node.actor.type) {
                 case "live":
@@ -170,78 +175,73 @@ class SpritePlayer extends Actor {
                     break;
             }
         }
-    }
-    move() {
-        this.speed.x = this.speed.y = 0;
-        this.image.paused = true;
-        switch (pressed[pressed.length - 1]) {
-            case "up":
-                this.speed.y = -this.speedRate;
-                this.rotation = 0;
-                this.image.paused = false;
-                break;
-            case "down":
-                this.speed.y = this.speedRate;
-                this.rotation = 180;
-                this.image.paused = false;
-                break;
-            case "right":
-                this.speed.x = this.speedRate;
-                this.rotation = 90;
-                this.image.paused = false;
-                break;
-            case "left":
-                this.speed.x = -this.speedRate;
-                this.rotation = 270;
-                this.image.paused = false;
-                break;
-        }
-        //开火
-        if (this.nextBullet <= 0) {
-            if (keys.attack) {
-                this.nextBullet = this.BULLET_TIME;
-                this.createBullet();
+        //与地图碰撞
+        let rect = this.rect.clone();
+        rect.x += this.speed.x;
+        rect.y += this.speed.y;
+        node = game.hitMap(rect);
+        if (!node) {
+            var actor = this.hitActors(game.enemyLayer.children, rect);
+            if (!actor) {
+                super.act();
             }
-        } else {
-            this.nextBullet--;
-        }
 
+        }
+    }
+}
+class Enemy extends Tank {
+    constructor(xpos, ypos) {
+        super(xpos, ypos,0.8*step,0.8*step);
+        this.setSpriteData(spriteSheet, "enemy",1,90);
+        this.rotation = 90;
+        this.v = 0.64;
+        this.tick = 0;
+        this.key = 80;
+        this.type = "enemy";
+        this.image.paused = true;
+    }
+    act() {
+        this.tick++;
+        if (this.tick > Math.random() * 80 + 200) {
+            this.key = Math.random() * 100;
+            this.tick1 = this.tick;
+            this.tick = 0;
+        }
+        if (this.tick1 >= 212) this.fire(enemyBullets, EnemyBullet, game.enemyLayer);
+        if (this.key <= 10) this.key = "up";
+        else if (this.key > 10 && this.key <= 40) this.key = "down";
+        else if (this.key > 40 && this.key <= 65) this.key = "right";
+        else if (this.key > 65) this.key = "left";
+
+        this.move(this.key);
         let rect = this.rect.clone();
         rect.x += this.speed.x;
         rect.y += this.speed.y;
         var node = game.hitMap(rect);
         if (!node) {
-            var actor = this.hitActors(game.world.children,rect);
-            if (!actor) {
+            let actor = this.hitActors(game.playerLayer.children.concat(game.enemyLayer.children), rect);
+            if (!actor || (actor.type != "enemy" && actor.type != "player")) {
                 this.plus(this.speed.x, this.speed.y);
             }
-            
+        } else {
+            this.key = Math.random() * 100;
+            this.tick = 0;
         }
     }
-    createBullet() {
-        let bullet, angle = (this.rotation - 90) * Math.PI / 180;
-        bullet = gframe.Game.getActor(bullets, Barrage1);
-        bullet.speed.angle = angle;
-        bullet.x = this.x + Math.cos(angle) * this.hit;
-        bullet.y = this.y + Math.sin(angle) * this.hit;
-        bullet.updateRect();
-        game.addChildToWorld(bullet);
-    }
 }
-class Barrage1 extends CirActor {
+class PlayerBullet extends CirActor {
     constructor(xpos, ypos) {
-        super(xpos, ypos);
+        super(xpos, ypos,5);
         this.speed.length = 3;
-        this.init(8, 8);
-        this.setSpriteData(spriteSheet, "barrage")
+        this.setSpriteData(spriteSheet, "barrage", 1.5)
     }
     act() {
         let node = game.hitMap(this.rect);
         if (!node) {
-            let actor = this.hitActors(game.world.children);
-            if (!actor || actor.type != "enemy") {
+            let actor = this.hitActors(game.enemyLayer.children);
+            if (!actor) {
                 super.act();
-            } else if (actor.type == "enemy") {
+            } else {
                 this.recycle();
             }
         } else {
@@ -250,16 +250,15 @@ class Barrage1 extends CirActor {
     }
 }
 
-class EnemyBarrage extends CirActor {
+class EnemyBullet extends CirActor {
     constructor(xpos, ypos) {
-        super(xpos, ypos);
+        super(xpos, ypos,4);
         this.speed.length = 3;
-        this.init(8, 8);
     }
     act() {
         let node = game.hitMap(this.rect);
         if (!node) {
-            let actor = this.hitActors(game.world.children);
+            let actor = this.hitActors(game.playerLayer.children);
             if (!actor || actor.type != "player") {
                 super.act();
             } else if (actor.type == "player") {
@@ -273,96 +272,24 @@ class EnemyBarrage extends CirActor {
 
 class Live extends Actor {
     constructor(xpos, ypos) {
-        super(xpos, ypos);
+        super(xpos, ypos,step,step);
         this.type = "live";
-        this.init(step, step);
         this.setSpriteData(spriteSheet, "live");
     }
 }
 class Bullet extends Actor {
     constructor(xpos, ypos) {
-        super(xpos, ypos);
+        super(xpos, ypos,0.3*step,0.7*step);
         this.type = "bullet";
-        this.init(0.3 * step, 0.7 * step);
-        this.plus(0.35*step,0.15*step)
+        this.plus(0.35 * step, 0.15 * step)
         this.setSpriteData(spriteSheet, "buttle");
     }
 }
-class Tank extends Actor {
+class TankLive extends Actor {
     constructor(xpos, ypos) {
-        super(xpos, ypos);
-        this.init(0.6 * step, 0.6 * step);
-        this.plus(0.2*step,0.2*step);
+        super(xpos, ypos,0.6*step,0.6*step);
+        this.plus(0.2 * step, 0.2 * step);
         this.setSpriteData(spriteSheet, "tanke");
         this.type = "tank";
     }
-}
-class Enemy extends Actor {
-    constructor(xpos, ypos) {
-        super(xpos, ypos);
-        this.speedRate = 0.64;
-        this.init(0.8 * step, 0.8 * step);
-        this.setSpriteData(spriteSheet, "enemy");
-        this.tick = 0;
-        this.key = 80;
-        this.type = "enemy";
-    }
-    act() {
-        this.move();
-    }
-    move() {
-        this.speed.x = 0;
-        this.speed.y = 0;
-        this.tick++;
-        if (this.tick > Math.random() * 80 + 200) {
-            this.key = Math.random() * 100;
-            this.tick1 = this.tick;
-            this.tick = 0;
-        }
-        if (this.key <= 10) {
-            //上
-            this.speed.y = -this.speedRate;
-            this.rotation = 0;
-
-        } else if (this.key > 10 && this.key <= 40) {
-            //下
-            this.speed.y = this.speedRate;
-            this.rotation = 180;
-        } else if (this.key > 40 && this.key <= 65) {
-            //右
-            this.speed.x = this.speedRate;
-            this.rotation = 90;
-        } else if (this.key > 65) {
-            //左
-            this.speed.x = -this.speedRate;
-            this.rotation = 270;
-        }
-        if (this.tick1 >= 201) {
-            this.tick1 = 0;
-            this.createBullet();
-        }
-        let rect = this.rect.clone();
-        rect.x += this.speed.x;
-        rect.y += this.speed.y;
-        var node = game.hitMap(rect);
-        if (!node) {
-            let actor = this.hitActors(game.world.children, rect);
-            if (!actor || (actor.type != "enemy" && actor.type != "player")) {
-                this.plus(this.speed.x, this.speed.y);
-            }
-        } else {
-            this.key = Math.random() * 100;
-            this.tick = 0;
-        }
-    }
-    createBullet() {
-        let bullet, angle = (this.rotation - 90) * Math.PI / 180;
-        bullet = gframe.Game.getActor(enemyBullets, EnemyBarrage);
-        bullet.speed.angle = angle;
-        bullet.x = this.x + Math.cos(angle) * this.hit;
-        bullet.y = this.y + Math.sin(angle) * this.hit;
-        bullet.updateRect();
-        game.addChildToWorld(bullet);
-    }
-
 }

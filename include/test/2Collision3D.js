@@ -1,6 +1,7 @@
 import { Point3D } from "../../classes/3DClass.js";
+import { Game } from "../../classes/Game.js";
 import { CirActor } from "../../classes/actor.js";
-import { gframe, stage } from "../../classes/gframe.js";
+import { stage } from "../../classes/gframe.js";
 
 var balls, vpX, vpY,
     numBalls = 20,
@@ -11,7 +12,7 @@ var balls, vpX, vpY,
     right = 200,
     front = 200,
     back = -200;
-export class Collision3D extends gframe.Game {
+export class Collision3D extends Game {
     constructor() {
         super("3D碰撞检测");
     }
@@ -21,8 +22,7 @@ export class Collision3D extends gframe.Game {
         vpX =stage.width / 2;
         vpY =stage.height / 2;
         for (let i = 0; i < numBalls; i++) {
-            const ball = new CirActor();
-            ball.init(30);
+            const ball = new CirActor(0,0,15);
             ball.pos = new Point3D();
             ball.pos.x = Math.random() * 400 - 200;
             ball.pos.y = Math.random() * 400 - 200;

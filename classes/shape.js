@@ -175,9 +175,9 @@ class BarGraph extends createjs.Container {
 }
 //关节
 class Segment extends Actor {
-    constructor(xpos, ypos) {
-        super(xpos, ypos);
-        this.color = "#ffffff";
+    constructor(xpos, ypos,width,height,IsShape) {
+        super(xpos, ypos,width,height,IsShape);
+        this._color = "#ffffff";
     }
     drawShape(width, height) {
         this.image.graphics.clear().beginStroke("#000").beginFill(this.color).drawRoundRect(-height / 2, -height / 2, width, height, height / 2).endFill();

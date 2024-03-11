@@ -1,16 +1,17 @@
+import { Game, ScoreBoard } from "../classes/Game.js";
 import { gframe, stage } from "../classes/gframe.js";
 import { mc } from "../classes/mc.js";
 
 window.onload = function () {
     gframe.buildStage('canvas');
     gframe.preload(Colordrop);
-    gframe.startFPS(stage);
 };
 const  colors = ["#ff0000", "#00ff00", "#0000ff", "#ffff00", "#ewe0ee"];
 var slots, shapes;
-class Colordrop extends gframe.Game {
+class Colordrop extends Game{
     constructor() {
         super("Colordrop");
+        stage.canvas.style.backgroundColor="#A4AB61";
         slots = [];
         shapes = [];
         for (let i = 0; i < colors.length; i++) {
@@ -32,7 +33,7 @@ class Colordrop extends gframe.Game {
         }
     }
     createScoreBoard() {
-        this.scoreboard = new gframe.ScoreBoard();
+        this.scoreboard = new ScoreBoard();
         this.scoreboard.createTextElement("score", 20);
         this.scoreboard.createTextElement("level", 320);
     }
@@ -68,7 +69,7 @@ class Colordrop extends gframe.Game {
                         y: slot.y
                     }, 200, createjs.Ease.QuadOut).call(() => {
                         if (this.score == 5) {
-                            this.clear(gframe.event.LEVEL_UP);
+                            this.levelUp=true;
                         }
                     }, null, this);
                 } else {

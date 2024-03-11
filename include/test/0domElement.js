@@ -1,7 +1,8 @@
-import { stage,gframe } from "../../classes/gframe.js";
+import { Game } from "../../classes/Game.js";
+import { stage } from "../../classes/gframe.js";
 //游戏变量;
 let element,domElement;
-export class DomElement extends gframe.Game {
+export class DomElement extends Game {
     constructor() {
         super("DomElement");
         element=document.createElement("p");
@@ -19,6 +20,7 @@ export class DomElement extends gframe.Game {
         domElement.regX=100;
         domElement.regY=50;
         stage.addChild(domElement);
+
     }
     waitComplete() {
         super.waitComplete();

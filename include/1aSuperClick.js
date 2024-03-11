@@ -1,8 +1,8 @@
+import { Game, ScoreBoard } from "../classes/Game.js";
 import {gframe, stage } from "../classes/gframe.js";
 window.onload = function () {
     gframe.buildStage('canvas');
     gframe.preload(SuperClick);
-    gframe.startFPS();
 };
 const CLICKS = "clicks",
     NEEDED = "needed",
@@ -21,15 +21,16 @@ var radius = 8,
     needed = 0,
     achieve = 0,
     balls = [];
-export class SuperClick extends gframe.Game {
+export class SuperClick extends Game{
     constructor() {
         super("super click");
         this.maxLevel = 10;
         this.setSize(stage.width, stage.height - this.scoreboard.height);
         this.y = this.scoreboard.height;
+        
     }
     createScoreBoard() {
-        this.scoreboard = new gframe.ScoreBoard(0, 0, false, { justifyContent: "space-between" });
+        this.scoreboard = new ScoreBoard(0, 0, false, { justifyContent: "space-between" });
         this.scoreboard.x=50;
         this.scoreboard.createTextElement("score");
         this.scoreboard.createTextElement("level");
@@ -58,11 +59,11 @@ export class SuperClick extends gframe.Game {
     }
     waitComplete(){
         stage.enableMouseOver();
-        stage.addEventListener('mousedown', (e) => {
+        this.e=stage.on('mousedown', (e) => {
             if (createjs.Ticker.paused) {
                 return;
             } else if (e.target.type === BAD) {
-                this.clear(gframe.event.GAME_OVER);
+                this.gameOver=true;
             } else if (e.target.type === GOOD && e.target.first === true) {
                 let ball = e.target;
                 ball.clicked = true;
@@ -92,16 +93,12 @@ export class SuperClick extends gframe.Game {
     }
     runGame() {
         this.creatElement();
-        this.moveActors();
+        this.moveActors(this.playerLayer);
         this.checkOver();
         this.checkLevelUp();
     }
-    clear(e){
-        stage.removeAllEventListeners("mousedown");
-        super.clear(e);
-    }
     creatElement() {
-        if (this.container.children.length < maxOnScreen && numCreated < numCircles) {
+        if (this.playerChildren.length < maxOnScreen && numCreated < numCircles) {
             var circle;
             if (Math.random() * 100 < percentBadCircle) {
                 circle = SuperClick.getActor(balls, Ball);
@@ -114,19 +111,22 @@ export class SuperClick extends gframe.Game {
             circle.x = Math.random() * (this.width - radius * 2 + radius);
             circle.y = Math.random() * (this.height - radius * 2 + radius);
             circle.scaleX = circle.scaleY = 0.5;
-            this.addChild(circle);
+            this.addToPlayer(circle);
         }
     }
     checkOver() {
         if (numCreated == numCircles && !this.hasTypeOnContainer(GOOD)) {
-            console.log(numCreated,numCircles);
-            this.clear(gframe.event.GAME_OVER);
+            this.gameOver=true;
         }
     }
     checkLevelUp() {
         if (achieve >= needed) {
-            this.clear(gframe.event.LEVEL_UP)
+            this.levelUp=true;
         }
+    }
+    clear(){
+        super.clear();
+        stage.off("mousedown",this.e);
     }
 }
 class Ball extends createjs.Shape {

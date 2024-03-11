@@ -1,7 +1,8 @@
-import { stage, gframe, queue } from "../../classes/gframe.js";
+import { Game } from "../../classes/Game.js";
+import { stage, queue } from "../../classes/gframe.js";
 import { PushButton } from "../../classes/mc.js";
 var button;
-export class RandomDice extends gframe.Game {
+export class RandomDice extends Game {
     static loadItem = [{
         id: "dice",
         src: "fakezee/fakezee.json",

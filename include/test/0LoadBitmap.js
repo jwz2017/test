@@ -1,6 +1,7 @@
+import { Game, ScoreBoard } from "../../classes/Game.js";
 import { gframe, stage, queue, lib } from "../../classes/gframe.js";
-var spriteSheet1, spriteSheet;
-export class LoadBitmap extends gframe.Game {
+var spriteSheet1;
+export class LoadBitmap extends Game {
     static loadItem = [
         {
             id: "spritesheet_button",
@@ -112,7 +113,7 @@ export class LoadBitmap extends gframe.Game {
     }
     waitComplete() {
         super.waitComplete();
-        this.a = new gframe.ScoreBoard(0, 300, true);
+        this.a = new ScoreBoard(0, 300, true);
         this.a.createTextElement("ddd", 0);
         this.a.createTextElement("ddd", 0);
         this.a.createTextElement("ddd", 0);

@@ -1,24 +1,19 @@
-import { gframe, stage } from "../../classes/gframe.js";
+import {  stage } from "../../classes/gframe.js";
 import { CirActor } from "../../classes/actor.js";
+import { Game } from "../../classes/Game.js";
 var ball0, ball1;
-export class Billiard extends gframe.Game {
+export class Billiard extends Game {
     constructor() {
         super("单轴动量碰撞");
     }
     waitComplete() {
         super.waitComplete();
-        ball0 = new CirActor();
-        ball0.init(80, 80);
+        ball0 = new CirActor(100,400,40);
         ball0.mass = 2;
-        ball0.x = 50;
-        ball0.y = stage.height / 2;
         ball0.speed.x = 1;
 
-        ball1 = new CirActor();
-        ball1.init(40, 40);
+        ball1 = new CirActor(600,420,20);
         ball1.mass = 1;
-        ball1.x = 700;
-        ball1.y = stage.height / 2;
         ball1.speed.x = -1;
         stage.addChild(ball0, ball1);
     }

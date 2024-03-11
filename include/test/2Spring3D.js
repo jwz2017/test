@@ -1,18 +1,18 @@
 import { Point3D } from "../../classes/3DClass.js";
+import { Game } from "../../classes/Game.js";
 import { CirActor } from "../../classes/actor.js";
-import { gframe, stage } from "../../classes/gframe.js";
+import { stage } from "../../classes/gframe.js";
 
 var ball, tx, ty, tz, vpX, vpY,
     spring = 0.1, friction = 0.94, fl = 250;
-export class Spring3D extends gframe.Game {
+export class Spring3D extends Game {
     constructor() {
         super("3d弹性运动");
     }
     waitComplete() {
         vpX =stage.width / 2;
         vpY = stage.height / 2;
-        ball = new CirActor();
-        ball.init(50, 50);
+        ball = new CirActor(0,0,25);
         ball.pos = new Point3D;
         ball.speed.z = 0;
         stage.addChild(ball);

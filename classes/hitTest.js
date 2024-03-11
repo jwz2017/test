@@ -27,36 +27,10 @@ export var detectorOBBvsOBB = function (OBB1, OBB2) {
   if (OBB1.getProjectionRadius(axisB2) + OBB2.getProjectionRadius(axisB2) <= Math.abs(nv.dot(axisB2))) return false;
   return true;
 }
-
-
-/*
-The MIT License
-像素级碰撞检测
-Copyright (c) 2012 Olaf Horstmann, indiegamr.com
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
-all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-THE SOFTWARE.
-*/
 /**
- * A Pixel Perfect Collision Detection for EaselJS Bitmap-Objects
+ 像素级碰撞检测
  * @author olsn, indiegamr.com
  **/
-
 var collisionCanvas = document.createElement('canvas');
 var collisionCtx = collisionCanvas.getContext('2d', { willReadFrequently: true });
 //collisionCtx.globalCompositeOperation = 'source-in';
@@ -96,7 +70,6 @@ export var checkPixelCollision = function (bitmap1, bitmap2, rect, alphaThreshol
   } else {
     return false;
   }
-
   return pixelIntersection;
 }
 var _intersectingImagePart = function (intersetion, bitmap, ctx) {

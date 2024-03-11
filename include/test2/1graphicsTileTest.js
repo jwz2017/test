@@ -1,8 +1,8 @@
 import { GraphicTile, IsoUtils, Point3D } from "../../classes/3DClass.js";
-import { GridsMapGame } from "../../classes/GridsMapGame.js";
+import { Game } from "../../classes/Game.js";
 import { gframe, queue, stage } from "../../classes/gframe.js";
 
-export class GraphicsTileTest extends GridsMapGame {
+export class GraphicsTileTest extends Game {
     static loadItem = [{
         id: "tile_01",
         src: "images/tile_01.png"
@@ -22,17 +22,17 @@ export class GraphicsTileTest extends GridsMapGame {
                 let tile_01 = new createjs.Bitmap(queue.getResult("tile_01"));
                 const tile = new GraphicTile(20, tile_01, 20, 10);
                 tile.position = new Point3D(i * 20, 0, j * 20);
-                this.addChildToFloor(tile);
+                this.addToFloor(tile);
             }
         }
-        this.floor.addEventListener("click", () => {
+        this.floorLayer.addEventListener("click", () => {
             let box = new GraphicTile(20, new createjs.Bitmap(queue.getResult("tile_02")), 20, 30);
-            let pos = IsoUtils.screenToIso(this.world.globalToLocal(stage.mouseX, stage.mouseY));
+            let pos = IsoUtils.screenToIso(this.playerLayer.globalToLocal(stage.mouseX, stage.mouseY));
             pos.x = Math.round(pos.x / 20) * 20;
             pos.y = Math.round(pos.y / 20) * 20;
             pos.z = Math.round(pos.z / 20) * 20;
             box.position = pos;
-            this.addChildToWorld(box);
+            this.addToPlayer(box);
             this.sortDepth(this.world);
         });
     }

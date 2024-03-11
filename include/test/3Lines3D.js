@@ -1,9 +1,10 @@
 import { Point3D } from "../../classes/3DClass.js";
-import { gframe, stage } from "../../classes/gframe.js";
+import { Game } from "../../classes/Game.js";
+import { stage } from "../../classes/gframe.js";
 
 var points, vpX, vpY, shape,
     numPoints = 50, fl = 250;
-export class Lines3D extends gframe.Game {
+export class Lines3D extends Game {
     constructor() {
         super("3D线条");
     }

@@ -1,9 +1,9 @@
 import { DrawnIsoBox, DrawnIsoTile, Point3D } from "../../classes/3DClass.js";
-import { GridsMapGame } from "../../classes/GridsMapGame.js";
+import { Game } from "../../classes/Game.js";
 import { pressed, stage } from "../../classes/gframe.js";
 
 var box,speed = 5;
-export class MotionTest extends GridsMapGame {
+export class MotionTest extends Game {
     constructor() {
         super("移动测试");
         this.keyboard=true;
@@ -16,13 +16,13 @@ export class MotionTest extends GridsMapGame {
             for (let j = 0; j < 20; j++) {
                 let tile = new DrawnIsoTile(20, "#cccccc");
                 tile.position = new Point3D(i * 20, 0, j * 20);
-                this.addChildToFloor(tile);
+                this.addToFloor(tile);
             }
         }
         box = new DrawnIsoBox(20, "#ff0000", 20);
         box.xpos = 100;
         box.zpos = 100;
-        this.addChildToWorld(box);
+        this.addToPlayer(box);
     }
     runGame() {
         box.vx = 0;

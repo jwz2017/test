@@ -1,10 +1,11 @@
-import { gframe, keys, stage } from "../../classes/gframe.js";
+import { Game } from "../../classes/Game.js";
+import { keys, stage } from "../../classes/gframe.js";
 import { Tree } from "../../classes/shape.js";
 
 var trees, vpX, vpY,
     numTrees = 100, fl = 250, floor = 50, friction = 0.98,
     vx = 0, vy = 0, vz = 0, ax = 0, ay = 0, az = 0, gravity = 0.3;
-export class Trees extends gframe.Game {
+export class Trees extends Game {
     constructor() {
         super("屏幕环绕3d");
         this.keyboard=true;
@@ -20,7 +21,7 @@ export class Trees extends gframe.Game {
             tree.pos.x = Math.random() * 2000 - 1000;
             tree.pos.y = floor;
             tree.pos.z = Math.random() * 10000;
-            this.addChild(tree);
+            this.addToFloor(tree);
         }
     }
     runGame() {
@@ -54,7 +55,7 @@ export class Trees extends gframe.Game {
         vx *= friction;
         vy *= friction;
         //排序
-        this.container.sortChildren(function (a, b) {
+        this.floorLayer.sortChildren(function (a, b) {
             return b.pos.z - a.pos.z;
         })
     }

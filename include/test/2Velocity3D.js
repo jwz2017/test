@@ -1,23 +1,23 @@
+import { Game } from "../../classes/Game.js";
 import { CirActor } from "../../classes/actor.js";
-import { gframe, keys, pressed, stage } from "../../classes/gframe.js";
+import { keys, pressed, stage } from "../../classes/gframe.js";
 
 var xpos, ypos, zpos, ball, vpX, vpY,
     friction = .98, fl = 250,
     top = -200, bottom = 200, left = -200, right = 200,
     front = 200, back = -200;
-export class Velocity3D extends gframe.Game {
+export class Velocity3D extends Game {
     constructor() {
         super("3d速度");
-        this.instructionScreen.updateTitle(wasd,shift,ctrl)
+        this.instructionScreen.updateTitle("wasd,shift,ctrl")
         this.keyboard=true;
     }
     waitComplete() {
         xpos = ypos = zpos = 0;
         vpX = stage.width / 2;
         vpY = stage.height / 2;
-        ball = new CirActor();
+        ball = new CirActor(0,0,25);
         ball.speed.z = 0;
-        ball.init(50, 50);
         stage.addChild(ball);
     }
     runGame() {

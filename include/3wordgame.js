@@ -1,17 +1,17 @@
-import {gframe, stage } from "../classes/gframe.js";
+import { Game, ScoreBoard } from "../classes/Game.js";
+import {gframe } from "../classes/gframe.js";
 window.onload = function () {
     /*************游戏入口*****/
      gframe.buildStage('canvas');
      //stage.setClearColor(0x00000000);
      gframe.preload(WordGame);
-     gframe.startFPS();
 };
 //游戏变量;
 var answers=["CERATEJS IS&AWESOME","ABCDEFGHDK OIS&SKDDD"];
 var answer;
 var abc="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 var lettersNeeded=0;
-export class WordGame extends gframe.Game {
+export class WordGame extends Game{
     constructor() {
         canvas.style.backgroundColor="#555";
         super("WordGame");
@@ -20,10 +20,11 @@ export class WordGame extends gframe.Game {
         this.y=200;
     }
     createScoreBoard() {
-        this.scoreboard = new gframe.ScoreBoard();
+        this.scoreboard = new ScoreBoard();
         this.scoreboard.createTextElement(WordGame.LIVES);
     }
     newLevel() {
+        lettersNeeded=0;
         this.lives=5;
         answer=answers[this.level-1];
         this.scoreboard.update(WordGame.LIVES,this.lives);
@@ -115,7 +116,7 @@ export class WordGame extends gframe.Game {
             if(box.key==letter){
                 lettersNeeded--;
                 if(lettersNeeded==0){
-                    this.clear(gframe.event.LEVEL_UP)
+                    this.levelUp=true;
                 }
                 match=true;
                 txtClone=txt.clone();
@@ -125,10 +126,10 @@ export class WordGame extends gframe.Game {
                 this.addChild(txtClone);
             }
         }
-        this.removeChild(txt);
+        this.container.removeChild(txt);
         if(!match){
             this.lives--;
-            if(this.lives==0) this.clear(gframe.event.GAME_OVER);
+            if(this.lives==0) this.gameOver=true;
             this.scoreboard.update(WordGame.LIVES,this.lives);
         }
     }

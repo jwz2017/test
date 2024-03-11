@@ -1,12 +1,11 @@
 import { stage, gframe, keys, game } from "../classes/gframe.js";
 import { Actor, SteeredActor } from "../classes/actor.js";
 import { mc } from "../classes/mc.js";
+import { Game, ScoreBoard } from "../classes/Game.js";
 window.onload = function () {
     /*************游戏入口*****/
     gframe.buildStage('canvas');
-    //stage.setClearColor(0x00000000);
     gframe.preload(Tunnel, true);
-    gframe.startFPS();
 };
 //游戏变量;
 var player,gravity=0.15,playerSpeed=0.3;
@@ -29,7 +28,7 @@ var obstacleDelay = 30,
     centerWidth=15;
 //分数版
 var startTime,time=0,levelTime=10;
-export class Tunnel extends gframe.Game {
+export class Tunnel extends Game {
     static TIME = "time";
     //static loadItem = null;
     //static loadId = null;
@@ -39,7 +38,6 @@ export class Tunnel extends gframe.Game {
         this.y = stage.height - this.height >> 1;
         //创建飞船
         player = new SteeredActor();
-        player.init(15);
         this.superAddChild(player)
         //背景框架
         this.background = new createjs.Shape();
@@ -48,7 +46,7 @@ export class Tunnel extends gframe.Game {
         this.background.cache(0, 0, this.width, this.height)
     }
     createScoreBoard() {
-        this.scoreboard = new gframe.ScoreBoard();
+        this.scoreboard = new ScoreBoard();
         this.scoreboard.createTextElement(Tunnel.TIME,0,300,0);
     }
     newLevel() {
@@ -72,14 +70,13 @@ export class Tunnel extends gframe.Game {
             player.speed.y+=gravity-playerSpeed;
         }else player.speed.y+=gravity;
         player.plus(0,player.speed.y);
-        if(player.hitBounds()) this.clear(gframe.event.GAME_OVER);
+        if(this.hitBounds(player.rect)) this.gameOver=true;
         //障碍物
-        this.moveActors();
+        this.moveActors(this.playerLayer);
         obstacleTick++;
         if(obstacleTick>obstacleDelay){
             obstacleTick=0;
             let obstacle=Tunnel.getActor(obstacles,Obstacle);
-            obstacle.color=obstacleColor[this.level-1];
             if(Math.random()<centerFrequency){
                 obstacle.init(centerWidth,centerHeight);
                 obstacle.setPos(this.width,this.height/2+Math.random()*100-50);
@@ -92,10 +89,11 @@ export class Tunnel extends gframe.Game {
                 if (mc.getRandom(0,1)<0.5) obstacle.setPos(this.width,0);
                 else obstacle.setPos(this.width,this.height-obstacle.rect.height);
             }
-            this.addChild(obstacle);
+            obstacle.color=obstacleColor[this.level-1];
+            this.addToPlayer(obstacle);
         }
         let speed=Math.min(obstacleSpeedMax,obstacleSpeed+this.level);
-        this.container.children.forEach(element => {
+        this.playerChildren.forEach(element => {
             element.speed.x=-speed;
         });
     }
@@ -110,7 +108,7 @@ class Obstacle extends Actor{
             this.recycle();
         }
         if(this.rect.intersects(player.rect)){
-            game.clear(gframe.event.GAME_OVER);
+            game.gameOver=true;
         }
     }
 }

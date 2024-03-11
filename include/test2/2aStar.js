@@ -1,15 +1,18 @@
-import { AStar, GridsMapGame, Node } from "../../classes/GridsMapGame.js";
+import { AStar } from "../../classes/Astar.js";
+import { Game } from "../../classes/Game.js";
+import { Node } from "../../classes/Node.js";
 import { stage } from "../../classes/gframe.js";
 
 var step = 20,numcols=30,numrows=30,shape,astar=new AStar();
-export class AStarTest extends GridsMapGame {
+export class AStarTest extends Game {
     //static loadItem = null;
     constructor() {
-        super("AStarTest",numcols*step,numrows*step,step,step,numcols,numrows);
+        super("AStarTest",numcols*step,numrows*step,step,step);
         this.x=stage.width-this.width>>1;
         this.y=stage.height-this.height>>1;
         shape = new createjs.Shape();
         this.addChild(shape);
+        this.createGrid(numrows,numcols);
     }
     newLevel() {
         this.setStartNode(0, 2);

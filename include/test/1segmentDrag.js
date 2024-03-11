@@ -1,16 +1,16 @@
-import { gframe, stage } from "../../classes/gframe.js";
+import { Game } from "../../classes/Game.js";
+import { stage } from "../../classes/gframe.js";
 import { Segment } from "../../classes/shape.js";
 
 var segments, numSegments = 30;
-export class SegmentDrag extends gframe.Game {
+export class SegmentDrag extends Game {
     constructor() {
         super("关节拖拽");
     }
     waitComplete() {
         segments = [];
         for (let i = 0; i < numSegments; i++) {
-            const segment = new Segment();
-            segment.init(50, 10);
+            const segment = new Segment(0,0,50,10);
             stage.addChild(segment);
             segments.push(segment);
         }

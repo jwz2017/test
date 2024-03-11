@@ -1,4 +1,5 @@
-import { gframe, stage } from "../../classes/gframe.js";
+import { Game } from "../../classes/Game.js";
+import { stage } from "../../classes/gframe.js";
 import { Slider, mc } from "../../classes/mc.js";
 import { Segment } from "../../classes/shape.js";
 
@@ -6,25 +7,21 @@ var segment0, segment1, segment2, segment3,
     speedSlider, thighRangeSlider, thighBaseSlider,
     calfRangeSlider, calfOffsetSlider, gravitySlider,
     cycle = 0, vx = 0, vy = 0;
-export class SegmentWalk extends gframe.Game {
+export class SegmentWalk extends Game {
     constructor() {
         super("关节行走");
     }
     waitComplete() {
-        segment0 = new Segment();
-        segment0.init(100, 30);
+        segment0 = new Segment(0,0,100,30);
         segment0.x = 400;
         segment0.y = 100;
-        segment1 = new Segment();
-        segment1.init(100, 20);
+        segment1 = new Segment(0,0,100,20);
         segment1.x = segment0.getPin().x;
         segment1.y = segment0.getPin().y;
-        segment2 = new Segment();
-        segment2.init(100, 30);
+        segment2 = new Segment(0,0,100,30);
         segment2.x = 400;
         segment2.y = 100;
-        segment3 = new Segment();
-        segment3.init(100, 20);
+        segment3 = new Segment(0,0,100,20);
         segment3.x = segment2.getPin().x;
         segment3.y = segment2.getPin().y;
         stage.addChild(segment0, segment1, segment2, segment3);

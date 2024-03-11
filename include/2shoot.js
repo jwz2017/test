@@ -1,10 +1,10 @@
+import { Game, ScoreBoard } from "../classes/Game.js";
 import { Actor, CirActor, Vector } from "../classes/actor.js";
 import { game, gframe, lib, queue, stage } from "../classes/gframe.js";
 
 window.onload = function () {
     gframe.buildStage('canvas');
     gframe.preload(Shoot);
-    gframe.startFPS();
 };
 const NUMENEMY = "plane",
     SHOTS = "shots";
@@ -23,7 +23,7 @@ var playerBullets = [],
     enemyWaveMax,
     maxEnemys,
     numEnemy;
-class Shoot extends gframe.Game {
+class Shoot extends Game {
     static loadItem = [{
         id: "shoot",
         src: "shoot/shoot.json"
@@ -40,7 +40,7 @@ class Shoot extends gframe.Game {
         // enemys = [];
     }
     createScoreBoard() {
-        this.scoreboard = new gframe.ScoreBoard();
+        this.scoreboard = new ScoreBoard();
         this.scoreboard.createTextElement("score");
         this.scoreboard.createTextElement("level");
         this.scoreboard.createTextElement(NUMENEMY);
@@ -75,7 +75,7 @@ class Shoot extends gframe.Game {
         //鼠标点击发射子弹
         stage.on("stagemousedown", (e) => {
             if (numPlayerBullets <= 0) return;
-            let shoot = gframe.Game.getActor(playerBullets, Shot);
+            let shoot = Game.getActor(playerBullets, Shot);
             numPlayerBullets--;
             this.scoreboard.update(SHOTS, numPlayerBullets)
             stage.addChild(shoot);
@@ -89,7 +89,7 @@ class Shoot extends gframe.Game {
                 y: e.stageY
             }, dis / shoot.speed.length).call(() => {
                 shoot.recycle();
-                let exploy = gframe.Game.getActor(exployeds, Exploy);
+                let exploy = Game.getActor(exployeds, Exploy);
                 exploy.x=shoot.x;
                 exploy.y=shoot.y;
                 exploy.updateRect();
@@ -120,14 +120,10 @@ class Shoot extends gframe.Game {
             return enemy.active == true;
         });
         if (numEnemy == maxEnemys && !isenemy) {
-            this.clear(gframe.event.LEVEL_UP);
+            this.levelUp=true;
         }
     }
-    clear(e) {
-        stage.removeAllEventListeners("stagemousedown");
-        super.clear(e);
-
-    }
+    
     placeShip() {
         let l = ships.length;
         let spacing = stage.width / shipStore;
@@ -151,12 +147,11 @@ class Shoot extends gframe.Game {
             if (chance <= enemyWaveChance) {
                 enemiesToCreate = Math.floor(Math.random() * enemyWaveMax) + 1;
             }
-            // enemys=Game.getActor(enemys,Enemy);
             if (enemiesToCreate > maxEnemys - numEnemy) {
                 enemiesToCreate = maxEnemys - numEnemy;
             }
             for (let i = 0; i < enemiesToCreate; i++) {
-                let enemy = gframe.Game.getActor(enemys, Enemy);
+                let enemy = Game.getActor(enemys, Enemy);
                 enemy.x = Math.random() * (stage.width - enemy.rect.width) + enemy.rect.width / 2;
                 enemy.y = -enemy.rect.height / 2;
                 enemy.updateRect();
@@ -167,12 +162,16 @@ class Shoot extends gframe.Game {
             enemyFrameCount = 0;
         }
     }
+    clear(){
+        super.clear();
+        stage.removeAllEventListeners("stagemousedown");
+    }
 
 }
 //玩家子弹
 class Shot extends CirActor {
     constructor() {
-        super();
+        super(0,0,0,false);
         this.speed.length = 0.5;
         this.setSpriteData(spriteSheet, "bullet1");
     }
@@ -180,7 +179,7 @@ class Shot extends CirActor {
 //子弹爆炸
 class Exploy extends CirActor {
     constructor(xpos, ypos) {
-        super(xpos, ypos);
+        super(xpos, ypos,0,0,false);
         this.setSpriteData(spriteSheet, "exployed");
         this.hit = 54;
         this.multiple = 0;
@@ -204,14 +203,14 @@ class Exploy extends CirActor {
 //船
 class Ship extends Actor {
     constructor(xpos, ypos) {
-        super(xpos, ypos);
+        super(xpos, ypos,0,0,false);
         this.setSpriteData(spriteSheet, "ship", 1, 90);
     }
 }
 //敌机
 class Enemy extends Actor {
     constructor(xpos, ypos) {
-        super(xpos, ypos);
+        super(xpos, ypos,0,0,false);
         this.setSpriteData(spriteSheet, "enemy1", 1);
         this.speed.y = 3;
         this.edgeBehavior = Actor.RECYCLE;
@@ -223,7 +222,7 @@ class Enemy extends Actor {
             ob.recycle();
             shipStore--;
             if (shipStore== 0) {
-                game.clear(gframe.event.GAME_OVER);
+                game.gameOver=true;
             }
             this.recycle();
         }

@@ -1,11 +1,12 @@
 import { stage, keys, pressed, gframe, game, queue } from "../classes/gframe.js";
-import { GridsMapGame, Node } from "../classes/GridsMapGame.js";
-import { Vector, Actor } from "../classes/actor.js";
+import { Vector, Actor, JumpActor } from "../classes/actor.js";
 import { Sparkles } from "../classes/effect.js";
+import { Node } from "../classes/Node.js";
+import { LoaderBar, ScoreBoard, ScrollMapGame } from "../classes/Game.js";
 window.onload = function () {
     /*************游戏入口*****/
     gframe.buildStage('canvas');
-    gframe.startFPS();
+    // gframe.startFPS();
     gframe.createQueue();
     queue.loadFile({
         id: "loaderbar",
@@ -14,19 +15,15 @@ window.onload = function () {
     });
     queue.on("complete", () => {
         gframe.loaderBar = new LoaderBar1();
-        gframe.preload(Jump);
+        gframe.preload(Jump,true);
     }, null, true);
 };
 //游戏变量;
 var spriteSheet,
-    actorChars,
-    floorChars,
     bullets,
     step = 30,
-    winWidth = 750,
-    winHeight = 400,
     plans;
-export class Jump extends GridsMapGame {
+export class Jump extends ScrollMapGame {
     static loadItem = [{
         id: "spritedata",
         src: "jump/spriteData.json",
@@ -47,42 +44,45 @@ export class Jump extends GridsMapGame {
     }];
     constructor() {
         plans = queue.getResult("levels");
-        super("Jump2", winWidth, winHeight, step, step, 0, 0, { titleSoundId: "titlesound",backSoundId:"titlesound"});
-        this.keyboard = true;
+        super("Jump2", 750, 400, step, step);
+        this.titleSound=createjs.Sound.createInstance("titlesound");
+        this.backSound=createjs.Sound.createInstance("titlesound");
+        this.y=stage.height-this.height>>1;
         this.instructionScreen.updateTitle("方向:w,a,s,d <br>小键盘4567:普通攻击，跳跃，技能");
         this.maxLevel = plans.length;
-        this.y = stage.height - this.height >> 1;
         spriteSheet = queue.getResult("spritedata");
-        actorChars = {
-            "@": JumpPlayer,
+        this.playerChars = {
+            "@": JumpPlayer
+        };
+        this.propChars = {
+            "b": Big,
+            "o": Coin
+        };
+        this.enemyChars={
+            "m": MoveBrick,
             "=": Lava,
             "|": Lava,
             "v": Lava,
-            "m": MoveBrick
-        };
-        floorChars = {
-            "b": Big,
-            "o": Coin
         }
         this.sparkle = new Sparkles(queue.getResult("sparkle"), stage.width, this.y);
-        
+
     }
     createScoreBoard() {
-        this.scoreboard = new gframe.ScoreBoard(0,0,true);
-        this.scoreboard.createTextElement(gframe.Game.SCORE);
-        this.scoreboard.createTextElement(gframe.Game.LEVEL);
-        this.scoreboard.createTextElement(gframe.Game.LIVES);
+        this.scoreboard = new ScoreBoard(0, 0, true);
+        this.scoreboard.createTextElement(Jump.SCORE);
+        this.scoreboard.createTextElement(Jump.LEVEL);
+        this.scoreboard.createTextElement(Jump.LIVES);
     }
     newLevel() {
-        this.scoreboard.update(gframe.Game.SCORE, this.score);
-        this.scoreboard.update(gframe.Game.LEVEL, this.level);
-        this.scoreboard.update(gframe.Game.LIVES, this.lives);
+        this.scoreboard.update(Jump.SCORE, this.score);
+        this.scoreboard.update(Jump.LEVEL, this.level);
+        this.scoreboard.update(Jump.LIVES, this.lives);
         bullets = [];
         let plan = plans[this.level - 1];
-        game.createGridMap(plan, actorChars, (ch, node) => {
+        game.createGridMap(plan, (ch, node) => {
             let color = "#555";
             let shape = new createjs.Shape();
-            this.addChildToFloor(shape);
+            this.addToFloor(shape);
             if (ch == "x") {
                 node.type = Node.NOWALKABLE;
                 color = "#fff";
@@ -97,10 +97,10 @@ export class Jump extends GridsMapGame {
                 node.type = Node.NOWALKABLE;
                 let k = new K(node.x * step, node.y * step);
                 node.actor = k;
-                this.addChildToFloor(k);
+                this.addToFloor(k);
             }
             shape.graphics.beginStroke(color).beginFill(color).drawRect(node.x * step, node.y * step, step, step);
-        }, floorChars);
+        });
     }
     waitComplete() {
         stage.addChild(this, this.sparkle);
@@ -108,189 +108,47 @@ export class Jump extends GridsMapGame {
     }
 
     runGame() {
-        this.sparkle.addSparkles(3, Math.random() * stage.width, 0, 0.1)
-        // 渲染actors
-        this.moveActors(this.world);
-        this.moveActors(this.floorActor)
+        // this.sparkle.addSparkles(3, Math.random() * stage.width, 0, 0.1)
+        // 移动flayer层元素
+        this.moveActors(this.playerLayer);
+        //移动道具层元素
+        this.moveActors(this.propLayer);
+        //移动敌人层元素
+        this.moveActors(this.enemyLayer);
         //滚动地图
         this.scrollPlayerIntoView(this.player);
     }
 
 }
 
-class JumpPlayer extends Actor {
+class JumpPlayer extends JumpActor {
     constructor(xpos, ypos) {
-        super(xpos, ypos);
-        this.speed.zero();
+        super(xpos, ypos,0.8*step,1.4*step,true);
         this.type = "player";
-        this.walkspeed = 1.2;
-        this.jumpspeed = 6;
-        this.gravity = 0.27;
-        this.runspeed = 1.8;
-        this.mult = 1;
-        this.init(0.8 * 30, 1.6 * 30);
-        this.plus(0, -0.6 * 30);
-        this.setSpriteData(spriteSheet, "stand", 0.6);
+        this.plus(0, -0.4 * step);
+        this.setSpriteData(spriteSheet, "jump", 0.6, 0, 0, -2);
     }
-    startRoll() {
-        this.oldPos = new Vector(this.x, this.y);
-        this.speed.x = this.scaleX > 0 ? this.walkspeed : -this.walkspeed;
-        this.image.gotoAndPlay("roll");
-        this.image.on("animationend", this.stopRoll, this, true);
-        //重设图片位置
-        this.rect.height /= 2;
-        this.rect.y += this.rect.height;
+    act() {
+        this.moveY();
+        this.moveX();
+        this.chectHitEnemy();
+        this.chectHitProp();
     }
-    stopRoll() {
-        this.rect.y -= this.rect.height;
-        this.rect.height *= 2;
-        let node = game.hitMap(this.rect);
-        if (node) {
-            this.x=this.oldPos.x;
-            this.y=this.oldPos.y;
-            this.updateRect();
-        }
-    }
-    moveY() {
-        this.speed.y += this.gravity;
-        var newRect = this.rect.clone();
-        newRect.y += this.speed.y;
-        var node = game.hitMap(newRect);
-        if (node) {
-            if (node.type == Node.DEATH) {
-                game.clear(gframe.event.GAME_OVER);
-            }
-            else if (node.type == Node.NOWALKABLE) {
-                this.actY();
-                this.mult = node.costMultiplier;
-            }
-
-        }
-        else if (this._hitMove) {
-            this.actY();
-        } 
-        else {
-            //未碰撞地图状态
-            this.plus(0, this.speed.y);
-        }
-    }
-    actY() {
-        let status = this.image.currentAnimation;
-        let idle = (status == "walk" || status == "stand" || status == "run");
-        if (pressed.length == 0) this._roll = false;
-        //落地地面以后
-        if (status == "jumpSky" && this.speed.y > 0) {
-            //检测跳跃是否结束
-            this.image.gotoAndPlay("crouch");
-        } else if (keys.jump && idle) {
-            this.speed.y = -this.jumpspeed;
-            this.image.gotoAndPlay("jump");
-        } else if (keys.down && idle && !this._roll) {
-            //开始滚动
-            this._roll = true;
-            this.startRoll();
-        } else if (keys.attack && idle) {
-            //开始普通攻击
-            if (Math.random() > 0.5) {
-                this.image.gotoAndPlay("attack1");
-            } else {
-                this.image.gotoAndPlay("attack2");
-            }
-        } else if (keys.skill1 && idle) {
-            //开始技能1攻击
-            this.image.gotoAndPlay("skill1");
-        } else if (keys.fire && idle) {
-            //放子弹
-            this.image.gotoAndPlay("fire");
-            this.image.on("animationend", this.createBullet, this, true);
-        } else {
-            this.speed.y = 0;
-        }
-        this._hitMove = false;
-    }
-    //创建子弹
-    createBullet() {
-        let bullet = gframe.Game.getActor(bullets, Barrage1);
-        if (this.scaleX > 0) {
-            bullet.scaleX = 1;
-            bullet.speed.angle = 0;
-        } else {
-            bullet.scaleX = -1;
-            bullet.speed.angle = Math.PI;
-        }
-        bullet.x=this.x;
-        bullet.y=this.y;
-        bullet.updateRect();
-        game.addChildToWorld(bullet);
-    }
-    //玩家移动
-    moveX() {
-        let status = this.image.currentAnimation;
-        let idle = status == "stand" || status == "walk" || status == "run" || status == "jump" || status == "jumpSky";
-        let key = pressed[pressed.length - 1];
-        if (status == "roll") { }
-        else if (key == "right" || key == "left") {
-            let a = key == "right";
-            if (status == "stand") {
-                if (keys.rightRun) {
-                    this.speed.x = this.runspeed;
-                    this.image.gotoAndPlay("run");
-                } else if (keys.leftRun) {
-                    this.speed.x = -this.runspeed;
-                    this.image.gotoAndPlay("run");
-                } else if (key == "right") {
-                    this.speed.x = this.walkspeed;
-                    this.image.gotoAndPlay("walk")
-                } else {
-                    this.speed.x = -this.walkspeed;
-                    this.image.gotoAndPlay("walk")
-                }
-                keys.rightRun = keys.leftRun = false;
-            } else if (status == "walk") {
-                this.speed.x = a ? this.walkspeed : -this.walkspeed;
-            } else if (status == "run") {
-                if (this.scaleX < 0 && key == "right") {
-                    this.speed.x = this.walkspeed;
-                    this.image.gotoAndPlay("walk")
-                } else if (this.scaleX > 0 && key == "left") {
-                    this.speed.x = -this.walkspeed;
-                    this.image.gotoAndPlay("walk")
-                }
-            }
-            else if (status == "jump" || status == "jumpSky") {
-                this.speed.x = a ? Math.abs(this.speed.x) || this.walkspeed : -Math.abs(this.speed.x) || -this.walkspeed
-            }
-            else if (!idle) this.speed.x = 0;
-            this.scaleX = key == "right" ? Math.abs(this.scaleX) : -Math.abs(this.scaleX);
-        } else {
-            this.speed.x = 0;
-            if (status == "walk" || status == "run") this.image.gotoAndPlay("stand");
-        }
-        var newRect = this.rect.clone();
-        newRect.x += this.speed.x;
-        var node = game.hitMap(newRect);
-        if (node) {
-            if (node.type == Node.DEATH) {
-                game.clear(gframe.event.GAME_OVER);
-            }
-        } else {
-            this.plus(this.speed.x * this.mult, 0);
-        }
-    }
-    chectHitActor() {
-        var actor = this.hitActors(game.world.children);
+    //与敌人层碰撞
+    chectHitEnemy() {
+        var actor = this.hitActors(game.enemyChildren);
         if (actor) {
             if (actor.type == "lava") {
-                game.clear(gframe.event.GAME_OVER);
-            } else if (actor.type == "move" && this.speed.y >= 0 && this.y < actor.y) {
-            // } else if (actor.type == "move" && this.speed.y >actor.rect.y-(this.y)) {
+                game.gameOver = true;
+            } else if (actor.type == "move" && this.speed.y >= Math.max(0, this.y - actor.rect.y)) {
                 this._hitMove = true;
+                if (this.status != "roll") this.setPos(this.rect.x, actor.rect.y - this.rect.height);
                 let newRect = this.rect.clone();
                 newRect.x += actor.speed.x;
                 let node = game.hitMap(newRect);
                 if (node) {
                     if (node.type == Node.DEATH) {
-                        game.clear(gframe.event.GAME_OVER);
+                        game.gameOver = true;
                     }
                 } else {
                     this.plus(actor.speed.x, 0)
@@ -298,8 +156,9 @@ class JumpPlayer extends Actor {
             }
         }
     }
-    chectHitFloorActor() {
-        let node = game.hitFloorActor(this.rect);
+    //与道具层碰撞
+    chectHitProp() {
+        let node = game.hitMapWithProp(this.rect);
         if (node) {
             const actor = node.actor;
             if (actor.type == "coin") {
@@ -307,15 +166,14 @@ class JumpPlayer extends Actor {
                 game.scoreboard.update("score", game.score);
                 actor.parent.removeChild(actor);
                 node.actor = null;
-                if (!game.hasTypeOnContainer("coin", game.floorActor)) {
-                    game.clear(gframe.event.LEVEL_UP);
+                if (!game.hasTypeOnContainer("coin", game.propLayer)) {
+                    game.levelUp = true;
                 }
             } else if (actor.type == "big") {
                 actor.parent.removeChild(actor);
                 node.actor = null;
-                if (this.image.currentAnimation == "roll") {
-                    this.image.gotoAndPlay("stand");
-                    this.stopRoll();
+                if (this.status == "roll") {
+                    this.stopAct();
                 }
                 this.plus(0, -this.rect.height * 0.1);
                 let a = this.act;
@@ -324,22 +182,69 @@ class JumpPlayer extends Actor {
                     scaleX: this.scaleX * 1.2,
                     scaleY: this.scaleY * 1.2
                 }, 800, createjs.Ease.quadOut).call(() => {
-                    this.rect.copy(this.getTransformedBounds());
+                    this.updateRect();
                     this.act = a;
                 });
             }
         }
     }
-    act() {
-        this.moveY();
-        this.moveX();
-        this.chectHitActor();
-        this.chectHitFloorActor();
+    startFloorAct() {
+        if (keys.jump) this.jump();
+        else if (keys.attack) this.attack();
+        else if (keys.skill1) this.skill1();
+        else if (keys.down) this.roll();
+        else if (keys.fire) this.fire(bullets, Barrage1, game.playerLayer);
+    }
+    startJumpAct() {
+        if (keys.attack) this.jumpAttack();
+    }
+    changeAct() {
+        if (!this.status) this.image.gotoAndPlay("stand");
+        else if (this.status == "attack") {
+            if (Math.random() > 0.5) {
+                this.image.gotoAndPlay("attack1");
+            } else {
+                this.image.gotoAndPlay("attack2");
+            }
+        } else {
+            this.image.gotoAndPlay(this.status);
+        }
+    }
+    moveY() {
+        this.speed.y += this.gravity;
+        let rect = this.rect.clone();
+        rect.y += this.speed.y;
+        let node = game.hitMap(rect);
+        if (node) {
+            if (node.type == Node.DEATH) {
+                game.gameOver = true;
+            } else if (node.type == Node.NOWALKABLE) {
+                this.hitFloor(node.costMultiplier);
+            }
+        }
+        else if (this._hitMove) {
+            this.hitFloor();
+            this.plus(0, this.speed.y);
+            this._hitMove = false;
+        } else {
+            this.overhead();
+            this.startJumpAct();
+
+        }
+    }
+    moveX() {
+        this.walk(pressed[pressed.length - 1], keys);
+        let rect = this.rect.clone();
+        rect.x += this.speed.x;
+        let node = game.hitMap(rect);
+        if (node) {
+            if (node.type == Node.DEATH) game.gameOver = true;
+        } else this.plus(this.speed.x * this.mult, 0);
     }
 }
 class Barrage1 extends Actor {
     constructor(xpos, ypos) {
-        super(xpos, ypos);
+        super(xpos, ypos,0.7*step,0.7*step);
         this.speed.length = 5;
         var skilData = {
             images: [queue.getResult("guiqizhan")],
@@ -355,13 +260,12 @@ class Barrage1 extends Actor {
                 run2: [8, 11, "run2", 0.3]
             }
         };
-        this.init(0.7 * step, 0.7 *step);
         this.setSpriteData(new createjs.SpriteSheet(skilData), "run", 0.5);
     }
     act() {
         var node = game.hitMap(this.rect);
         if (!node) {
-            let actor = this.hitActors(game.world.children);
+            let actor = this.hitActors(game.enemyChildren);
             if (actor && actor.type == "lava") {
                 this.recycle();
             } else {
@@ -379,11 +283,10 @@ class Barrage1 extends Actor {
 
 class Lava extends Actor {
     constructor(xpos, ypos, ch) {
-        super(xpos, ypos);
+        super(xpos, ypos,step,step);
         this.speed.length = 1.6;
         this.type = "lava";
         this.color = "rgb(255,100,100)";
-        this.init(30, 30);
         if (ch == "=") {
         } else if (ch == "|") {
             this.speed.angle = Math.PI / 2;
@@ -399,8 +302,8 @@ class Lava extends Actor {
         if (!game.hitMap(newrect)) {
             this.plus(this.speed.x, this.speed.y);
         } else if (this.repeatPos) {
-            this.x=this.repeatPos.x;
-            this.y=this.repeatPos.y;
+            this.x = this.repeatPos.x;
+            this.y = this.repeatPos.y;
             this.updateRect();
         } else {
             this.speed = this.speed.times(-1);
@@ -409,11 +312,10 @@ class Lava extends Actor {
 }
 class MoveBrick extends Actor {
     constructor(xpos, ypos) {
-        super(xpos, ypos);
+        super(xpos, ypos,90,15);
         this.speed.length = 1.5;
         this.type = "move";
         this.color = "#0f0";
-        this.init(90, 15);
     }
     act() {
         var newrect = this.rect.clone();
@@ -429,14 +331,13 @@ class MoveBrick extends Actor {
 }
 class Coin extends Actor {
     constructor(xpos, ypos) {
-        super(xpos, ypos);
+        super(xpos, ypos,0.6*step,0.6*step);
         this.angleSpeed = 0.08;
         this.wobbleDist = 2.1;
         this.angle = Math.random() * Math.PI * 2;
         this.type = "coin";
-        this.color = "rgb(241,229,89)";
-        this.init(0.6 * 30, 0.6 * 30);
         this.plus(0.2 * 30, 0.2 * 30);
+        this.color = "rgb(241,229,89)";
         this.basePos = new Vector(this.x, this.y);
     }
     act() {
@@ -454,10 +355,10 @@ class Big extends Coin {
     }
 
 }
-class LoaderBar1 extends gframe.LoaderBar {
+class LoaderBar1 extends LoaderBar{
     constructor() {
         super("加载中...");
-        this.title.y=-100;
+        this.title.y = -100;
         this.createTitle();
     }
     createTitle() {
@@ -474,25 +375,17 @@ class LoaderBar1 extends gframe.LoaderBar {
         this.addChild(this.percent);
     }
     startLoad(e) {
-        this.bar.htmlElement.value=e.progress*100;
-        this.title.x = e.progress*this.width;
-        this.percent.text=Math.floor(e.progress*100)+"%";
+        this.bar.htmlElement.value = e.progress * 100;
+        this.title.x = e.progress * this.width;
+        this.percent.text = Math.floor(e.progress * 100) + "%";
     }
 
 }
+//半高地图块
 class K extends Actor {
     constructor(xpos, ypos) {
-        super(xpos, ypos);
-        this.color = "#00f";
-        this.init(step, 0.5 * step);
+        super(xpos, ypos,step,0.5*step);
         this.plus(0, 0.5 * step);
-        // let builder=new createjs.SpriteSheetBuilder();
-        // builder.addFrame(this.image,null);
-        // var sheet=builder.build();
-        // let image=new createjs.Sprite(sheet);
-        // image.paused=true;
-        // this.removeChild(this.image);
-        // this.image=image;
-        // this.addChild(image);
+        this.color = "#00f";
     }
 }

@@ -1,6 +1,7 @@
-import { stage,gframe } from "../../classes/gframe.js";
+import { Game } from "../../classes/Game.js";
+import { stage } from "../../classes/gframe.js";
 import { BarGraph,drawSmile} from "../../classes/shape.js";
-export class Graphics extends gframe.Game {
+export class Graphics extends Game {
     constructor() {
         super("绘画工具");
         this.instructionScreen.title.text = "1:画虚线\r2:画扇形\r3:画同心圆";

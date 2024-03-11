@@ -1,20 +1,21 @@
-import { gframe, stage } from "../../classes/gframe.js";
+import {  stage } from "../../classes/gframe.js";
 import { Actor,CirActor } from "../../classes/actor.js";
 import { GridCollision } from "../../classes/GridCollision.js";
+import { Game } from "../../classes/Game.js";
 var particles, gridSize = 80, grid,
     numParticles = 100;
-export class Particle extends gframe.Game {
+export class Particle extends Game {
     constructor() {
         super("Particle");
+        console.log(this.width,this.contentSize.width);
     }
     waitComplete() {
         grid = new GridCollision(stage.width, stage.height, gridSize);
         grid.drawGrid();
         particles = [];
         for (let i = 0; i < numParticles; i++) {
-            const particle = new CirActor(Math.random() * stage.width, Math.random() * stage.height);
-            let size = Math.random() * 50 + 10;
-            particle.init(size, size);
+            let size = Math.random() * 25 + 5;
+            const particle = new CirActor(Math.random() * stage.width, Math.random() * stage.height,size);
             particle.edgeBehavior = Actor.WRAP;
             particle.mass = size;
             stage.addChild(particle);

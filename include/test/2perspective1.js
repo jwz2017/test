@@ -1,9 +1,10 @@
+import { Game } from "../../classes/Game.js";
 import { CirActor } from "../../classes/actor.js";
-import { gframe, keys, stage } from "../../classes/gframe.js";
+import { keys, stage } from "../../classes/gframe.js";
 
 var ball, xpos, ypos, zpos, vpX, vpY,
     fl = 250;
-export class Perspective1 extends gframe.Game {
+export class Perspective1 extends Game {
     constructor() {
         super("透视1");
         this.instructionScreen.updateTitle("w,s放大缩小")
@@ -14,8 +15,7 @@ export class Perspective1 extends gframe.Game {
         vpX = stage.width / 2;
         vpY = stage.height / 2;
 
-        ball = new CirActor();
-        ball.init(50, 50);
+        ball = new CirActor(0,0,25);
         stage.addChild(ball);
     }
     runGame() {

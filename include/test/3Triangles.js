@@ -1,9 +1,10 @@
 import { Light, Point3D, Triangle } from "../../classes/3DClass.js";
-import { gframe, stage } from "../../classes/gframe.js";
+import { Game } from "../../classes/Game.js";
+import { stage } from "../../classes/gframe.js";
 
 var points, triangles, vpX, vpY, shape, light,
     color = "#ffcccc";
-export class Triangles extends gframe.Game {
+export class Triangles extends Game{
     constructor() {
         super("三角绘制");
     }

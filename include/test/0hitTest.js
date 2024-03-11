@@ -1,18 +1,17 @@
 
-import { stage, gframe, queue } from "../../classes/gframe.js";
+import { stage} from "../../classes/gframe.js";
 import { Actor } from "../../classes/actor.js";
+import { Game } from "../../classes/Game.js";
 var rect1, rect2;
-export class hitTest extends gframe.Game {
+export class hitTest extends Game {
     static loadItem = [{
         id: "spritesheet_button",
         src: "images/spritesheet_button.png"
     }];
     constructor() {
         super("hitTest");
-        rect1 = new Actor(300, 400);
-        rect1.init(200, 80);
-        rect2 = new Actor(500, 100);
-        rect2.init(200, 50);
+        rect1 = new Actor(300, 400,200,80);
+        rect2 = new Actor(500, 100,200,50);
     
         stage.on("stagemousemove", (e) => {
             rect2.setPos(e.stageX, e.stageY);

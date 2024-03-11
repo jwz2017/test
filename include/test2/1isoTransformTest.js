@@ -1,7 +1,8 @@
 import { IsoUtils, Point3D } from "../../classes/3DClass.js";
-import { gframe, stage } from "../../classes/gframe.js";
+import { Game } from "../../classes/Game.js";
+import { stage } from "../../classes/gframe.js";
 
-export class isoTransformTest extends gframe.Game {
+export class isoTransformTest extends Game {
     constructor() {
         super("等角坐标转换测试");
     }

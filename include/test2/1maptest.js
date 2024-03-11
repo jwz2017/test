@@ -1,6 +1,7 @@
 import { DrawnIsoBox, DrawnIsoTile, GraphicTile } from "../../classes/3DClass.js";
-import { GridsMapGame, Node } from "../../classes/GridsMapGame.js";
-import { queue, stage } from "../../classes/gframe.js";
+import { Game } from "../../classes/Game.js";
+import { Node } from "../../classes/Node.js";
+import { queue } from "../../classes/gframe.js";
 import { mc } from "../../classes/mc.js";
 
 var size = 20,
@@ -16,7 +17,7 @@ var size = 20,
         [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     ];
-export class MapTest extends GridsMapGame {
+export class MapTest extends Game {
     static loadItem = [{
         id: "tile_01",
         src: "images/tile_01.png"
@@ -32,7 +33,7 @@ export class MapTest extends GridsMapGame {
     //     stage.addChild(this);
     // }
     newLevel() {
-        this.createGridMap(plan, {}, (ch, node) => {
+        this.createGridMap(plan, (ch, node) => {
             let a;
             if (ch == "0") {
                 a = new GraphicTile(size, new createjs.Bitmap(queue.getResult("tile_01")), size, size / 2);
@@ -47,8 +48,8 @@ export class MapTest extends GridsMapGame {
             }
             a.xpos = node.x * size;
             a.zpos = node.y * size;
-            this.addChildToFloor(a);
-        },{}, true)
+            this.addToFloor(a);
+        },true)
     }
 
 }

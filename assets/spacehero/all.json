@@ -397,7 +397,7 @@
     "heroHit": {
         "frames": [0, 14, 15, 16, 17, 18, 19],
         "next": "heroIdle",
-        "speed": 0.4
+        "speed": 0.2
     },
     "title": {"frames": [176], "speed": 1}
 }

@@ -41,7 +41,7 @@ ol {
   overflow: hidden;
   margin: 0 auto;
   transform-origin: 0 0;
-  border: 3px inset #333;
+  /* border: 3px inset #333; */
   /* align-items: center; */
 }
 #gameDom{

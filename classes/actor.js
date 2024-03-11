@@ -1,4 +1,5 @@
-import { game, keys } from "./gframe.js";
+import { Game } from "./Game.js";
+import { game } from "./gframe.js";
 import { checkPixelCollision } from "./hitTest.js";
 //向量角色类**************************************************************************
 class Vector {
@@ -119,47 +120,38 @@ class Actor extends createjs.Container {
   static WRAP = "wrap";
   static BOUNCE = "bounce";
   static RECYCLE = "recycle";
-  constructor(xpos = 0, ypos = 0) {
+  constructor(xpos = 0, ypos = 0,width=0,height=0,IsShape=true) {
     super();
-    this._rect = new createjs.Rectangle(xpos, ypos);
+    this.mouseChildren = false;
+    this.hit = Math.sqrt(width*width+height*height)/2;
+    this._rect = new createjs.Rectangle(xpos, ypos,width,height);
     this.edgeBehavior = Actor.RECYCLE;
+    this.status = null;
+    this.body = null;
     //摩檫力
     this.friction = 1;
-    this.bounce=-1;
+    this.bounce = -1;
     this.speed = new Vector(0, 0);
-    this.maxSpeed = 10;
+    this.maxSpeed = 5;
     this.active = true;
-    this.color = "rgb(64,64,64)";
+    this._color = "rgb(64,64,64)";
+    // this._color = "#fff";
     this.type = "actor";
-    this._image = new createjs.Shape();
+    if(IsShape){
+      this.image=new createjs.Shape();
+      this.drawShape(width,height);
+      let b=this.image.getBounds();
+      this.addChild(this.image);
+      this.setBounds(b.x,b.y,b.width,b.height);
+      this.x=xpos-b.x;
+      this.y=ypos-b.y;
+    }else if(width&&height){
+      this.setBounds(-width/2,-height/2,width,height);
+      this.x=xpos+width/2;
+      this.y=ypos+height/2;
+    }
   }
-  init(width, height) {
-    this.setBounds(null);
-    this.removeAllChildren();
-    this.setTransform();
-    this.alpha = 1;
-    this.hit = 0;
-    this.image = this._image;
-    this.drawShape(width, height);
-    this.addChild(this.image);
-    let b = this.getBounds();
-    this.setBounds(b.x, b.y, b.width, b.height);
-    this._update(b);
-  }
-  _update(b) {
-    this._rect.width = b.width;
-    this._rect.height = b.height;
-    this.x = this._rect.x - b.x;
-    this.y = this._rect.y - b.y;
-    if (!this.hit) this.hit = Math.sqrt(this._rect.width * this._rect.width + this._rect.height * this._rect.height) / 2;
-  }
-
-  drawShape(width, height) {
-    this.image.graphics.clear().beginFill(this.color).drawRect(-width / 2, -height / 2, width, height);
-    this.image.setBounds(-width / 2, -height / 2, width, height);
-  }
-
-  setSpriteData(spriteSheet, animation, scale = 1, rotation = 0) {
+  setSpriteData(spriteSheet, animation, scale = 1, rotation = 0, offsetX = 0, offsetY = 0) {
     //显示辅助矩形
     if (this.image) this.removeChild(this.image);
     this.image = new createjs.Sprite(spriteSheet, animation);
@@ -170,26 +162,59 @@ class Actor extends createjs.Container {
     }
     this.image.scale = scale;
     this.image.rotation = rotation;
-    b = this.getBounds();
-    if (!b) {
+    this.image.x += offsetX;
+    this.image.y += offsetY;
+    if (this._rect.width==0) {
       this.addChild(this.image);
-      b = this.getBounds();
-      this._update(b);
+      b=this.getBounds();
+      this._rect.width=b.width;
+      this._rect.height=b.height;
+      this.x=this._rect.x-b.x;
+      this.y=this._rect.y-b.y;
+      this.hit=Math.sqrt(this._rect.width*this._rect.width+this._rect.height*this._rect.height)/2;
     } else {
       this.addChild(this.image);
     }
   }
+  init(width,height) {
+    this.hit = Math.sqrt(width*width+height*height)/2;
+    if(this.image instanceof createjs.Shape){
+      this.drawShape(width,height);
+      let b=this.image.getBounds();
+      this.setBounds(b.x,b.y,b.width,b.height);
+    }else if(!this.image){
+      this.image=new createjs.Shape();
+      this.addChild(this.image);
+      this.drawShape(width,height);
+      let b=this.image.getBounds();
+      this.setBounds(b.x,b.y,b.width,b.height);
+    }else{
+      this.setBounds(-width/2,-height/2,width,height);
+    }
+    this.active=true;
+    this.scale=1;
+    this.rotation=0;
+    this.speed.setValues(0,0);
+    this.status=null;
+    this.updateRect();
+  }
+  
+  drawShape(width, height) {
+    this.image.graphics.clear().beginFill(this._color).drawRect(-width / 2, -height / 2, width, height);
+    this.image.setBounds(-width / 2, -height / 2, width, height);
+  }
+
   get rect() {
     return this._rect;
     // return this.getTransformedBounds();
   }
-  setPos(x, y) {
-    this.rect.x=x;
-    this.rect.y=y;
-    this.x=this.rect.x+this.rect.width/2;
-    this.y=this.rect.y+this.rect.height/2;
+  get color() {
+    return this._color;
   }
-
+  set color(val) {
+    this._color = val;
+    this.drawShape(this.rect.width, this.rect.height);
+  }
   updateRect() {
     this._rect.copy(this.getTransformedBounds());
   }
@@ -199,33 +224,44 @@ class Actor extends createjs.Container {
     this._rect.x += speedX;
     this._rect.y += speedY;
   }
-  setScale(scaleX, scaleY) {
-    this.scaleX = scaleX;
-    this.scaleY = scaleY;
-    this._rect.copy(this.getTransformedBounds());
-    this.hit = Math.sqrt(this._rect.width * this._rect.width + this._rect.height * this._rect.height) / 2;
+  setPos(xpos,ypos){
+    this._rect.x=xpos;
+    this._rect.y=ypos;
+    this.x=this._rect.x+this.rect.width/2;
+    this.y=this._rect.y+this.rect.height/2;
   }
-  setReg(regX, regY) {
-    this.regX = regX;
-    this.regY = regY;
-    this._rect.copy(this.getTransformedBounds());
+  setScale(scale) {
+    this.hit=this.hit/this.scale*scale;
+    this.scale=scale;
+    this.updateRect();
+  }
+  setRotation(ang) {
+    this.rotation = ang;
+    this.updateRect();
   }
   recycle() {
     this.active = false;
     if (this.parent) this.parent.removeChild(this);
   }
-  //检测 元素之间是否碰撞
-  hitActors(actors, rect = this.rect, pixl = false) {
+  /**
+   * 与其它元素碰撞
+   * @param {*} actors 
+   * @param {rectangle} rect=this.rect
+   * @param {boolean} pixl=false
+   * @param {number} alphaThreshold 0 
+   * @returns 
+   */
+  hitActors(actors, rect = this.rect, pixl = false, alphaThreshold = 0) {
     for (var i = 0; i < actors.length; i++) {
       var other = actors[i];
       if (other == this || !other.active) {
         continue;
       }
-      let hit=this.hitActor(other,rect,pixl);
-      if(hit)return hit;
+      let hit = this.hitActor(other, rect, pixl, alphaThreshold);
+      if (hit) return hit;
     }
   }
-  hitActor(other,rect=this.rect,pixl=false){
+  hitActor(other, rect = this.rect, pixl = false, alphaThreshold = 0) {
     if (!pixl || !(other.image instanceof createjs.Sprite)) {
       if (rect.intersects(other.rect)) return other;
     } else {
@@ -234,75 +270,10 @@ class Actor extends createjs.Container {
         let p = game.container.localToGlobal(r.x, r.y);
         r.x = p.x;
         r.y = p.y;
-        if (checkPixelCollision(this.image, other.image, r)) {
+        if (checkPixelCollision(this.image, other.image, r, alphaThreshold)) {
           return other
         }
       }
-    }
-  }
-  
-
-  /**检测是否碰撞屏幕
-   * 
-   * @param {*} x this.x
-   * @param {*} y this.y
-   * @returns boolean
-   */
-  hitBounds(rect = this.rect, mapWidth = game.width, mapHeight = game.height) {
-    return rect.x < 0 || rect.x + rect.width > mapWidth || rect.y < 0 || rect.y + rect.height > mapHeight;
-
-  }
-  /**检测是否出边界
- * 
- * @param {*} x this.x
- * @param {*} y this.y
- * @returns boolean
- */
-  outOfBounds(rect = this.rect) {
-    return rect.x + rect.width < 0 || rect.x > game.width || rect.y + rect.height < 0 || rect.y > game.height;
-  }
-  /**屏幕反弹
-   * 
-   * @param {*} bounce -1
-   */
-  rebounds(mapWidth = game.contentSize.width, mapHeight = game.contentSize.height) {
-    let rect = this.rect;
-    if (rect.x < 0) {
-      this.speed.x *= this.bounce;
-      rect.x = 0;
-      this.x = rect.width / 2;
-    } else if (rect.x + rect.width > mapWidth) {
-      this.speed.x *= this.bounce;
-      rect.x = mapWidth - rect.width;
-      this.x = mapWidth - rect.width / 2;
-    }
-    if (rect.y < 0) {
-      this.speed.y *= this.bounce;
-      rect.y = 0;
-      this.y = rect.height / 2;
-    } else if (rect.y + rect.height > mapHeight) {
-      this.speed.y *= this.bounce;
-      rect.y = mapHeight - rect.height;
-      this.y = mapHeight - rect.height / 2;
-    }
-  }
-
-  //屏幕环绕
-  placeInBounds(mapWidth = game.contentSize.width, mapHeight = game.contentSize.height) {
-    let rect = this.rect;
-    if (rect.x + rect.width < 0) {
-      rect.x = mapWidth;
-      this.x = mapWidth + rect.width / 2;
-    } else if (rect.x > mapWidth) {
-      rect.x = -rect.width;
-      this.x = -rect.width / 2;
-    }
-    if (rect.y + rect.height < 0) {
-      rect.y = mapHeight;
-      this.y = mapHeight + rect.height / 2;
-    } else if (rect.y > mapHeight) {
-      rect.y = -rect.height;
-      this.y = -rect.height / 2;
     }
   }
   /**两个球体碰撞或球与点的碰撞
@@ -337,11 +308,11 @@ class Actor extends createjs.Container {
     this.speed = this.speed.times(this.friction);
     this.plus(this.speed.x, this.speed.y);
     if (this.edgeBehavior == Actor.WRAP) {
-      this.placeInBounds();
+      game.placeInBounds(this);
     } else if (this.edgeBehavior == Actor.BOUNCE) {
-      this.rebounds();
+      game.rebounds(this);
     } else if (this.edgeBehavior == Actor.RECYCLE) {
-      if (this.outOfBounds()) {
+      if (game.outOfBounds(this)) {
         this.recycle();
       }
     }
@@ -378,11 +349,11 @@ class CirActor extends Actor {
     pos0.rotate(angle, false);
     pos1.rotate(angle, false);
     //将位置调整为屏幕的实际位置
-    ball1.x=ball0.x + pos1.x;
-    ball1.y= ball0.y + pos1.y;
+    ball1.x = ball0.x + pos1.x;
+    ball1.y = ball0.y + pos1.y;
     ball1.updateRect();
-    ball0.x=ball0.x + pos0.x;
-    ball0.y=ball0.y + pos0.y;
+    ball0.x = ball0.x + pos0.x;
+    ball0.y = ball0.y + pos0.y;
     ball0.updateRect();
     //将速度旋转回来
     vel0.rotate(angle, false);
@@ -395,42 +366,27 @@ class CirActor extends Actor {
    * @param {*} xpos 
    * @param {*} ypos 
    */
-  constructor(xpos, ypos) {
-    super(xpos, ypos);
+  constructor(xpos, ypos,radius,IsShape) {
+    super(xpos, ypos,radius*2,radius*2,IsShape);
+    this.hit=radius
   }
-  init(size) {
-    super.init(size);
-  }
-  drawShape(size) {
-    let radius = size / 2;
-    this.image.graphics.clear().beginRadialGradientFill(["#c9c9c9", this.color], [0, 1], radius / 3, -radius / 3, 0, radius / 6, -radius / 6, radius).drawCircle(0, 0, radius);
-    this.image.setBounds(-radius, -radius, size, size);
-    this.hit = radius;
-  }
-  setScale(scale) {
-    this.hit /= this.scale;
-    this.scale = scale;
-    this._rect.copy(this.getTransformedBounds());
-    this.hit *= scale;
+  drawShape(width) {
+    let radius = width / 2;
+    this.image.graphics.clear().beginRadialGradientFill(["#c9c9c9", this._color], [0, 1], radius / 3, -radius / 3, 0, radius / 6, -radius / 6, radius).drawCircle(0, 0, radius);
+    this.image.setBounds(-radius, -radius, width, width);
   }
 }
 
 //斜面反弹类
 class BounceActor extends Actor {
-  constructor(xpos, ypos) {
-    super(xpos, ypos);
+  constructor(xpos, ypos,width,height,IsShape) {
+    super(xpos, ypos,width,height,IsShape);
     this.type = "angleBounce";
     this.cos = 1;
     this.sin = 0;
   }
-  init(width, rotation) {
-    super.init(width, 2);
-    this.setBounds(null);
-    this.setRotation(rotation);
-  }
   setRotation(val) {
-    this.rotation = val;
-    this._rect.copy(this.getTransformedBounds());
+    super.setRotation(val);
     let angle = this.rotation * Math.PI / 180;
     this.cos = Math.cos(angle);
     this.sin = Math.sin(angle);
@@ -458,15 +414,61 @@ class BounceActor extends Actor {
     }
   }
 }
-
-class SteeredActor extends Actor {
+//坦克类，四方向运动
+class Tank extends Actor {
+  constructor(xpos, ypos,width,height,IsShape) {
+    super(xpos, ypos,width,height,IsShape);
+    this.fireIndex = 0;
+    this.fireStep = 40;
+    this.v = 1;
+  }
+  move(direction) {
+    this.speed.zero();
+    if (direction) this.image.paused = false;
+    else this.image.paused = true;
+    switch (direction) {
+      case "up":
+        this.speed.y = -this.v;
+        this.rotation = -90;
+        break;
+      case "down":
+        this.speed.y = this.v;
+        this.rotation = 90;
+        break;
+      case "right":
+        this.speed.x = this.v;
+        this.rotation = 0;
+        break;
+      case "left":
+        this.speed.x = -this.v;
+        this.rotation = 180;
+        break;
+    }
+  }
+  fire(bullets, Bullet, parent) {
+    if (this.fireIndex-- < 0) {
+      this.fireIndex = this.fireStep;
+      let bullet = Game.getActor(bullets, Bullet);
+      bullet.setRotation(this.rotation);
+      let angle = this.rotation * Math.PI / 180;
+      bullet.x = this.x + Math.cos(angle) * this.hit;
+      bullet.y = this.y + Math.sin(angle) * this.hit;
+      bullet.speed.angle = angle;
+      parent.addChild(bullet);
+      bullet.updateRect();
+    }
+  }
+}
+class SteeredActor extends Tank {
   /**
    * 转向机车类
-   * @param {*} xpos 
-   * @param {*} ypos 
+   * @param {0} xpos 
+   * @param {0} ypos 
+   * @param {15} size 
+   * @param {true} IsShape 
    */
-  constructor(xpos, ypos) {
-    super(xpos, ypos);
+  constructor(xpos, ypos,size=15,IsShape) {
+    super(xpos, ypos,size,size,IsShape);
     this.edgeBehavior = Actor.WRAP;
     //转向作用力
     this.steeringForce = new Vector();
@@ -498,9 +500,9 @@ class SteeredActor extends Actor {
   drawShape(width) {
     this.shipFlame = new createjs.Shape();
     this.addChild(this.shipFlame);
-    var g = this._image.graphics;
+    var g = this.image.graphics;
     g.clear();
-    g.beginStroke(this.color);
+    g.beginStroke(this._color);
     g.moveTo(0, width); //nose
     g.lineTo(width / 2, -width / 1.6); //rfin
     g.lineTo(0, -width / 5); //notch
@@ -508,12 +510,12 @@ class SteeredActor extends Actor {
     g.closePath(); // nose
     //draw ship flame
     this.shipFlame.rotation = -90;
-    this._image.rotation = -90;
+    this.image.rotation = -90;
     this.shipFlame.x = -width / 1.6;
     this.shipFlame.alpha = 0;
     g = this.shipFlame.graphics;
     g.clear();
-    g.beginStroke(this.color);
+    g.beginStroke(this._color);
     g.moveTo(width / 5, 0); //ship
     g.lineTo(width / 2.5, -width / 3.3); //rpoint
     g.lineTo(width / 5, -width / 5); //rnotch
@@ -521,8 +523,8 @@ class SteeredActor extends Actor {
     g.lineTo(-width / 5, -width / 5); //lnotch
     g.lineTo(-width / 2.5, -width / 3.3); //lpoint
     g.lineTo(-width / 5, -0); //ship
-    this.setBounds(-width / 2, -width / 2, width, width);
-    this.hit = width / 2;
+    this.image.setBounds(-width / 2, -width / 2, width, width);
+    // this.hit = width / 2;
   }
   act() {
     this.steeringForce.truncate(this.maxForce);
@@ -533,7 +535,7 @@ class SteeredActor extends Actor {
     super.act();
   }
   //键盘开车
-  driveCar(speed) {
+  driveCar(keys, speed) {
     if (keys.right) {
       this.steeringForce.length = speed;
       this.steeringForce.angle = 0;
@@ -733,4 +735,350 @@ class SteeredActor extends Actor {
     return centerPos.dist(targetcenterPos) < this.tooCloseDist;
   }
 }
-export { Vector, Actor, CirActor, BounceActor, SteeredActor };
+class JumpActor extends Actor {
+  /**
+   * 跳跃类角色
+   * @param {*} xpos 
+   * @param {*} ypos 
+   */
+  constructor(xpos, ypos,width,height,IsShape) {
+    super(xpos, ypos,width,height,IsShape);
+    this.walkspeed = 1.2;
+    this.jumpspeed = 6;
+    this.gravity = 0.27;
+    this.runspeed = 1.8;
+    this.mult = 1;
+    this.actIndex = 0;
+    this.actStep = 30;
+    this._oldPos = new createjs.Point();
+
+  }
+  //开始地面动作
+  startFloorAct() {
+
+  }
+  //开始空中动作
+  startJumpAct() {
+
+  }
+  //无图片时动作测试，有图片时需重写
+  changeAct() {
+    if (this.status == "attack" || this.status == "skill1" || this.status == "fire" || this.status == "roll") {
+      this.actIndex = this.actStep;
+      let a = this.on("tick", () => {
+        if (this.actIndex-- < 0) {
+          this.actIndex = this.actStep;
+          this.off("tick", a);
+          this.image.dispatchEvent("animationend");
+        }
+      })
+    }
+  }
+  /**
+   * 水平移动
+   * @param {*} direction 左右方向
+   * @param {*} runkeys 跑动参数
+   */
+  walk(direction, runkeys = {}) {//移动
+    if (this.status != "roll") {
+      switch (direction) {
+        case "left":
+          if (!this.status) {
+            if (runkeys.leftRun) {
+              this.speed.x = -this.runspeed;
+              this.status = "run";
+              this.changeAct();
+              runkeys.leftRun = false;
+            } else {
+              this.speed.x = -this.walkspeed;
+              this.status = "walk";
+              this.changeAct();
+            }
+          } else if (this.status == "run") {
+            if (this.scaleX > 0) {
+              this.status = "walk";
+              this.speed.x = -this.walkspeed;
+              this.changeAct();
+            }
+          } else if (this.status == "walk") {
+            this.speed.x = -this.walkspeed;
+          } else if (this.status == "jump") {
+            this.speed.x = -Math.abs(this.speed.x) || -this.walkspeed;
+          } else if (this.status == "jumpAttack") {
+            this.speed.x = this.speed.x;
+          } else {
+            this.speed.x = 0;
+          }
+          if (this.status != "jumpAttack") this.scaleX = -Math.abs(this.scaleX);
+          break;
+        case "right":
+          if (!this.status) {
+            if (runkeys.rightRun) {
+              this.speed.x = this.runspeed;
+              this.status = "run";
+              this.changeAct();
+              runkeys.rightRun = false;
+            } else {
+              this.speed.x = this.walkspeed;
+              this.status = "walk";
+              this.changeAct();
+            }
+          } else if (this.status == "run") {
+            if (this.scaleX < 0) {
+              this.status = "walk";
+              this.speed.x = this.walkspeed;
+              this.changeAct();
+            }
+          } else if (this.status == "walk") {
+            this.speed.x = this.walkspeed;
+          } else if (this.status == "jump") {
+            this.speed.x = Math.abs(this.speed.x) || this.walkspeed
+          } else if (this.status == "jumpAttack") {
+            this.speed.x = this.speed.x;
+          } else {
+            this.speed.x = 0;
+          }
+          if (this.status != "jumpAttack") this.scaleX = Math.abs(this.scaleX);
+          break;
+        default:
+          this.speed.x = 0;
+          if (this.status == "walk" || this.status == "run") {
+            this.status = null;
+            this.changeAct();
+          }
+          break;
+      }
+    }
+  }
+  /**
+   * 与地面碰撞
+   * @param {number} floorMult=1：地板光滑程度
+   */
+  hitFloor(floorMult = 1) {
+    if ((this.status == "jump" || this.status == "jumpAttack") && this.speed.y >= 0) {
+      this.status = null;
+      this.changeAct();
+    }
+    if (this.speed.y > 0) {
+      this.speed.y = 0;
+      this.mult = floorMult;
+      this.startFloorAct();
+    } else this.speed.y = 0;
+  }
+  overhead() {
+    if (!this.status || this.status == "walk" || this.status == "run") {
+      this.status = "jump";
+      this.changeAct();
+    }
+    this.plus(0, this.speed.y);
+  }
+  //动作完毕事件函数
+  stopAct() {
+    if (this.status == "roll") {
+      this.rect.y -= this.rect.height;
+      this.rect.height *= 2;
+      let node = game.hitMap(this.rect);
+      if (node) {
+        this.x = this._oldPos.x;
+        this.y = this._oldPos.y;
+        this.updateRect();
+      }
+    }
+    this.status = null;
+  }
+  jump() {//跳跃
+    if (this.idle) {
+      this.status == "jump";
+      this.speed.y = -this.jumpspeed;
+      this.changeAct();
+    }
+  }
+  attack() {//普通攻击
+    if (this.idle) {
+      this.status = "attack";
+      this.image.on("animationend", this.stopAct, this, true);
+      this.changeAct();
+    }
+  }
+  jumpAttack() {
+    if (this.status == "jump") {
+      this.status = "jumpAttack";
+      this.changeAct();
+    }
+  }
+  skill1() {//技能攻击1
+    if (this.idle) {
+      this.status = "skill1";
+      this.image.on("animationend", this.stopAct, this, true);
+      this.changeAct();
+    }
+  }
+  roll() {//开始滚动
+    if (this.idle) {
+      this.status = "roll";
+      this.image.on("animationend", this.stopAct, this, true);
+      this.changeAct();
+      this._oldPos.setValues(this.x, this.y);
+      this.speed.x = this.scaleX > 0 ? this.walkspeed : -this.walkspeed;
+      this.rect.height /= 2;
+      this.rect.y += this.rect.height;
+    }
+  }
+  fire(bullets, Bullet, parent) {//放子弹
+    if (this.idle) {
+      let bullet = Game.getActor(bullets, Bullet);
+      this.status = "fire";
+      this.image.on("animationend", this.stopAct, this, true);
+      this.changeAct();
+      if (this.scaleX > 0) {
+        bullet.scaleX = 1;
+        bullet.speed.angle = 0;
+      } else {
+        bullet.scaleX = -1;
+        bullet.speed.angle = Math.PI;
+      }
+      bullet.x = this.x;
+      bullet.y = this.y;
+      bullet.updateRect();
+      parent.addChild(bullet);
+    }
+  }
+
+  get idle() {
+    return this.status == "walk" || this.status == null || this.status == "run"
+  }
+
+}
+//飞机类 八方向运动
+class Plane extends Actor {
+  constructor(xpos, ypos,width,height,IsShape) {
+    super(xpos, ypos,width,height,IsShape);
+    this.v = 3;
+    this.bulletType = 1;
+    this.bulletOffAangle = 10 * Math.PI / 180;
+    this.fireIndex = 0;
+    this.fireStep = 10;
+  }
+  move(keys) {
+    this.speed.zero();
+    if (keys.left) {
+      this.speed.x = -this.v;
+    } else if (keys.right) {
+      this.speed.x = this.v;
+    }
+    if (keys.up) {
+      this.speed.y = -this.v;
+    } else if (keys.down) {
+      this.speed.y = this.v;
+    }
+  }
+  fire(bullets, Bullet, parent) {
+    if (this.fireIndex-- < 0) {
+      this.fireIndex = this.fireStep;
+      if (!isNaN(this.bulletType)) {
+        for (let i = 0; i < this.bulletType; i++) {
+          const bullet = Game.getActor(bullets, Bullet);
+          this._activateBullet(i, bullet);
+          parent.addChild(bullet);
+          if (i > 0) {
+            let bullet1 = Game.getActor(bullets, Bullet);
+            this._activateBullet(-i, bullet1);
+            parent.addChild(bullet1);
+          }
+        }
+      }
+    }
+  }
+  _activateBullet(i, bullet) {
+    let angle = this.rotation * Math.PI / 180;
+    bullet.speed.angle = i * this.bulletOffAangle + angle;
+    bullet.x = this.x + Math.cos(angle) * this.hit;
+    bullet.y = this.y + Math.sin(angle) * this.hit;
+    bullet.rotation = bullet.speed.angle * 180 / Math.PI;
+    bullet.updateRect();
+  }
+}
+//box2d对象----------------球类
+class BoxActor extends Actor{
+  constructor(xpos, ypos,width,height,IsShape){
+    super(xpos, ypos,width,height,IsShape);
+    this.TROUR = 40;
+    this.ASPEED = 400 * Math.PI / 180;
+    this.VSPEED = 10;
+    this.init();
+  }
+  init() {
+    this.body = EasyBody.createBox(this.x, this.y, this.rect.width,this.rect.height);
+  }
+  act(){
+    this.update();
+  }
+  update() {
+    this.rotation = this.body.GetAngle() * (180 / Math.PI);
+    let p = this.body.GetPosition();
+    this.x = p.x * PTM;
+    this.y = p.y * PTM;
+  }
+  recycle() {
+    super.recycle();
+    world.DestroyBody(this.body);
+    this.body = null;
+  }
+}
+class BoxBall extends CirActor {
+  constructor(xpos, ypos,radius,IsShape) {
+    super(xpos, ypos,radius,IsShape);
+    this.TROUR = 40;
+    this.ASPEED = 400 * Math.PI / 180;
+    this.VSPEED = 10;
+    this.init()
+  }
+  init() {
+    this.body = EasyBody.createCircle(this.x, this.y, this.rect.width / 2);
+    this.body.SetSleepingAllowed(false);
+    this.body.SetAngularDamping(1);
+    this.impulse = new b2Vec2(0, 0);
+    this.playerTorque = 0;
+    this.body.isReadyToJump = false;
+  }
+  act(keys) {
+    this.playerTorque = 0;
+    if (keys.left) this.playerTorque = -this.TROUR;
+    if (keys.right) this.playerTorque = this.TROUR;
+    if (keys.up) {
+      if (this.body.isReadyToJump) {
+        this.impulse.y = -this.body.GetMass() * 8;
+        this.body.ApplyLinearImpulse(this.impulse, this.body.GetPosition());
+        this.body.isReadyToJump = false;
+      }
+    }
+    this.body.ApplyTorque(this.playerTorque);
+    this._limitAngleVelocity(this.body, this.ASPEED)
+    if (keys.left || keys.right) {
+      let v = this.body.GetLinearVelocity();
+      v.x = this.body.GetAngularVelocity() * 20 / PTM;
+      this.body.SetLinearVelocity(v);
+    }
+    this.update();
+
+  }
+  _limitAngleVelocity(body, speedMax) {
+    var av = body.GetAngularVelocity();
+    if (Math.abs(av) > speedMax) {
+      av = Math.abs(av) / av * speedMax;
+      body.SetAngularVelocity(av);
+    }
+  }
+  update() {
+    this.rotation = this.body.GetAngle() * (180 / Math.PI);
+    let p = this.body.GetPosition();
+    this.x = p.x * PTM;
+    this.y = p.y * PTM;
+  }
+  recycle() {
+    super.recycle();
+    world.DestroyBody(this.body);
+    this.body = null;
+  }
+}
+export { Vector, Actor, CirActor, BounceActor, SteeredActor, JumpActor, Tank, Plane,BoxActor,BoxBall };

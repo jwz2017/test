@@ -1,19 +1,19 @@
-import { gframe, stage } from "../../classes/gframe.js";
+import { Game } from "../../classes/Game.js";
+import { stage } from "../../classes/gframe.js";
 import { Slider, mc } from "../../classes/mc.js";
 import { Segment } from "../../classes/shape.js";
 
 var segment0, segment1, slider0, slider1;
-export class SingleSegment extends gframe.Game {
+export class SingleSegment extends Game {
     constructor() {
         super("关节运动");
     }
     waitComplete() {
-        segment0 = new Segment(200, 150);
-        segment0.init(100, 20);
-        segment1 = new Segment();
-        segment1.init(100, 20);
-        segment1.x = segment0.getPin().x;
-        segment1.y = segment0.getPin().y;
+        segment0 = new Segment(200, 150,100,20);
+        let p=segment0.getPin();
+        segment1 = new Segment(0,0,100,20);
+        segment1.x=p.x;
+        segment1.y=p.y;
         stage.addChild(segment0, segment1);
         //slider
         mc.style.fontSize = 18;

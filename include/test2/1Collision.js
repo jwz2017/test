@@ -1,9 +1,9 @@
 import { DrawnIsoBox, DrawnIsoTile, Point3D } from "../../classes/3DClass.js";
-import { GridsMapGame } from "../../classes/GridsMapGame.js";
+import { Game } from "../../classes/Game.js";
 import { pressed, stage } from "../../classes/gframe.js";
 
-var world, box, speed = 4;
-export class Collision extends GridsMapGame {
+var box, speed = 4;
+export class Collision extends Game {
     constructor() {
         super("碰撞测试");
         this.keyboard=true;
@@ -17,18 +17,18 @@ export class Collision extends GridsMapGame {
             for (let j = 0; j < 20; j++) {
                 const tile = new DrawnIsoTile(20, "#cccccc");
                 tile.position = new Point3D(i * 20, 0, j * 20);
-                this.addChildToFloor(tile);
+                this.addToFloor(tile);
             }
         }
         box = new DrawnIsoBox(20, "#ff0000", 20);
         box.xpos = 200;
         box.zpos = 200;
-        this.addChildToWorld(box);
+        this.addToPlayer(box);
 
         let newBox = new DrawnIsoBox(20, "#ccffcc", 20);
         newBox.xpos = 300;
         newBox.zpos = 300;
-        this.addChildToWorld(newBox);
+        this.addToPlayer(newBox);
 
 
     }
@@ -52,12 +52,12 @@ export class Collision extends GridsMapGame {
         let rect=box.rect.clone();
         rect.x+=box.vx;
         rect.y+=box.vz;
-        if (!box.hitActors(this.world.children,rect)) {
+        if (!box.hitActors(this.playerChildren,rect)) {
             box.xpos += box.vx;
             box.ypos += box.vy;
             box.zpos += box.vz;
         }
-        this.sortDepth(this.world);
+        this.sortDepth(this.playerLayer);
     }
 
 }

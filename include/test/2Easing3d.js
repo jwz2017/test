@@ -1,18 +1,18 @@
+import { Game } from "../../classes/Game.js";
 import { CirActor, Vector } from "../../classes/actor.js";
-import { gframe, stage } from "../../classes/gframe.js";
+import { stage } from "../../classes/gframe.js";
 
 var ball, tx, ty, tz, vpX, vpY,
     easing = .1, fl = 250;
-export class Easing3d extends gframe.Game {
+export class Easing3d extends Game{
     constructor() {
         super("3d缓动");
     }
     waitComplete() {
         vpX =stage.width / 2;
         vpY = stage.height / 2;
-        ball = new CirActor();
+        ball = new CirActor(0,0,25);
         ball.pos = new Vector(0, 0);
-        ball.init(50, 50);
         ball.pos.z = 0;
         ball.speed.z = 0;
         tx = Math.random() * 500 - 250;

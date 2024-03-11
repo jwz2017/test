@@ -1,13 +1,13 @@
-import { gframe,stage } from "../../classes/gframe.js";
+import { Game } from "../../classes/Game.js";
+import { stage } from "../../classes/gframe.js";
 import { mc,PushButton,CheckBox,RadioButton,Slider,ScrollContainer } from "../../classes/mc.js";
-export class Mctest extends gframe.Game {
+export class Mctest extends Game {
     constructor() {
         super("mc组件测试");
         this.instructionScreen.text = "游戏介绍";
         mc.style.fontSize=16;
     }
     waitComplete() {
-        super.waitComplete();
         stage.enableMouseOver();
         /**
         * 颜色parseColor

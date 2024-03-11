@@ -1,15 +1,15 @@
+import { Game } from "../../classes/Game.js";
 import { SteeredActor, Vector } from "../../classes/actor.js";
-import { gframe, stage } from "../../classes/gframe.js";
+import { stage } from "../../classes/gframe.js";
 
 var vehicle, path, shape;
-export class PathTest extends gframe.Game {
+export class PathTest extends Game {
     constructor() {
         super("路径跟随");
     }
     waitComplete() {
         shape = new createjs.Shape();
         vehicle = new SteeredActor();
-        vehicle.init(15);
         stage.addChild(shape, vehicle);
 
         path = [];

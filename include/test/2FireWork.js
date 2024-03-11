@@ -1,5 +1,6 @@
+import { Game } from "../../classes/Game.js";
 import { CirActor } from "../../classes/actor.js";
-import { gframe, stage } from "../../classes/gframe.js";
+import { stage } from "../../classes/gframe.js";
 import { mc } from "../../classes/mc.js";
 
 var balls, vpX, vpY,
@@ -8,7 +9,7 @@ var balls, vpX, vpY,
     gravity = 0.2,
     floor = 200,
     bounce = -0.6;
-export class FireWork extends gframe.Game {
+export class FireWork extends Game {
     constructor() {
         super("烟火");
     }
@@ -17,9 +18,8 @@ export class FireWork extends gframe.Game {
         vpX =stage.width / 2;
         vpY = stage.height / 2;
         for (let i = 0; i < numBalls; i++) {
-            const ball = new CirActor();
+            const ball = new CirActor(0,0,2);
             ball.color = mc.randomColor();
-            ball.init(3, 3);
             ball.speed.x = Math.random() * 6 - 3;
             ball.speed.y = Math.random() * 6 - 6;
             ball.speed.z = Math.random() * 6 - 3;

@@ -1,17 +1,19 @@
-import { AStar, GridsMapGame, Node } from "../../classes/GridsMapGame.js";
+import { AStar } from "../../classes/Astar.js";
+import { Game } from "../../classes/Game.js";
+import { Node } from "../../classes/Node.js";
 import { CirActor } from "../../classes/actor.js";
 import { stage } from "../../classes/gframe.js";
 
-var player,numCols = 30,numRows = 30, step = 20,astar=new AStar,
+var player,numCols = 30,numRows = 30, step = 20,astar=new AStar(),
     path = [],index = 0,shape;
-export class AstarMove extends GridsMapGame {
+export class AstarMove extends Game {
     constructor() {
-        super("AstarMove",numCols*step,numRows*step,step,step,numCols,numRows);
+        super("AstarMove",numCols*step,numRows*step,step,step);
         this.x=stage.width-this.width>>1;
         this.y=stage.height-this.height>>1;
         shape = new createjs.Shape();
         this.addChild(shape);
-
+        this.createGrid(numRows,numCols);
     }
     drawGrid() {
         shape.graphics.clear();
@@ -31,9 +33,8 @@ export class AstarMove extends GridsMapGame {
     }
     newLevel() {
         // makePlayer
-        player = new CirActor(Math.random() * numCols * step, Math.random() * numRows * step);
+        player = new CirActor(Math.random() * numCols * step, Math.random() * numRows * step,8);
         player.color = "#ff0000"
-        player.init(15, 15);
         player.speed.length = 2;
         this.addChild(player);
         //makeGrid

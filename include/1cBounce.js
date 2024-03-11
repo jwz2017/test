@@ -1,14 +1,13 @@
 import { Actor, BounceActor, CirActor } from "../classes/actor.js";
-import {GridsMapGame, Node } from "../classes/GridsMapGame.js";
 import { game, gframe, pressed, stage } from "../classes/gframe.js";
+import { Game, ScoreBoard } from "../classes/Game.js";
+import { Node } from "../classes/Node.js";
 
 window.onload = function () {
     gframe.buildStage('canvas');
-    gframe.preload(Bounce,true);
-    gframe.startFPS();
+    gframe.preload(Bounce, true);
 };
 var bricks,
-    actorChars,
     stepWidth = 44,
     stepHeight = 30,
     colorOffse = Math.random() * 360,
@@ -42,66 +41,65 @@ var bricks,
         ]
     ];
 
-class Bounce extends GridsMapGame {
+class Bounce extends Game {
     constructor() {
-        stage.canvas.style.background=gframe.style.SCOREBOARD_COLOR;
-        super("弹球06",plans[0][0].length * stepWidth, plans[0].length * stepHeight, stepWidth, stepHeight);
+        stage.canvas.style.background = Game.style.SCOREBOARD_COLOR;
+        super("弹球06", plans[0][0].length * stepWidth, plans[0].length * stepHeight, stepWidth, stepHeight);
         this.x = stage.width - this.width >> 1;
-        this.y=this.scoreboard.height;
+        this.y = this.scoreboard.height;
         this.maxLevel = plans.length;
-        actorChars = {
-            "@": Pandle,
+        this.enemyChars = {
             "p": Puck,
-            "/": AngleBounce
         }
-        this.backshape= new createjs.Shape;
+        this.playerChars = {
+            "/": AngleBounce,
+            "@": Pandle
+        }
+        this.backshape = new createjs.Shape;
         this.backshape.graphics.clear().beginFill("#fff").drawRect(0, 0, this.width, this.height);
-        this.addChildAt(this.backshape,0);
+        this.addChildAt(this.backshape, 0);
     }
     createScoreBoard() {
-        this.scoreboard = new gframe.ScoreBoard(0,0,true);
+        this.scoreboard = new ScoreBoard(0, 0, true);
         this.scoreboard.createTextElement("score");
         this.scoreboard.createTextElement("level");
         this.scoreboard.createTextElement("lives");
     }
     newLevel() {
-        this.scoreboard.update("score",this.score);
-        this.scoreboard.update("level",this.level);
-        this.scoreboard.update("lives",this.lives);
+        this.scoreboard.update("score", this.score);
+        this.scoreboard.update("level", this.level);
+        this.scoreboard.update("lives", this.lives);
         bricks = [];
         let plan = plans[this.level - 1];
-        this.createGridMap(plan, actorChars, (ch, node) => {
+        this.createGridMap(plan, (ch, node) => {
             if (ch == "w") {
                 node.type = Node.NOWALKABLE;
-                let bg = new Actor(node.x * stepWidth, node.y * stepHeight);
-                bg.init(stepWidth, stepHeight);
-                // this.addChildToFloor(bg);
-                this.floorActor.addChild(bg)
+                let bg = new Actor(node.x * stepWidth, node.y * stepHeight,stepWidth,stepHeight);
+                this.addToFloor(bg)
             } else if (ch == "x" || ch == "l") {
                 node.type = Node.NOWALKABLE;
                 let fieldType = new Brick(node.x * stepWidth, node.y * stepHeight, ch);
                 node.brick = fieldType;
                 bricks.push(fieldType);
-                // this.addChildToFloor(fieldType);
-                this.floorActor.addChild(fieldType)
+                this.addToEnemy(fieldType)
             }
         });
-        
+
     }
     runGame() {
         // console.time("a");
-        this.moveActors(this.world);
+        this.moveActors(this.playerLayer);
+        this.moveActors(this.enemyLayer);
         // console.timeEnd("a");
     }
 }
 
 class Pandle extends Actor {
     constructor(xpos, ypos) {
-        super(xpos, ypos);
+        super(xpos, ypos, 150, 15);
         this.type = "player";
-        this.color = "#555";
         this.xspeed = 7.5;
-        this.init(150, 15);
+        this.color = "#555";
     }
     act() {
         this.moveX();
@@ -116,17 +114,16 @@ class Pandle extends Actor {
         var rect = this.rect.clone();
         rect.x += this.speed.x;
         rect.y += this.speed.y;
-        if (!game.hitMap(rect)) {
-            this.plus(this.speed.x, 0);
+        if(!game.hitBounds(rect)){
+            this.plus(this.speed.x,0);
         }
     }
 }
 class Puck extends CirActor {
     constructor(xpos, ypos) {
-        super(xpos, ypos);
+        super(xpos, ypos, 8);
         this.speedlength = 7;
         this.speed.length = this.speedlength;
-        this.init(15, 15);
         this.speed.angle = Math.PI / 2;
         this.combo = 0;
         this.homePos = this.rect.clone();
@@ -134,7 +131,7 @@ class Puck extends CirActor {
     act() {
         this.moveX();
         this.moveY();
-        var actor = this.hitActors(game.world.children);
+        var actor = this.hitActors(game.playerChildren);
         if (actor) this.hitResult(actor);
     }
     moveX() {
@@ -163,9 +160,9 @@ class Puck extends CirActor {
                 this.setPos(this.homePos.x, this.homePos.y);
                 this.speed.length = this.speedlength;
                 this.speed.angle = Math.PI / 2;
-                game.scoreboard.update("lives",game.lives);
+                game.scoreboard.update("lives", game.lives);
             } else {
-                game.clear(gframe.event.GAME_OVER);
+                game.gameOver = true;
             }
         } else if (fieldType.brick) {
             this.speed.y *= -1;
@@ -188,27 +185,26 @@ class Puck extends CirActor {
             combotex.x = fieldType.x + rect.width / 2;
             combotex.y = fieldType.y + rect.height / 2;
             combotex.alpha = 0;
-            game.addChild(combotex);
+            game.addToProp(combotex);
             createjs.Tween.get(combotex).to({
                 alpha: 1,
                 scaleY: 2,
                 scaleX: 2,
                 y: combotex.y - 60
             }, 1000).call(() => {
-                game.removeChild(combotex);
+                game.propLayer.removeChild(combotex);
             });
         }
-        game.scoreboard.update("score",game.score)
+        game.scoreboard.update("score", game.score)
         if (fieldType.type == "live") {
             game.lives++;
-            game.scoreboard.update("lives",game.lives);
+            game.scoreboard.update("lives", game.lives);
         }
         bricks.splice(bricks.indexOf(fieldType), 1);
         fieldType1.type = Node.WALKABLE;
         fieldType.parent.removeChild(fieldType);
-        // game.floor.updateCache();
         if (bricks.length == 0) {
-            game.clear(gframe.event.LEVEL_UP);
+            game.levelUp = true;
         }
     }
 
@@ -226,18 +222,16 @@ class Puck extends CirActor {
 }
 class Brick extends Actor {
     constructor(xpos, ypos, ch) {
-        super(xpos, ypos);
+        super(xpos, ypos, stepWidth, stepHeight);
         if (ch == "x") {
             this.color = createjs.Graphics.getHSL(Math.cos((count++) * 0.1) * 30 + colorOffse,
                 80,
                 35,
                 1);
             this.type = "brick";
-            this.init(stepWidth, stepHeight);
         } else if (ch == "l") {
             this.color = "#595";
             this.type = "live";
-            this.init(stepWidth, stepHeight);
             var text = new createjs.Text('1Up', "24px Times", '#fff');
             text.textAlign = "center";
             text.textBaseline = "middle";
@@ -247,9 +241,11 @@ class Brick extends Actor {
 }
 class AngleBounce extends BounceActor {
     constructor(xpos, ypos) {
-        super(xpos, ypos);
-        this.init(200, 20);
-        // this.setRotation(30);
+        super(xpos, ypos, 200, 10);
+        this.setRotation(15);
     }
-
+    drawShape(width, height) {
+        this.image.graphics.clear().beginFill(this._color).drawRect(0, 0, width, height);
+        this.image.setBounds(0, 0, width, height);
+    }
 }

@@ -1,25 +1,24 @@
+import { Game } from "../../classes/Game.js";
 import { Actor, CirActor, Vector } from "../../classes/actor.js";
-import { gframe, stage } from "../../classes/gframe.js";
+import { stage } from "../../classes/gframe.js";
 import { Segment } from "../../classes/shape.js";
 
 var segments, ball, numSegments = 6, gravity = 0.5,
     bounce = -1;
-export class SegmentReach extends gframe.Game {
+export class SegmentReach extends Game{
     constructor() {
         super("关节伸展");
     }
     waitComplete() {
         segments = [];
-        ball = new CirActor();
+        ball = new CirActor(0,0,25);
         ball.maxSpeed = 20;
         ball.edgeBehavior = Actor.BOUNCE;
-        ball.init(50, 50);
         ball.speed.x = 10;
         stage.addChild(ball);
 
         for (let i = 0; i < numSegments; i++) {
-            var segment = new Segment();
-            segment.init(50, 10);
+            var segment = new Segment(0,0,50,10);
             stage.addChild(segment);
             segments.push(segment);
         }
