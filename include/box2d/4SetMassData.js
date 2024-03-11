@@ -17,7 +17,7 @@ export class SetMassData extends Game {
         
     }
     createBody(){
-        body=EasyBody.getEmptyBody(stage.width/2,stage.height/2);
+        body=EasyBody.getEmptyBody(stage.width/2,stage.height/2,2);
         body.SetSleepingAllowed(false)
         var semiCircle=EasyShape.createSemiCicle(100,50);
         var vertices=[];
