@@ -26,7 +26,7 @@ export class AstarMove extends Game {
         }
     }
     getColor(node) {
-        if (node.type!=Node.WALKABLE) return "#000";
+        if (node.type==Node.NOWALKABLE) return "#000";
         if (node == this.startNode) return "#cccccc";
         if (node == this.endNode) return "#cccccc";
         return "#ffffff";

@@ -915,19 +915,9 @@ class ScrollContainer extends createjs.Container {
     if (isbar) {
       this.addChild(this.scrollBarH, this.scrollBarV);
     }
-    this.superAddChild = this.addChild;
-    this.addChild = child => {
-      this.container.addChild(child)
-    }
-    // this.superAddChildAt=this.addChildAt;
-    // this.removeChild = child => {
-    //   this.container.removeChild(child);
-    // }
-    // this.removeAllChildren = () => {
-    //   this.container.removeAllChildren();
-    // }
-    // this.addChildAt=(child,i)=>{
-    //   this.container.addChildAt(child,i);
+    // this.superAddChild = this.addChild;
+    // this.addChild = child => {
+    //   this.container.addChild(child)
     // }
     this.setSize(width, height);
   }

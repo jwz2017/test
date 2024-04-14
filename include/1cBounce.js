@@ -46,12 +46,9 @@ class Bounce extends Game {
         stage.canvas.style.background = Game.style.SCOREBOARD_COLOR;
         super("弹球06", plans[0][0].length * stepWidth, plans[0].length * stepHeight, stepWidth, stepHeight);
         this.x = stage.width - this.width >> 1;
-        this.y = this.scoreboard.height;
         this.maxLevel = plans.length;
-        this.enemyChars = {
-            "p": Puck,
-        }
         this.playerChars = {
+            "p": Puck,
             "/": AngleBounce,
             "@": Pandle
         }
@@ -64,6 +61,7 @@ class Bounce extends Game {
         this.scoreboard.createTextElement("score");
         this.scoreboard.createTextElement("level");
         this.scoreboard.createTextElement("lives");
+        this.y = this.scoreboard.height;
     }
     newLevel() {
         this.scoreboard.update("score", this.score);
@@ -87,10 +85,8 @@ class Bounce extends Game {
 
     }
     runGame() {
-        // console.time("a");
-        this.moveActors(this.playerLayer);
         this.moveActors(this.enemyLayer);
-        // console.timeEnd("a");
+        this.moveActors(this.playerLayer);
     }
 }
 
@@ -201,7 +197,7 @@ class Puck extends CirActor {
             game.scoreboard.update("lives", game.lives);
         }
         bricks.splice(bricks.indexOf(fieldType), 1);
-        fieldType1.type = Node.WALKABLE;
+        fieldType1.type =null;
         fieldType.parent.removeChild(fieldType);
         if (bricks.length == 0) {
             game.levelUp = true;

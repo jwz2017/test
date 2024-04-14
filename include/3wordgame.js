@@ -48,7 +48,7 @@ export class WordGame extends Game{
                 box.y=yPos;
                 box.name="box_"+i;
                 box.key=char;
-                this.addChild(box);
+                this.container.addChild(box);
             }
             xPos+=26;
             if(char=="&"){
@@ -61,14 +61,14 @@ export class WordGame extends Game{
         let txt=new createjs.Text("WORD GAME","26px Arial");
         txt.color="#990000";
         txt.x=txt.y=10;
-        this.addChild(txt);
+        this.container.addChild(txt);
     }
     drawLetters(){
         let i,char,txt,btn;
         let cnt=0;
         let xPos=20;
         let yPos=200;
-        for (let i = 0; i < abc.length; i++) {
+        for (i = 0; i < abc.length; i++) {
             char = abc[i];
             btn=new createjs.Shape();
             btn.graphics.beginFill("#000").beginStroke("#000")
@@ -77,7 +77,7 @@ export class WordGame extends Game{
             btn.regY=12;
             btn.x=xPos;
             btn.y=yPos;
-            this.addChild(btn);
+            this.container.addChild(btn);
             //create text
             txt=new createjs.Text(char);
             txt.color="#fff";
@@ -85,7 +85,7 @@ export class WordGame extends Game{
             txt.textBaseline="middle";
             txt.x=xPos;
             txt.y=yPos;
-            this.addChild(txt);
+            this.container.addChild(txt);
             btn.txt=txt;
             let eve=btn.on('click',(e)=>{
                 let b=e.target;
@@ -123,7 +123,7 @@ export class WordGame extends Game{
                 txtClone.color="#000";
                 txtClone.x=box.x;
                 txtClone.y=box.y;
-                this.addChild(txtClone);
+                this.container.addChild(txtClone);
             }
         }
         this.container.removeChild(txt);

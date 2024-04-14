@@ -34,11 +34,11 @@ export class Tunnel extends Game {
     //static loadId = null;
     constructor() {
         super("隧道惊魂", stage.width, 380);
-        this.instructionScreen.updateTitle("w:向上");
+        this.instructionText="w:向上";
         this.y = stage.height - this.height >> 1;
         //创建飞船
         player = new SteeredActor();
-        this.superAddChild(player)
+        this.addChild(player)
         //背景框架
         this.background = new createjs.Shape();
         this.background.graphics.setStrokeStyle(2).beginStroke("#fff").moveTo(0, 0).lineTo(this.width, 0)

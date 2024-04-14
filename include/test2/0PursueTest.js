@@ -1,8 +1,9 @@
 import { Game } from "../../classes/Game.js";
-import { Actor, CirActor, SteeredActor } from "../../classes/actor.js";
+import { Actor, CirActor, MoveManage, SteeredActor } from "../../classes/actor.js";
 import { stage } from "../../classes/gframe.js";
 
 var seeker, pursuer, target;
+var moveManage=new MoveManage();
 export class VehiclPursue extends Game {
     constructor() {
         super("机车追捕");
@@ -17,13 +18,12 @@ export class VehiclPursue extends Game {
 
     }
     runGame() {
-        seeker.seek(target);
+        target.act();
+        moveManage.seek(seeker,target);
         seeker.act();
-
-        pursuer.pursue(target);
+        moveManage.pursue(pursuer,target);
         pursuer.act();
 
-        target.act();
 
     }
 

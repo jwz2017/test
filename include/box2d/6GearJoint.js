@@ -6,7 +6,7 @@ var player;
 var contactListener;
 export class GearJoint extends Game {
     constructor() {
-        super("GearJoint");
+        super("齿轮关节");
         gframe.buildWorld(true);
     }
     waitComplete(){
@@ -25,7 +25,6 @@ export class GearJoint extends Game {
         EasyBody.createBox(stage.width-50,200,200,20,0).SetUserData(USER_DATA_GROUND);
 
         player=new BoxBall(30,100,20);
-        player.body.SetUserData(USER_DATA_PLAYER);
         this.addToPlayer(player);
     }
     createGearJoint(){

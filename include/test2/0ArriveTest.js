@@ -1,8 +1,9 @@
 import { Game } from "../../classes/Game.js";
-import { SteeredActor, Vector } from "../../classes/actor.js";
+import { MoveManage, SteeredActor, Vector } from "../../classes/actor.js";
 import { stage } from "../../classes/gframe.js";
 
 var vehicle;
+var moveManage=new MoveManage();
 export class VehiclArrive extends Game {
     constructor() {
         super("机车到达");
@@ -12,7 +13,7 @@ export class VehiclArrive extends Game {
         stage.addChild(vehicle);
     }
     runGame() {
-        vehicle.arrive(new Vector(stage.mouseX, stage.mouseY));
+        moveManage.arrive(vehicle,new Vector(stage.mouseX, stage.mouseY));
         vehicle.act();
     }
 

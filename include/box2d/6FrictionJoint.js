@@ -5,7 +5,7 @@ import { Game } from "../../classes/Game.js";
 var player, contactListener1;
 export class FrictionJoint extends Game {
     constructor() {
-        super("FrictionJoint");
+        super("摩擦关节");
         gframe.buildWorld(true, 0);
     }
     waitComplete() {
@@ -15,7 +15,7 @@ export class FrictionJoint extends Game {
         this.createBodies();
         contactListener1 = new FrictionJointContactListener();
         //dragBody
-        this.dragBody();
+        this.dragBody(USER_DATA_PLAYER,40);
 
 
         
@@ -42,7 +42,6 @@ export class FrictionJoint extends Game {
         for (let i = 0; i < 100; i++) {
             posX = Math.random() * 500 + 50;
             posY = Math.random() * 300 + 50;
-            // let ball = EasyBody.createBox(posX, posY, bodySize*2,bodySize*2);
             let ball = EasyBody.createCircle(posX, posY, bodySize);
             ball.SetUserData(USER_DATA_BALL);
         }
@@ -55,8 +54,10 @@ class FrictionJointContactListener extends ContactListener {
         super();
         this.bodyB = null;
         this.bodyC = null;
+        this.jointDef=new b2FrictionJointDef();
+        this.jointDef.collideConnected=true;
     }
-    PreSolve(contact,manifold) {
+    PreSolve(contact) {
         let result = this.sortByTwoBody(contact, USER_DATA_PLAYER, USER_DATA_BALL);
         if (result) {
             contact.SetEnabled(false);
@@ -76,21 +77,13 @@ class FrictionJointContactListener extends ContactListener {
     }
     createFrictionJoint(bodyB) {
         let anchor = bodyB.GetPosition();
-        let jointDef = new b2FrictionJointDef();
-        // jointDef.BodyA=player;
-        // jointDef.BodyB=bodyB;
-        jointDef.collideConnected = true
-        jointDef.localAnchorA = new b2Vec2();
-        jointDef.localAnchorB = new b2Vec2();
-        jointDef.maxForce = bodyB.GetMass() * 60;
-        jointDef.maxTorque = 10;
-        jointDef.Initialize(player, bodyB, anchor);
-        world.CreateJoint(jointDef);
+        this.jointDef.maxForce = bodyB.GetMass() * 60;
+        this.jointDef.maxTorque = 10;
+        this.jointDef.Initialize(player, bodyB, anchor);
+        world.CreateJoint(this.jointDef);
     }
     destroyFrictionJointWith(bodyB) {
         let tempJointEdge = bodyB.GetJointList();
-        // if(tempJointEdge.a){;
         world.DestroyJoint(tempJointEdge.joint)
-        // }
     }
 }

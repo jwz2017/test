@@ -5,41 +5,39 @@ window.onload = function () {
     /*************游戏入口*****/
     //gframe.loaderBar=null;
     gframe.buildStage('canvas',false);
-    gframe.preload(ColorDrop);
+    gframe.preload(ColorDrop,true);
 };
 //游戏变量;
 var space = 7;
-var step = 30, numcols = 15, numrows = 15;
+var step = 30, numcols = 10, numrows = 15;
 class ColorDrop extends Game {
     static loadItem = [{
         id: "color",
         src: "colordrop1/color.json",
         type: "spritesheet"
     }];
-    //static loadId = null;
     static SCORE_BOARD_PLAYS = "plays";
     static SCORE_BOARD_THRESHOLD = "threshold";
     static SCORE_BOARD_LEVEL_SCORE = "levelScore";
     constructor() {
-        stage.canvas.style.background = "#000";
+        // stage.canvas.style.background = "#000";
         super("魔法方块", step * numcols + (numcols + 1) * space, step * numrows + (numrows + 1) * space, step, step);
-        this.instructionScreen.title.text = "10步内超过500分过关";
+        this.instructionText= "10步内超过500分过关";
         this.maxLevel = 10;
         this.x = stage.width - this.width >> 1;
         this.y = stage.height - this.height >> 1;
         this.difficultyLevel = 7;
-        this.createGrid(15,15);
+        this.createGrid(numrows,numcols);
     }
     createScoreBoard() {
         this.scoreboard = new ScoreBoard(60,0,false,{justifyContent:"space-between"});
-        this.scoreboard.createTextElement(ColorDrop.SCORE);
+        this.scoreboard.createTextElement(ColorDrop.SCORE,"0");
         this.scoreboard.createTextElement(ColorDrop.LEVEL);
         this.scoreboard.createTextElement(ColorDrop.SCORE_BOARD_PLAYS);
         this.scoreboard.createTextElement(ColorDrop.SCORE_BOARD_THRESHOLD);
         this.scoreboard.createTextElement(ColorDrop.SCORE_BOARD_LEVEL_SCORE);
     }
     newLevel() {
-        this.scoreboard.update("score",this.score);
         this.scoreboard.update("level",this.level);
         this.plays = 10;//点击步数
         this.threshold = 500;//过关分数
@@ -55,7 +53,7 @@ class ColorDrop extends Game {
     }
 
     waitComplete() {
-        stage.enableMouseOver();
+        stage.enableMouseOver()
         //drawgrid
         for (let i = 0; i < this.numCols; i++) {
             for (let j = 0; j < this.numRows; j++) {
@@ -89,8 +87,8 @@ class ColorDrop extends Game {
                     //设置选中节点的方块为空
                     //方块移动回收移除
                     createjs.Tween.get(tile).to({
-                        alpha: 0.1,
-                        y: this.height
+                        alpha: 0.01,
+                        y: tile.y+400
                     }, 2000).call(() => {
                         tile.parent.removeChild(tile);
                     })
@@ -119,13 +117,9 @@ class ColorDrop extends Game {
             tile.cursor = "pointer";
         });
     }
-    clear(){
-        super.clear();
-        this.removeAllEventListeners("mousedown")
-    }
     //检测全部方块移是否移动完毕
     checkForFallingTiles() {
-        return this.container.children.some(function (actor) {
+        return this.playerChildren.some(function (actor) {
             return actor.isFalling == true;
         })
     }
@@ -140,8 +134,7 @@ class ColorDrop extends Game {
                 let node = this.getNode(i, j);
                 if (node.type == null){
                     nummiss++;
-                } 
-                else if (node.type != null) {
+                }else if (node.type != null) {
                     missing = 0;
                     for (let m = j + 1; m < this.numRows; m++) {
                         if (this.getNode(i, m).type == null) {
@@ -190,7 +183,7 @@ class Block extends createjs.Container {
         let b = this.getBounds();
         let filters = [new createjs.BlurFilter(7,7,1),new createjs.ColorFilter(0, 0, 0, 1.5, 255, 255,255, 0)];
         let fx=getFXBitmap(this.sprite,filters,0,0,b.width,b.height);
-        createjs.Tween.get(fx, {loop:false}).to({alpha:0.01}, 2000);
+        createjs.Tween.get(fx, {loop:false}).to({alpha:0.01}, 4000);
         this.addChildAt(fx,0);
     }
     gotoAndStop(val){

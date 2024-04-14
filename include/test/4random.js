@@ -9,16 +9,13 @@ export class Random extends Game {
     }
     waitComplete() {
         for (let i = 0; i < numDots; i++) {
-            const dot = new CirActor(0,0,1);
+            const dot = new CirActor(0, 0, 1);
             stage.addChild(dot);
             let radius = Math.sqrt(Math.random()) * maxRadius;
             let angle = Math.random() * Math.PI * 2;
             dot.x = stage.width / 2 + Math.cos(angle) * radius;
-            dot.y =stage.height / 2 + Math.sin(angle) * radius;
+            dot.y = stage.height / 2 + Math.sin(angle) * radius;
         }
-    }
-    runGame() {
-
     }
 
 }

@@ -32,7 +32,7 @@ function drawSegment(vert1, vert2) {
 
 function drawPolygon(vertices, vertexCount, fill) {
     context.beginPath();
-    for (tmpI = 0; tmpI < vertexCount; tmpI++) {
+    for (let tmpI = 0; tmpI < vertexCount; tmpI++) {
         var vert = Box2D.wrapPointer(vertices + (tmpI * 8), Box2D.b2Vec2);
         if (tmpI == 0)
             context.moveTo(vert.get_x(), vert.get_y());

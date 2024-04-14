@@ -13,6 +13,7 @@ export class ApplyForce extends Game {
 
         force=new b2Vec2(0,0);
         force.x=-ball.GetMass()*1*PTM;
+        isApplyForce=false;
     }
     waitComplete(){
         stage.on("stagemousedown",(e)=>{

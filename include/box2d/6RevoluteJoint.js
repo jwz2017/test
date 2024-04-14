@@ -4,7 +4,7 @@ import {  BoxBall } from "../../classes/actor.js";
 
 export class RevoluteJoint extends Game {
     constructor() {
-        super("RevoluteJoint");
+        super("旋转关节");
         gframe.buildWorld(true,20);
         
         this.createJoint();
@@ -12,14 +12,12 @@ export class RevoluteJoint extends Game {
         this.contactListener=new BallMoveContactListener();
     }
     createJoint(){
-        let bodyA=world.CreateBody(new b2BodyDef());
         let bodyB=EasyBody.createBox(250,600,250,10);
         bodyB.SetUserData(USER_DATA_GROUND);
 
         let anchor=new b2Vec2(250/PTM,500/PTM);
         let jointDef=new b2RevoluteJointDef();
-        jointDef.Initialize(bodyA,bodyB,anchor);
-
+        jointDef.Initialize(EasyBody.getEmptyBody(anchor.x*PTM,anchor.y*PTM),bodyB,anchor);
         jointDef.enableLimit=true;
         jointDef.lowerAngle=-Math.PI/6;
         jointDef.upperAngle=Math.PI/6;
@@ -38,7 +36,6 @@ export class RevoluteJoint extends Game {
         EasyBody.createBox(this.width-50,500,100,20,0).SetUserData(USER_DATA_GROUND);
 
         this.p=new BoxBall(0,0,25);
-        this.p.body.SetUserData(USER_DATA_PLAYER);
         this.addChild(this.p)
     }
     runGame() {

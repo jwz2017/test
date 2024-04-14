@@ -1,6 +1,6 @@
 import { stage, gframe, game } from "../../classes/gframe.js";
 import { Game, ScoreBoard } from "../../classes/Game.js";
-import { Actor, BoxActor } from "../../classes/actor.js";
+import { Actor, BoxActor, BoxBall, Vector } from "../../classes/actor.js";
 //游戏变量;
 var bird, stone;
 var birdManager, textTip, contactListener;
@@ -22,10 +22,11 @@ export class NomalImpulse extends Game {
         stone.CreateFixture(rect, 3);
         rect = EasyShape.createBox(20, 40, 0, -120);
         stone.CreateFixture(rect, 3);
-        stone.life = 16;
+        stone.life = 13;
         stone.SetUserData(NomalImpulse.STONE)
 
-        bird = new BoxActor(0,0,20,20);
+        // bird = new BoxActor(0,0,20,20);
+        bird=new BoxBall(0,0,10);
         bird.body.SetUserData(NomalImpulse.PLAYER)
         this.addToPlayer(bird);
         birdManager = new BirdThrower(this, bird, 100, 600);
@@ -44,7 +45,8 @@ export class NomalImpulse extends Game {
         this.scoreboard.update(NomalImpulse.STONELIFE, stone.life);
     }
     runGame() {
-        this.moveActors(this.playerLayer);
+        // this.moveActors(this.playerLayer);
+        bird.update();
         birdManager.drawTrail();
         if (!bird.body.IsAwake() && birdManager.isBirdMoveing) {
             birdManager.reset();
@@ -66,7 +68,7 @@ export class NomalImpulse extends Game {
             stone.life += contactListener.imp;
             game.scoreboard.update(NomalImpulse.STONELIFE, stone.life);
             if (stone.life <= 0) {
-                splits(stone, function (f) {
+                EasyBody.splitsBody(stone, function (f) {
                     return true;
                 })
             }
@@ -87,10 +89,14 @@ class ImpulseListener extends ContactListener {
             let m = new b2WorldManifold()
             contact.GetWorldManifold(m);
             let v1 = m.get_normal();
+            // let ang=Vector.angleBetween(new Vector(v.x,v.y),new Vector(v1.x,v1.y))
             let cos = (v.x * v1.x + v.y * v1.y) / v.Length() * v1.Length();
-            this.imp = v.Length() * cos * result[0].GetMass();
+            this.imp =Math.min(v.Length() * cos,this.imp) 
             this.imp = Math.floor(this.imp);
-            console.log(this.imp);
         }
     }
+    // PostSolve(contact,implus){
+    //     var result = this.sortByTwoBody(contact, NomalImpulse.PLAYER, NomalImpulse.STONE)
+    //     if(result)console.log(implus,implus.get_count());
+    // }
 }

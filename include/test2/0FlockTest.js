@@ -1,8 +1,9 @@
 import { Game } from "../../classes/Game.js";
-import { Actor, SteeredActor } from "../../classes/actor.js";
+import { Actor, MoveManage, SteeredActor } from "../../classes/actor.js";
 import { stage } from "../../classes/gframe.js";
 
 var vehicles, numVehicles = 30;
+var moveManage=new MoveManage();
 export class FlockTest extends Game{
     constructor() {
         super("群落测试");
@@ -20,8 +21,9 @@ export class FlockTest extends Game{
     }
     runGame() {
         for (let i = 0; i < numVehicles; i++) {
-            vehicles[i].flock(vehicles);
+            moveManage.flock(vehicles[i],vehicles);
             vehicles[i].act();
+            this.checkBounds(vehicles[i]);
         }
     }
 

@@ -1,6 +1,6 @@
 import { ScoreBoard, ScrollMapGame } from "../classes/Game.js";
 import { Node } from "../classes/Node.js";
-import { Actor, CirActor, Tank } from "../classes/actor.js";
+import { Actor, CirActor, MoveManage, Weapon } from "../classes/actor.js";
 import { game, gframe, keys, pressed, queue, stage } from "../classes/gframe.js";
 
 window.onload = function () {
@@ -8,7 +8,7 @@ window.onload = function () {
     gframe.preload(Tanke, true);
 };
 var spriteData, spriteSheet;
-var bullets, enemyBullets;
+var moveManage = new MoveManage();
 var step = 32,
     plans = [
         [
@@ -37,10 +37,12 @@ class Tanke extends ScrollMapGame {
     }];
     constructor() {
         super("坦克大战", plans[0][0].length * step, plans[0].length * step, step, step);
-        stage.canvas.style.backgroundColor = "#A4AB61";
-        this.x=stage.width-this.width>>1;
-        this.y=stage.height-this.height>>1;
-        this.instructionScreen.updateTitle("方向w,a,s,d<br>小键盘4开火攻击");
+        this.enemyBulletLayer=this.createrContainer();
+        this.playerBulletLayer=this.createrContainer();
+        Tanke.style.backgroundColor= "#A4AB61";
+        this.x = stage.width - this.width >> 1;
+        this.y = stage.height - this.height >> 1;
+        this.instructionText = "方向w,a,s,d<br>小键盘4开火攻击";
         this.playerChars = {
             "1": Player,
         };
@@ -75,6 +77,7 @@ class Tanke extends ScrollMapGame {
             }
         };
         spriteSheet = new createjs.SpriteSheet(spriteData);
+
     }
     createScoreBoard() {
         this.scoreboard = new ScoreBoard(0, 0, true);
@@ -86,8 +89,6 @@ class Tanke extends ScrollMapGame {
         this.scoreboard.update("level", this.level);
         //创建网格
         let plan = plans[this.level - 1];
-        bullets = [];
-        enemyBullets = [];
         this.createGridMap(plan, (ch, node) => {
             var tile = new createjs.Sprite(spriteSheet).set({
                 x: node.x * step + step / 2,
@@ -105,6 +106,8 @@ class Tanke extends ScrollMapGame {
     runGame() {
         this.moveActors(this.playerLayer);
         this.moveActors(this.enemyLayer);
+        this.moveActors(this.playerBulletLayer);
+        this.moveActors(this.enemyBulletLayer);
     }
 
     // setGrid(ch, x, y) {
@@ -144,23 +147,25 @@ class Tanke extends ScrollMapGame {
     // }
 }
 
-class Player extends Tank {
+class Player extends Actor {
     constructor(xpos, ypos) {
-        super(xpos, ypos,0.8*step,0.8*step);
+        super(xpos, ypos, 0.8 * step, 0.8 * step);
         this.type = "player";
-        this.setSpriteData(spriteSheet, "player",1,90);
+        this.setSpriteData(spriteSheet, "player", 1, 90);
         this.image.paused = true;
         this.rotation = -90;
+        this.weapon = new Weapon(PlayerBullet);
     }
     act() {
         //移动
-        this.move(pressed[pressed.length - 1]);
+        moveManage.tankMove(this, pressed[pressed.length - 1])
         //开火
-        if (keys.attack) this.fire(bullets, PlayerBullet, game.playerLayer);
-        else this.fireIndex--;
-        //与道具层碰撞
-        let node = game.hitMapWithProp(this.rect, this.image);
-        if (node) {
+        this.weapon.fire(keys.attack,this,game.playerBulletLayer);
+        //与地图碰撞
+        let rect = this.rect.clone();
+        rect.x += this.speed.x;
+        rect.y += this.speed.y;
+        let node = game.hitMap(rect,null,0,(node)=>{
             switch (node.actor.type) {
                 case "live":
                     console.log("live");
@@ -174,31 +179,22 @@ class Player extends Tank {
                 default:
                     break;
             }
-        }
-        //与地图碰撞
-        let rect = this.rect.clone();
-        rect.x += this.speed.x;
-        rect.y += this.speed.y;
-        node = game.hitMap(rect);
-        if (!node) {
-            var actor = this.hitActors(game.enemyLayer.children, rect);
-            if (!actor) {
-                super.act();
-            }
-
-        }
+            node.type=null;
+        });
+        var actor = this.hitActors(game.enemyLayer.children, rect);
+        if (!node && !actor) super.act();
     }
 }
-class Enemy extends Tank {
+class Enemy extends Actor {
     constructor(xpos, ypos) {
-        super(xpos, ypos,0.8*step,0.8*step);
-        this.setSpriteData(spriteSheet, "enemy",1,90);
+        super(xpos, ypos, 0.8 * step, 0.8 * step);
+        this.setSpriteData(spriteSheet, "enemy", 1, 90);
         this.rotation = 90;
-        this.v = 0.64;
         this.tick = 0;
         this.key = 80;
         this.type = "enemy";
         this.image.paused = true;
+        this.weapon = new Weapon(EnemyBullet);
     }
     act() {
         this.tick++;
@@ -207,22 +203,22 @@ class Enemy extends Tank {
             this.tick1 = this.tick;
             this.tick = 0;
         }
-        if (this.tick1 >= 212) this.fire(enemyBullets, EnemyBullet, game.enemyLayer);
+        if (this.tick1 >= 100) this.weapon.fire(true,this,game.enemyBulletLayer);
         if (this.key <= 10) this.key = "up";
         else if (this.key > 10 && this.key <= 40) this.key = "down";
         else if (this.key > 40 && this.key <= 65) this.key = "right";
         else if (this.key > 65) this.key = "left";
 
-        this.move(this.key);
+        moveManage.tankMove(this, this.key)
         let rect = this.rect.clone();
         rect.x += this.speed.x;
         rect.y += this.speed.y;
         var node = game.hitMap(rect);
-        if (!node) {
-            let actor = this.hitActors(game.playerLayer.children.concat(game.enemyLayer.children), rect);
-            if (!actor || (actor.type != "enemy" && actor.type != "player")) {
+        let actor = this.hitActors(game.playerLayer.children.concat(game.enemyLayer.children), rect);
+        if (!node&&!actor) {
+            // if (!actor || (actor.type != "enemy" && actor.type != "player")) {
                 this.plus(this.speed.x, this.speed.y);
-            }
+            // }
         } else {
             this.key = Math.random() * 100;
             this.tick = 0;
@@ -231,18 +227,20 @@ class Enemy extends Tank {
 }
 class PlayerBullet extends CirActor {
     constructor(xpos, ypos) {
-        super(xpos, ypos,5);
+        super(xpos, ypos, 5);
         this.speed.length = 3;
+        this.type="playerBullet"
         this.setSpriteData(spriteSheet, "barrage", 1.5)
     }
     act() {
         let node = game.hitMap(this.rect);
         if (!node) {
-            let actor = this.hitActors(game.enemyLayer.children);
+            let actor = this.hitActors(game.enemyLayer.children.concat(game.enemyBulletLayer.children));
             if (!actor) {
                 super.act();
             } else {
                 this.recycle();
+                if(actor.type=="enemyBullet")actor.recycle();
             }
         } else {
             this.recycle();
@@ -252,17 +250,19 @@ class PlayerBullet extends CirActor {
 
 class EnemyBullet extends CirActor {
     constructor(xpos, ypos) {
-        super(xpos, ypos,4);
+        super(xpos, ypos, 4);
         this.speed.length = 3;
+        this.type="enemyBullet";
     }
     act() {
         let node = game.hitMap(this.rect);
         if (!node) {
-            let actor = this.hitActors(game.playerLayer.children);
-            if (!actor || actor.type != "player") {
+            let actor = this.hitActors(game.playerLayer.children.concat(game.playerBulletLayer.children));
+            if (!actor) {
                 super.act();
-            } else if (actor.type == "player") {
+            } else  {
                 this.recycle();
+                if(actor.type=="playerBullet")actor.recycle();
             }
         } else {
             this.recycle();
@@ -272,14 +272,14 @@ class EnemyBullet extends CirActor {
 
 class Live extends Actor {
     constructor(xpos, ypos) {
-        super(xpos, ypos,step,step);
+        super(xpos, ypos, step, step);
         this.type = "live";
         this.setSpriteData(spriteSheet, "live");
     }
 }
 class Bullet extends Actor {
     constructor(xpos, ypos) {
-        super(xpos, ypos,0.3*step,0.7*step);
+        super(xpos, ypos, 0.3 * step, 0.7 * step);
         this.type = "bullet";
         this.plus(0.35 * step, 0.15 * step)
         this.setSpriteData(spriteSheet, "buttle");
@@ -287,9 +287,11 @@ class Bullet extends Actor {
 }
 class TankLive extends Actor {
     constructor(xpos, ypos) {
-        super(xpos, ypos,0.6*step,0.6*step);
+        super(xpos, ypos, 0.6 * step, 0.6 * step);
         this.plus(0.2 * step, 0.2 * step);
         this.setSpriteData(spriteSheet, "tanke");
         this.type = "tank";
     }
 }
+
+

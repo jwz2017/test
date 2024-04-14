@@ -6,7 +6,7 @@ import { BoxBall } from "../../classes/actor.js";
 var player,contactListener;
 export class DistanceJoint extends Game {
     constructor() {
-        super("DistanceJoint");
+        super("距离关节");
         gframe.buildWorld(true);
 
         this.createJoint();
@@ -40,7 +40,6 @@ export class DistanceJoint extends Game {
     createBodies(){
         EasyBody.createRectangle(0,0,stage.width,stage.height);
         player=new BoxBall(50,100,10);
-        player.body.SetUserData(USER_DATA_PLAYER);
         this.addChild(player);
 
         EasyBody.createBox(50,200,100,20,0).SetUserData(USER_DATA_GROUND);

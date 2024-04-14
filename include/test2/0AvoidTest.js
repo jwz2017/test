@@ -1,8 +1,9 @@
 import { Game } from "../../classes/Game.js";
-import { Actor, CirActor, SteeredActor } from "../../classes/actor.js";
+import { Actor, CirActor, MoveManage, SteeredActor } from "../../classes/actor.js";
 import { stage } from "../../classes/gframe.js";
 
 var vehicle, circles, numCircles = 10;
+var moveManage=new MoveManage();
 export class AvoidTest extends Game {
     constructor() {
         super("回避绕路测试");
@@ -22,8 +23,8 @@ export class AvoidTest extends Game {
         }
     }
     runGame() {
-        vehicle.wander();
-        vehicle.avoid(circles);
+        moveManage.wander(vehicle);
+        moveManage.avoid(vehicle,circles);
         vehicle.act();
     }
 

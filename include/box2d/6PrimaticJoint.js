@@ -3,9 +3,8 @@ import { Game,} from "../../classes/Game.js";
 import {BoxBall } from "../../classes/actor.js";
 var player,contactListener;
 export class PrimaticJoint extends Game {
-
     constructor() {
-        super("PrimaticJoint");
+        super("位移关节");
         gframe.buildWorld(true, 10);
         //createBodies
         EasyBody.createBox(0,this.height/2,10,this.height,0);
@@ -14,7 +13,6 @@ export class PrimaticJoint extends Game {
         EasyBody.createBox(50,this.height-50,100,100,0).SetUserData(USER_DATA_GROUND);
         EasyBody.createBox(this.width-50,this.height-50,100,100,0).SetUserData(USER_DATA_GROUND);
         player=new BoxBall(0,0,25);
-        player.body.SetUserData(USER_DATA_PLAYER);
         this.addChild(player)
         this.createJoint();
         
@@ -25,15 +23,15 @@ export class PrimaticJoint extends Game {
     }
 
     createJoint() {
-        var bodyA=world.CreateBody(new b2BodyDef());
         var car=EasyBody.createBox(200,670,100,10);
         car.SetUserData(USER_DATA_GROUND)
         var shape=EasyShape.createBox(10,30,-50,-10);
         car.CreateFixture(shape,3);
         shape=EasyShape.createBox(10,30,50,-10);
         car.CreateFixture(shape,3);
-
-        var anchor=new b2Vec2(600/PTM,500/PTM);
+        
+        var bodyA=EasyBody.getEmptyBody(this.width/2,600);
+        var anchor=bodyA.GetPosition();
         var axis=new b2Vec2(1,0);
         axis.Normalize();
 

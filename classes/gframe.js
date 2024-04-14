@@ -17,22 +17,9 @@ function updateWorldFromDebugDrawCheckboxes() {
   //     flags |= e_pairBit;
   if (gframe.guiProps.drawTransforms)
     flags |= e_centerOfMassBit;
-  if (debugDraw) debugDraw.SetFlags(flags);
+  if (window.debugDraw) debugDraw.SetFlags(flags);
 }
-//键盘按键
-var codes = {
-  65: "left",
-  87: "up",
-  68: "right",
-  83: "down",
-  32: "pause",
-  100: "attack",
-  101: "jump",
-  102: "skill1",
-  103: "fire",
-  16: "shift",
-  17: "ctrl"
-};
+
 //选择游戏状态
 function _switchSystemState(stateval) {
   _lastSystemState = _currentSystemState;
@@ -81,7 +68,6 @@ function _systemTitle() {
 };
 //介绍界面状态
 function _systemInstruction() {
-  game.instructionScreen.y = 0;
   stage.addChild(game.instructionScreen);
   game.instructionScreen.on("okbutton", _okButton, null, true);
   _switchSystemState(Game.state.STATE_WAIT_FOR_CLOSE);
@@ -101,16 +87,17 @@ function _systemNewLevel() {
   game.level++;
   game.levelUp = false;
   game.newLevel();
-  game.levelInScreen.updateTitle("level: " + game.level);
   _switchSystemState(Game.state.STATE_LEVEL_IN);
 };
 //新等级界面状态
 function _systemLevelIn() {
   stage.addChild(game.levelInScreen);
+  game.levelInScreen.updateTitle("level: " + game.level);
   _switchSystemState(Game.state.STATE_WAIT);
 };
 //通关
 function _systemLevelOut() {
+  game.levelOutScreen.y=0;
   stage.addChild(game.levelOutScreen);
   _nextSystemState = Game.state.STATE_TITLE;
   game.levelOutScreen.on("okbutton", _okButton, null, true);
@@ -223,7 +210,7 @@ function _adapt() {
   }
   gameDiv.style.height = stage.height + "px";
   screenPosY = stage.height - stage.canvas.height >> 1;
-  gameDom.style.width = stage.width * stageScale - 6 + "px";
+  gameDom.style.width = stage.width * stageScale + "px";
 };
 /**
  * 初始化游戏
@@ -232,21 +219,26 @@ function _adapt() {
  */
 function _initGame(GClass, keydown) {
   if (gframe.guiProps.fps) Fps.start();
-  if (keydown) gframe.onkeydown();
+  if (keydown) gframe.onkeydown(GClass);
   else {
     document.onkeydown = null;
     document.onkeyup = null;
   }
-  if (game) {
-    stage.removeAllEventListeners();
-  }
   game = new GClass();
-  if (stage.world) {
+  stage.canvas.style.backgroundColor=GClass.style.backgroundColor;
+  game.createTitleScreen();
+  game.createInstructionScreen();
+  game.createLevelInScreen();
+  game.createGameOverScreen();
+  game.createLevelOutScreen();
+  game.createPauseScreen();
+  game.createScoreBoard();
+  if (window.world) {
     game._runGame = game.updateWorld;
     if (debugDraw) {
       game.container.superDraw = game.container.draw;
       game.container.draw = game.containerDebugDraw
-      
+
     }
   } else game._runGame = game.runGame;
   _switchSystemState(Game.state.STATE_TITLE);
@@ -284,11 +276,11 @@ function createPannel() {
   }
   //主题音乐
   gui.add(gframe.guiProps, "主题音乐").onChange((val) => {
-    if(!game.titleScreen.backSound&&game.titleSound){
-      game.titleScreen.backSound=game.titleSound;
-      if(game.titleScreen.parent)game.titleScreen.backSound.play();
+    if (!game.titleScreen.backSound && game.titleSound) {
+      game.titleScreen.backSound = game.titleSound;
+      if (game.titleScreen.parent) game.titleScreen.backSound.play();
     }
-    if(game.titleScreen.backSound)game.titleScreen.backSound.muted = !val;
+    else if (game.titleScreen.backSound) game.titleScreen.backSound.muted = !val;
   });
   gui.add(gframe.guiProps, "主题音量", 0, 1).onChange((val) => {
     if (game.titleScreen.backSound) game.titleScreen.backSound.volume = val;
@@ -323,9 +315,8 @@ var gframe = {
     type: "font"
   }, {
     src: "fonts/regul-bold.woff",
-    type: "font"
+    type: "font",
   }],
-  loaderBar: null,
   guiProps: {
     isPannel: true,
     主题音乐: false,
@@ -338,9 +329,12 @@ var gframe = {
     drawAABBs: false,
     drawTransforms: false
   },
-  //创建box2d世界 
+  /**
+   * 创建box2d世界
+   * @param {boolean} isDebug 
+   * @param {10} gravity 
+   */
   buildWorld(isDebug, gravity = 10) {
-    stage.world=true;
     world = new b2World(new b2Vec2(0, gravity));
     context = stage.canvas.getContext("2d")
     if (isDebug) {
@@ -350,7 +344,11 @@ var gframe = {
       world.SetDebugDraw(debugDraw);
     }
   },
-  //建立化舞台
+  /**
+   * 建立舞台
+   * @param {string} canvasId 
+   * @param {false} isGL webgl
+   */
   buildStage(canvasId, isGL = false) {
     _systemFunction = _systemWaitForClose;
     //建立舞台
@@ -389,30 +387,45 @@ var gframe = {
     //自适应
     _adapt();
     if (this.guiProps.isPannel) createPannel();
-  },
-  createQueue() {
+    
     queue = new createjs.LoadQueue(true, "./assets/");
     queue.installPlugin(createjs.Sound); //注册声音插件
   },
   /*********************预加载****************************
   * 
-  * @param {*} array 
-  * @param {*} game 
-  * @param {*} compid 
+  * @param {Class} GClass 
+  * @param {false} widthKeyDown 是否支持键盘事件
   */
   preload(GClass, widthKeyDown) {
+    let manifest = null;
     if (queue != null) queue.close();
-    if (!this.loadItem && !GClass.loadItem && !GClass.loadId) _initGame(GClass, widthKeyDown);
+    if (this.loadItem) {
+      manifest = JSON.parse(JSON.stringify(this.loadItem));
+      queue.loadManifest(manifest);
+      // queue.loadManifest(this.loadItem);
+    }
+    if (GClass.loadBarItem) {
+      manifest = JSON.parse(JSON.stringify(GClass.loadBarItem));
+      queue.loadManifest(manifest);
+      // queue.loadManifest(GClass.loadBarItem);
+    }
+    if (manifest) {
+      queue.on("complete", () => {
+        this._preloadGame(GClass, widthKeyDown);
+      }, null, true);
+    } else {
+      this._preloadGame(GClass, widthKeyDown);
+    }
+  },
+  _preloadGame(GClass, widthKeyDown) {
+    if (!GClass.loadItem && !GClass.loadId) _initGame(GClass, widthKeyDown);
     else {
-      this.createQueue();
-      this.loaderBar = this.loaderBar || new LoaderBar();
-      stage.addChild(this.loaderBar);
-      this.loaderBar.x = stage.width - this.loaderBar.width >> 1;
-      this.loaderBar.y = stage.height - this.loaderBar.height >> 1;
-      if (this.loadItem) {
-        let manifest = JSON.parse(JSON.stringify(this.loadItem));
-        queue.loadManifest(manifest);
-      }
+      let loaderBar;
+      if (GClass.LoaderBar) loaderBar = new GClass.LoaderBar();
+      else loaderBar = new LoaderBar();
+      stage.addChild(loaderBar);
+      loaderBar.x = stage.width - loaderBar.width >> 1;
+      loaderBar.y = stage.height - loaderBar.height >> 1;
       if (GClass.loadId) {
         let comp = AdobeAn.getComposition(GClass.loadId);
         queue.on('fileload', (evt) => {
@@ -425,22 +438,25 @@ var gframe = {
         lib = comp.getLibrary();
         let manifest = JSON.parse(JSON.stringify(lib.properties.manifest));
         queue.loadManifest(manifest);
+        // queue.loadManifest(lib.properties.manifest);
       }
       if (GClass.loadItem) {
         let manifest = JSON.parse(JSON.stringify(GClass.loadItem));
         queue.loadManifest(manifest);
+        // queue.loadManifest(GClass.loadItem);
       }
       queue.on('progress', (e) => {
-        this.loaderBar.startLoad(e);
+        loaderBar.startLoad(e);
       });
       queue.on('error', () => {
         console.log("loaderror");
       });
       queue.on('complete', function onComplete() {
         queue.removeAllEventListeners();
-        stage.removeChild(this.loaderBar);
+        stage.removeChild(loaderBar);
         _initGame(GClass, widthKeyDown);
       }, this);
+
     }
   },
   //禁止键盘事件
@@ -449,15 +465,16 @@ var gframe = {
     document.onkeyup = null;
   },
   //启用键盘事件
-  onkeydown() {
+  onkeydown(GClass) {
     var pressAtime = 0, releaseAtime = 0, presseDtime = 0, releaseDtime = 0;
     var pressInterval = 90;
     keys.step = 30;
     keys.stepindex = 0;
     document.onkeydown = (e) => {
-      let c = codes[e.keyCode];
-      if (_currentSystemState == Game.state.STATE_GAME_PLAY && codes.hasOwnProperty(e.keyCode) && !keys[c]) {
+      let c = GClass.codes[e.keyCode];
+      if (_currentSystemState == Game.state.STATE_GAME_PLAY && GClass.codes.hasOwnProperty(e.keyCode) && !keys[c]) {
         keys[c] = true;
+        game.onkeydown(c)
         if (c == "pause") {
           createjs.Ticker.paused = !createjs.Ticker.paused;
           if (createjs.Ticker.paused) {
@@ -491,8 +508,8 @@ var gframe = {
       }
     }
     document.onkeyup = (e) => {
-      if (codes.hasOwnProperty(e.keyCode)) {
-        let c = codes[e.keyCode];
+      if (GClass.codes.hasOwnProperty(e.keyCode)) {
+        let c = GClass.codes[e.keyCode];
         keys[c] = false;
         keys.stepindex = 0;
         if (c == "left" || c == "right" || c == "up" || c == "down") {
@@ -511,11 +528,21 @@ var gframe = {
   },
   reset() {
     _switchSystemState(Game.state.STATE_WAIT_FOR_CLOSE);
-    game._clearBefore();
-    game._clearAfter();
+    if(game){
+      game._clearBefore();
+      game._clearAfter();
+      game=null;
+      stage.removeAllEventListeners();
+      Game.style.reset();
+      
+      stage.canvas.style.background="#000";
+    }else stage.removeAllChildren();
     createjs.Ticker.paused = false;
-    stage.world = false;
-    debugDraw = null;
+    if(window.world) {
+      world=null;
+      debugDraw = null;
+    }
+    queue.destroy();
   }
 };
 export { stage, game, queue, lib, keys, pressed, gframe };

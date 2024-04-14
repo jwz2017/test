@@ -24,7 +24,7 @@ export class FloorDown extends Game {
     //static loadId = null;
     constructor() {
         super("是男人就下100层");
-        this.instructionScreen.updateTitle("ad:左右方向")
+        this.instructionText="ad:左右方向";
         this.background = new Background("back", this);
         player = new Player(0, 0);
     }
@@ -142,16 +142,16 @@ class Floor3 extends Floor {
     constructor(xpos, ypos) {
         super(xpos, ypos);
         this.color = "#ff0000";
-        this.hit = false;
+        this.hited = false;
     }
     activate() {
         super.activate();
-        this.hit = false;
+        this.hited = false;
     }
     hitRun(actor) {
         super.hitRun(actor);
-        if (!this.hit) {
-            this.hit = true;
+        if (!this.hited) {
+            this.hited = true;
             actor.hp--;
             game.updateLives(actor.hp);
             if (actor.hp == 0) {

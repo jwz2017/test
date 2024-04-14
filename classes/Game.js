@@ -3,6 +3,7 @@ import { Node } from "./Node.js";
 import { PushButton, ScrollContainer, mc } from "./mc.js";
 import { ShapeBackground } from "./other.js";
 import { checkPixelCollision } from "./hitTest.js";
+import { Actor } from "./actor.js";
 /**********************************事件************************************** */
 class Okbutton extends createjs.Event {
     static TYPE = 'okbutton';
@@ -13,15 +14,20 @@ class Okbutton extends createjs.Event {
 }
 /*****************************************游戏界面**************************** */
 class BasicScreen extends createjs.Container {
-    constructor(title = null, width = canvas.width, height = canvas.height) {
+    constructor(title = null, width = canvas.width, height = canvas.height, titleFont = Game.style.titleFont) {
         super();
         this._width = width;
         this._height = height;
         this.backSound = null;
-        if (title) {
-            this.title = this.createText(title, true, Game.style.titleFont, Game.style.TEXT_COLOR);
+        if (typeof (title) == "string") {
+            this.title = this.createText(title, true, titleFont, Game.style.TEXT_COLOR);
             this.title.x = width - this.title.htmlElement.clientWidth >> 1;
             this.title.y = height / 3;
+        } else if (title) {
+            this.title = title;
+            this.title.x = width - title.getBounds().width >> 1;
+            this.title.y = height / 3;
+            this.addChild(this.title);
         }
         this.addEventListener("added", () => {
             this.children.forEach(element => {
@@ -124,13 +130,6 @@ class BasicScreen extends createjs.Container {
             }
         })
     }
-    updateTitle(text) {
-        this.title.htmlElement.innerHTML = text;
-        this.title.x = this._width - this.title.htmlElement.offsetWidth >> 1;
-    }
-    setTitleFont(font) {
-        this.title.htmlElement.style.font = font;
-    }
     get width() {
         return this._width;
     }
@@ -143,6 +142,10 @@ class LevelInScreen extends BasicScreen {
         super(text, width, height);
         if (!stage.isWebGL) this.bg = new ShapeBackground(stage.width / 2, stage.height / 2);
         this.addChild(this.bg);
+    }
+    updateTitle(text) {
+        this.title.htmlElement.innerHTML = text;
+        this.title.x = this._width - this.title.htmlElement.offsetWidth >> 1;
     }
     updateWaitBg() {
         this.bg.updateWaitBg();
@@ -224,7 +227,6 @@ class ScoreBoard extends BasicScreen {
 class LoaderBar extends BasicScreen {
     constructor(title = "loading...", width = 500, height = 30) {
         super(title, width, height, Game.style.laoderFont);
-        this.setTitleFont(Game.style.textFont);
         this.title.x = width - this.title.htmlElement.clientWidth >> 1;
         this.title.y = -this.title.htmlElement.offsetHeight - 8;
         this.createBar();
@@ -264,7 +266,12 @@ class LoaderBar extends BasicScreen {
 /***************************************游戏基类****************************** */
 var _fontFamily = "regul,pfrondaseven,Arial,宋体";
 class Game extends ScrollContainer {
+    static LoaderBar = null;
+    static loadBarItem = null;
+    static loadItem = null;
+    static loadId = null;
     static style = {
+        backgroundColor: "#000",
         titleFont: "bold " + "60px " + _fontFamily,
         textFont: "40px " + _fontFamily,
         laoderFont: "bold 40px Arial,宋体",
@@ -272,7 +279,17 @@ class Game extends ScrollContainer {
         //分数板样式
         scoreFont: "30px " + _fontFamily,
         SCORE_TEXT_COLOR: "#FFFFFF",
-        SCOREBOARD_COLOR: "#555"
+        SCOREBOARD_COLOR: "#555",
+        reset: function () {
+            this.backgroundColor = "#000";
+            this.titleFont = "bold " + "60px " + _fontFamily;
+            this.textFont = "40px " + _fontFamily;
+            this.laoderFont = "bold 40px Arial,宋体";
+            this.TEXT_COLOR = "#fff";
+            this.scoreFont = "30px " + _fontFamily;
+            this.SCORE_TEXT_COLOR = "#FFFFFF";
+            this.SCOREBOARD_COLOR = "#555";
+        }
     };
     static state = {
         STATE_WAIT_FOR_CLOSE: "statewaitforclose",
@@ -285,6 +302,20 @@ class Game extends ScrollContainer {
         STATE_GAME_PLAY: "stategameplay",
         STATE_LEVEL_OUT: "statelevelout",
         STATE_WAIT: "statewait"
+    };
+    //键盘按键
+    static codes = {
+        65: "left",
+        87: "up",
+        68: "right",
+        83: "down",
+        32: "pause",
+        100: "attack",
+        101: "jump",
+        102: "skill1",
+        103: "fire",
+        16: "shift",
+        17: "ctrl"
     };
     static SCORE = "score";
     static LEVEL = "level";
@@ -309,11 +340,24 @@ class Game extends ScrollContainer {
         if (parent) parent.addChild(a)
         return a;
     };
-    static createrContainer() {
-        let c = new createjs.Container();
-        c.name = "container";
-        return c;
-    }
+    static clearContainer(container) {
+        let l = container.numChildren - 1;
+        for (let i = l; i >= 0; i--) {
+            const element = container.children[i];
+            if (element.htmlElement) {
+                element._oldStage = null;
+                element.visible = false;
+                element.htmlElement.style.visibility = "hidden";
+                container.removeChild(element);
+            } else if (element.active) {
+                element.recycle();
+            } else if (element.name == "container") {
+                Game.clearContainer(element);
+            } else {
+                container.removeChild(element);
+            }
+        };
+    };
     /**
      * Game类
      * @param {string} titleText 
@@ -324,12 +368,15 @@ class Game extends ScrollContainer {
      */
     constructor(titleText, width = stage.width, height = stage.height, stepWidth = 0, stepHeight = 0) {
         super(null, 0, 0, width, height, 0, 0, false, false);
+        this.titleText = titleText;
+        this.instructionText = "介绍界面";
+        this.mouseStart = new createjs.Point();
+        this.mouseEnd = new createjs.Point();
         //游戏层
-        this.floorLayer = Game.createrContainer();
-        this.playerLayer = Game.createrContainer();
-        this.enemyLayer = Game.createrContainer();
-        this.propLayer = Game.createrContainer();
-        this.container.addChild(this.floorLayer, this.playerLayer, this.enemyLayer, this.propLayer);
+        this.floorLayer = this.createrContainer();
+        this.playerLayer = this.createrContainer();
+        this.enemyLayer = this.createrContainer();
+        this.propLayer = this.createrContainer();
         //网格
         this.nodes = [];
         this.numCols = 0;
@@ -338,9 +385,9 @@ class Game extends ScrollContainer {
         this.stepHeight = stepHeight;
         this._tempNode = new Node(-1, -1);
         //地图字符
-        this.playerChars = {};
-        this.enemyChars = {};
-        this.propChars = {};
+        this.playerChars = Object.create(null);
+        this.enemyChars = Object.create(null);
+        this.propChars = Object.create(null);
         //游戏属性
         this.maxLevel = 1;
         this.gameOver = false;
@@ -351,20 +398,22 @@ class Game extends ScrollContainer {
         //Astar智能寻路
         this._startNode = null;
         this._endNode = null;
-        //创建界面
-        this.createTitleScreen(titleText);
-        this.createInstructionScreen();
-        this.createLevelInScreen();
-        this.createGameOverScreen();
-        this.createLevelOutScreen();
-        this.createPauseScreen();
-        this.createScoreBoard();
         //背景音乐
         this.backSound = null;
+        this.titleSound = null;
     }
+    createrContainer(parent) {
+        let c = new createjs.Container();
+        c.name = "container";
+        if (parent) parent.addChild(c);
+        else this.container.addChild(c);
+        return c;
+    };
+
     /************************界面初始化*************************** */
-    createTitleScreen(title) {
-        this.titleScreen = new BasicScreen(title);
+
+    createTitleScreen() {
+        this.titleScreen = new BasicScreen(this.titleText);
         if (!stage.isWebGL) {
             this.titleScreen.createOkButton((stage.canvas.width - 250) / 2, stage.canvas.height * 0.6, null, { label: 'start', width: 250, height: 60, graphics: new mc.RoundRect(30) });
             this.titleScreen.createOkButton((stage.canvas.width - 250) / 2, stage.canvas.height * 0.6 + 80, null, { label: '游戏说明', width: 250, height: 60, graphics: new mc.RoundRect(30), id: Game.state.STATE_INSTRUCTION });
@@ -380,8 +429,7 @@ class Game extends ScrollContainer {
         }
     }
     createInstructionScreen() {
-        this.instructionScreen = new BasicScreen('说明界面', stage.width, stage.height);
-        this.instructionScreen.setTitleFont(Game.style.textFont);
+        this.instructionScreen = new BasicScreen(this.instructionText, stage.width, stage.height, Game.style.textFont);
         if (!stage.isWebGL) {
             this.instructionScreen.createOkButton((this.instructionScreen.width - 150) / 2, this.instructionScreen.height * 0.6, null, { label: '返回', width: 150, height: 150, graphics: new mc.Star(6, 0.35) });
         } else {
@@ -415,23 +463,47 @@ class Game extends ScrollContainer {
         }
     }
     createPauseScreen() {
-        this.pauseScreen = new BasicScreen("pause", this.width, this.height);
+        this.pauseScreen = new BasicScreen("pause", stage.width, stage.height);
         this.pauseScreen.title.y = stage.height - this.pauseScreen.title.htmlElement.offsetHeight >> 1;
     }
-    createScoreBoard() {
-
-    }
+    createScoreBoard() { }
     /***************************游戏开始状态************************ */
-    newGame() {
-
-    }
-    newLevel() {
-
-    }
-    waitComplete() {
-
-    }
-    runGame() {
+    newGame() { }
+    newLevel() { }
+    waitComplete() { }
+    runGame() { }
+    onkeydown(key) { }
+    clear() { }
+    //结束时立即清除
+    _clearBefore() {
+        if (this.backSound) this.backSound.stop();
+        this.removeAllEventListeners("mousedown");
+        stage.removeAllEventListeners("stagemousedown");
+        stage.removeAllEventListeners("stagemouseup");
+        this.clear();
+    };
+    _clearAfter() {
+        stage.alpha = 1;
+        createjs.Tween.removeAllTweens();
+        stage.enableMouseOver();
+        //清除游戏内容元素
+        Game.clearContainer(this.container);
+        //清除舞台元素
+        Game.clearContainer(stage);
+        // stage.removeChild(this);
+        if (window.world) {
+            var list = world.GetJointList();
+            while (list.a) {
+                world.DestroyJoint(list);
+                list = list.GetNext();
+            }
+            list = world.GetBodyList();
+            while (list.a) {
+                world.DestroyBody(list);
+                list = list.GetNext();
+            }
+            console.log("刚体数量" + world.GetBodyCount());
+        }
 
     }
     /***************************游戏运行时相关方法************* */
@@ -444,14 +516,20 @@ class Game extends ScrollContainer {
 
     //更新层内元素状态
     moveActors(layer) {
-        let l = layer.numChildren - 1
-        for (let i = l; i >= 0; i--) {
+        for (let i = layer.numChildren - 1; i >= 0; i--) {
             const element = layer.getChildAt(i);
             element.act();
         }
     }
-    // 检测地图元素碰撞
-    hitMap(rect1, image = null, alphaThreshold = 0) {
+    /**
+     * 检测地图元素碰撞
+     * @param {*} rect1 
+     * @param {null} image 
+     * @param {0} alphaThreshold 
+     * @param {null} hitPropNode 
+     * @returns node
+     */
+    hitMap(rect1, image, alphaThreshold = 0, hitPropNode) {
         let x1 = rect1.x / this.stepWidth,
             y1 = rect1.y / this.stepHeight,
             w1 = rect1.width / this.stepWidth,
@@ -470,17 +548,32 @@ class Game extends ScrollContainer {
         for (var y = yStart; y < yEnd; y++) {
             for (var x = xStart; x < xEnd; x++) {
                 let node = this.nodes[y][x];
-                if (node.type != Node.WALKABLE) {
-                    if (!node.actor) return node;
-                    else {
+                if (node.type) {
+                    if (!node.actor) {
+                        if (node.type == Node.PROP) {
+                            if (hitPropNode) hitPropNode(node);
+                        } else {
+                            return node;
+                        }
+                    } else {
                         if (!image || !(node.actor.image instanceof createjs.Sprite)) {
-                            if (rect1.intersects(node.actor.rect)) return node;
+                            if (rect1.intersects(node.actor.rect)) {
+                                if (node.type == Node.PROP) {
+                                    if (hitPropNode) hitPropNode(node);
+                                } else {
+                                    return node;
+                                }
+                            }
                         } else {
                             let r = rect1.intersection(node.actor.rect);
                             if (r) {
                                 this._transformRect(r);
                                 if (checkPixelCollision(image, node.actor.image, r, alphaThreshold)) {
-                                    return node
+                                    if (node.type == Node.PROP) {
+                                        if (hitPropNode) hitPropNode(node);
+                                    } else {
+                                        return node;
+                                    }
                                 }
                             }
                         }
@@ -489,62 +582,11 @@ class Game extends ScrollContainer {
             }
         }
     }
-    //检测地图道具元素碰撞
-    hitMapWithProp(rect1, image = null, alphaThreshold = 0) {
-        let x1 = rect1.x / this.stepWidth,
-            y1 = rect1.y / this.stepHeight,
-            w1 = rect1.width / this.stepWidth,
-            h1 = rect1.height / this.stepHeight;
-        var xStart = Math.floor(x1);
-        var xEnd = Math.ceil(x1 + w1);
-        var yStart = Math.floor(y1);
-        var yEnd = Math.ceil(y1 + h1);
-        for (var y = yStart; y < yEnd; y++) {
-            for (var x = xStart; x < xEnd; x++) {
-                let node = this.nodes[y][x];
-                if (node.type == Node.WALKABLE && node.actor) {
-                    if (!image || !(node.actor.image instanceof createjs.Sprite)) {
-                        if (rect1.intersects(node.actor.rect)) return node;
-                    } else {
-                        let r = rect1.intersection(node.actor.rect);
-                        if (r) {
-                            this._transformRect(r)
-                            if (checkPixelCollision(image, node.actor.image, r, alphaThreshold)) {
-                                return node
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    clear() { }
-    //结束时立即清除
-    _clearBefore() {
-        if (this.backSound) this.backSound.stop();
-        // this.removeAllEventListeners();
-        this.clear();
-    }
-    _clearAfter() {
-        stage.alpha = 1;
-        createjs.Tween.removeAllTweens();
-        stage.enableMouseOver();
-        //清除游戏内容元素
-        this._clearContainer(this.container);
-        //清除舞台元素
-        this._clearContainer(stage);
-        if (stage.world) {
-            var list = world.GetBodyList();
-            while (list.a) {
-                world.DestroyBody(list);
-                list = list.GetNext();
-            }
-            console.log("刚体数量" + world.GetBodyCount());
-
-        }
-    }
     updateLives(live) {
         this.scoreboard.update(Game.LIVES, live == 3 ? "🧡🧡🧡" : live == 2 ? "🧡🧡" : live == 1 ? "🧡" : "");
+    }
+    updateScore(key, val) {
+        this.scoreboard.update(key, val);
     }
     /**
      * 检测是否与边界碰撞
@@ -597,7 +639,7 @@ class Game extends ScrollContainer {
      * @param {*} actor 
      */
     placeInBounds(actor) {
-        let s=this.contentSize;
+        let s = this.contentSize;
         let rect = actor.rect;
         if (rect.x + rect.width < 0) {
             rect.x = s.width;
@@ -614,6 +656,31 @@ class Game extends ScrollContainer {
             actor.y = -rect.height / 2;
         }
     }
+    /**
+     * 检测边界碰撞
+     * @param {*} layer actor对象或层
+     */
+    checkBounds(layer) {
+        if (layer.edgeBehavior) this._checkBounds(layer);
+        else if (layer instanceof createjs.Container) {
+            let l = layer.numChildren - 1
+            for (let i = l; i >= 0; i--) {
+                const element = layer.getChildAt(i);
+                this._checkBounds(element);
+            }
+        }
+    }
+    _checkBounds(element) {
+        if (element.edgeBehavior == Actor.WRAP) {
+            this.placeInBounds(element);
+        } else if (element.edgeBehavior == Actor.BOUNCE) {
+            this.rebounds(element);
+        } else if (element.edgeBehavior == Actor.RECYCLE) {
+            if (this.outOfBounds(element)) {
+                element.recycle();
+            }
+        }
+    }
     /***************************网格相关************************ */
     //创建网格
     createGrid(rows, cols) {
@@ -626,7 +693,12 @@ class Game extends ScrollContainer {
             }
         }
     }
-    //创建网格地图
+    /**
+     * 创建网格地图
+     * @param {*} plan 关卡地图
+     * @param {*} drawGrid 背景地图函数
+     * @param {false} isIso 是否为二等角地图
+     */
     createGridMap(plan, drawGrid, isIso = false) {
         this.nodes = [];
         this.numCols = plan[0].length;
@@ -648,6 +720,7 @@ class Game extends ScrollContainer {
                     } else if (Act == this.propChars[ch]) {
                         this.propLayer.addChild(a);
                         this.nodes[y][x].actor = a;
+                        this.nodes[y][x].type = Node.PROP;
                     } else if (Act == this.enemyChars[ch]) {
                         this.enemyLayer.addChild(a);
                     }
@@ -676,10 +749,10 @@ class Game extends ScrollContainer {
         }
     };
     /**
-   * 寻找周围相似节点
-   * @param {*} node 
-   * @returns 
-   */
+    * 寻找周围相似节点
+    * @param {*} node 
+    * @returns 
+    */
     findLikeNode(node) {
         let nodesToCheck = [], nodesMatched = [], nodesTested = [];
         let typeToMatch = node.type;
@@ -769,24 +842,6 @@ class Game extends ScrollContainer {
         r.x = p.x;
         r.y = p.y;
     }
-    _clearContainer(container) {
-        let l = container.children.length - 1;
-        for (let i = l; i >= 0; i--) {
-            const element = container.children[i];
-            if (element.htmlElement) {
-                element._oldStage = null;
-                element.visible = false;
-                element.htmlElement.style.visibility = "hidden";
-                container.removeChild(element);
-            } else if (element.active) {
-                element.recycle();
-            } else if (element.name == "container") {
-                this._clearContainer(element);
-            } else {
-                container.removeChild(element);
-            }
-        };
-    };
     /*********************************box2d*********************************** */
     containerDebugDraw() {
         this.superDraw(context)//this-->container
@@ -794,28 +849,75 @@ class Game extends ScrollContainer {
         context.lineWidth /= PTM;
         drawAxes(context);
         world.DrawDebugData();
+        let mj = EasyWorld.mouseJoint
+        if (mj) {
+            drawSegment1(mj.GetAnchorB(), mj.GetTarget(), "255,255,255");
+        }
+        // let p=this.parent;
+        // if(p.isDrawing){
+        //     drawSegment1(p.mouseStart, p.mouseEnd, "255,255,255");
+        // }
     }
     updateWorld(e) {
         world.Step(e.delta / 1000, 10, 10);
         world.ClearForces();
         this.runGame();
     }
-    dragBody(userData){
+    dragBody(userData, maxForce = 20, isStrictDrag = false) {
         let mouseMove;
         stage.on("stagemousedown", (e) => {
-            let drawbody = EasyWorld.getBodyAt(e.stageX, e.stageY);
-            if (drawbody.GetUserData()==userData||(!userData&&drawbody)) {
-                mouseMove = stage.on("stagemousemove", (e) => {
-                    EasyWorld.drawBodyTo(drawbody, e.stageX, e.stageY, false);
-                })
+            let p = this.container.globalToLocal(e.stageX, e.stageY)
+            let drawbody = EasyWorld.getBodyAt(p.x, p.y);
+            if (drawbody) {
+                if (userData) {
+                    if (drawbody.GetUserData() == userData) {
+                        mouseMove = stage.on("stagemousemove", (e) => {
+                            p = this.container.globalToLocal(e.stageX, e.stageY)
+                            EasyWorld.drawBodyTo(drawbody, p.x, p.y, maxForce, isStrictDrag);
+                            // this.dragFun(this.dragBody);
+                        })
+                    }
+                } else {
+                    mouseMove = stage.on("stagemousemove", (e) => {
+                        p = this.container.globalToLocal(e.stageX, e.stageY);
+                        EasyWorld.drawBodyTo(drawbody, p.x, p.y, maxForce, isStrictDrag);
+                        // this.dragFun(this.dragBody)
+                    })
+                }
             }
         })
-        stage.on("stagemouseup", (e) => {
+        stage.on("stagemouseup", () => {
             if (mouseMove) {
                 EasyWorld.stopDragBody();
                 stage.off("stagemousemove", mouseMove);
                 mouseMove = null;
             }
+        })
+    }
+    // dragFun(drawbody) {
+
+    // }
+    drawMouseMove(onMouseUp) {
+        let mouseMove;
+        this.mouseStart = new b2Vec2();
+        this.mouseEnd = new b2Vec2();
+        stage.on("stagemousedown", (e) => {
+            let p = this.container.globalToLocal(e.stageX, e.stageY)
+            this.isDrawing = true;
+            this.mouseStart.x = p.x / PTM;
+            this.mouseStart.y = p.y / PTM;
+            this.mouseEnd.x = this.mouseStart.x;
+            this.mouseEnd.y = this.mouseStart.y;
+            mouseMove = stage.on("stagemousemove", (e) => {
+                p = this.container.globalToLocal(e.stageX, e.stageY)
+                this.mouseEnd.x = p.x / PTM;
+                this.mouseEnd.y = p.y / PTM;
+            })
+        });
+        stage.on("stagemouseup", () => {
+            stage.off("stagemousemove", mouseMove);
+            this.isDrawing = false;
+            if (onMouseUp) onMouseUp();
         })
     }
 };
@@ -826,36 +928,49 @@ class Game extends ScrollContainer {
 class ScrollMapGame extends Game {
     constructor(titleText, width, height, stepWidth, stepHeight) {
         super(titleText, width, height, stepWidth, stepHeight);
+        //滚动
         this.mapleft = 0;
         this.maptop = 0;
         this.mapright = this.width;
         this.mapbottom = this.height;
+        this._scrollActor = this.player;
+        this._marginw = this.width / 2;
+        this._marginh = this.height / 2;
+
     }
     //屏幕滚动默认焦点游戏玩家
-    scrollPlayerIntoView(actor = this.player, marginw = this.width / 3, marginh = this.height / 3) {
-        let a = this.setActorScroll(actor, marginw, marginh);
-        this.scrollX = a.scrollX;
-        this.scrollY = a.scrollY;
-    }
-    //设置焦点对象
-    setActorScroll(actor, marginw = this.width / 2, marginh = this.height / 2) {
-        let scrollX = this.scrollX, scrollY = this.scrollY;
-        //this viewpot
-        this.mapleft = -scrollX;
+    scrollView() {
+        this.mapleft = -this.scrollX;
         this.mapright = this.mapleft + this.width;
-        this.maptop = -scrollY;
+        this.maptop = -this.scrollY;
         this.mapbottom = this.maptop + this.height;
-        if (actor.x < this.mapleft + marginw) {
-            scrollX = -actor.x + marginw;
-        } else if (actor.x > this.mapright - marginw) {
-            scrollX = -actor.x - marginw + this.width;
+        if (this._scrollActor.x < this.mapleft + this._marginw) {
+            this.scrollX = -this._scrollActor.x + this._marginw;
+        } else if (this._scrollActor.x > this.mapright - this._marginw) {
+            this.scrollX = -this._scrollActor.x - this._marginw + this.width;
         }
-        if (actor.y < this.maptop + marginh) {
-            scrollY = Math.floor(-actor.y + marginh);
-        } else if (actor.y > this.mapbottom - marginh) {
-            scrollY = Math.floor(-actor.y - marginh + this.height);
+        if (this._scrollActor.y < this.maptop + this._marginh) {
+            this.scrollY = Math.floor(-this._scrollActor.y + this._marginh);
+        } else if (this._scrollActor.y > this.mapbottom - this._marginh) {
+            this.scrollY = Math.floor(-this._scrollActor.y - this._marginh + this.height);
         }
-        return { scrollX, scrollY };
+    }
+    //停止滚动
+    stopScrollView() {
+        let p = new createjs.Point();
+        p.setValues(this._scrollActor.x, this._scrollActor.y);
+        this._scrollActor = p;
+    }
+    /**
+     * 设置焦点参数
+     * @param {*} actor null不改变
+     * @param {*} marginWidth null不改变
+     * @param {*} marginHeight null不改变
+     */
+    setActorScroll(actor, marginWidth, marginHeight) {
+        if (actor) this._scrollActor = actor;
+        if (marginWidth) this._marginw = marginWidth;
+        if (marginHeight) this._marginh = marginHeight
     }
     /**检测是否出屏幕
      * 

@@ -16,7 +16,7 @@ export class OBB {
   }
 }
 export var detectorOBBvsOBB = function (OBB1, OBB2) {
-  var nv = OBB1.centerPoint.sub(OBB2.centerPoint);
+  let nv=Vector.sub(OBB1.centerPoint,OBB2.centerPoint);
   var axisA1 = OBB1.axes[0];
   if (OBB1.getProjectionRadius(axisA1) + OBB2.getProjectionRadius(axisA1) <= Math.abs(nv.dot(axisA1))) return false;
   var axisA2 = OBB1.axes[1];

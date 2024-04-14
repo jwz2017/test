@@ -25,8 +25,6 @@ export class SuperClick extends Game{
     constructor() {
         super("super click");
         this.maxLevel = 10;
-        this.setSize(stage.width, stage.height - this.scoreboard.height);
-        this.y = this.scoreboard.height;
         
     }
     createScoreBoard() {
@@ -37,6 +35,8 @@ export class SuperClick extends Game{
         this.scoreboard.createTextElement(CLICKS);
         this.scoreboard.createTextElement(NEEDED);
         this.scoreboard.createTextElement(ACHIEVE);
+        this.setSize(stage.width, stage.height - this.scoreboard.height);
+        this.y = this.scoreboard.height;
     }
     newLevel() {
         this.scoreboard.update("score", this.score);

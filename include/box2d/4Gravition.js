@@ -3,7 +3,7 @@ import { Game } from "../../classes/Game.js";
 import { Actor, BoxActor } from "../../classes/actor.js";
 //游戏变量;
 var planet, sensor, bird, contactListener;
-var planetGravity = 10, birdManager;
+var planetGravity = 10;
 export class Gravition extends Game {
     static SENSOR = "10";
     static GROUND = 999;
@@ -23,25 +23,29 @@ export class Gravition extends Game {
         this.thrower = new BirdThrower(this, bird, 150, 600);
 
         contactListener = new GraviationListener();
+
     }
     runGame() {
         world.ClearForces();
         this.moveActors(this.playerLayer)
         this.thrower.drawTrail()
     }
-
+    
 }
 class Bird extends BoxActor {
     constructor(xpos, ypos) {
         super(xpos, ypos,20,20);
+        this.force=new b2Vec2();
     }
     act() {
         if (contactListener.isBirdInSensor) {
-            var force = subVec2(planet.GetPosition(), this.body.GetPosition());
-            force.Normalize();
+            let p1=planet.GetPosition();
+            let p2=this.body.GetPosition();
+            this.force.Set(p1.x-p2.x,p1.y-p2.y)
+            this.force.Normalize();
             let F = planetGravity * this.body.GetMass();
-            force.Set(force.x * F, force.y * F);
-            this.body.ApplyForce(force, this.body.GetPosition());
+            this.force.op_mul(F);
+            this.body.ApplyForce(this.force, this.body.GetPosition());
             this.body.SetLinearDamping(0.2)
         }
         this.update()

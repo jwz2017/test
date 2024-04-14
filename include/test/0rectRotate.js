@@ -18,7 +18,6 @@ export class RectRotate extends Game {
         // //中心点
         let r0 = rect0.getTransformedBounds();
         let rect0center = new Vector(r0.x + r0.width / 2, r0.y + r0.height / 2);
-
         // //外接圆碰撞
         if (rect0.hitRadius(rect1, rect1.x, rect1.y, rect0center.x, rect0center.y)) {
             let obb1 = new OBB(rect0center, rect0.rect.width, rect0.rect.height, rect0.rotation * Math.PI / 180);

@@ -12,7 +12,6 @@ export class OneWayWall extends Game {
         ground.GetFixtureList().SetRestitution(0);
 
         player = new BoxBall(30,30,25);
-        player.body.SetUserData(USER_DATA_PLAYER);
         this.addChild(player);
 
         platform = EasyBody.createPlatform(150, 545, 100, 10);

@@ -4,8 +4,10 @@ import { mc,PushButton,CheckBox,RadioButton,Slider,ScrollContainer } from "../..
 export class Mctest extends Game {
     constructor() {
         super("mc组件测试");
-        this.instructionScreen.text = "游戏介绍";
         mc.style.fontSize=16;
+    }
+    clear(){
+        mc.style.fontSize=32;
     }
     waitComplete() {
         stage.enableMouseOver();
@@ -40,14 +42,14 @@ export class Mctest extends Game {
         // ----------------mc.style.darkStyle();//黑色主题------------------------
         this.scorecontainer = new ScrollContainer(stage, 0, 0, 600, 750, 800, 1400);
         //Rect RoundRect Circle Star Arrow
-        this.button = new PushButton(this.scorecontainer, "ok", null, 50, 50);
-        this.button1 = new PushButton(this.scorecontainer, "ok", null, 50, 100, 60, 20, new mc.RoundRect(25));
-        this.button2 = new PushButton(this.scorecontainer, "ok", null, 50, 150, 60, 60, new mc.Circle());
-        this.button3 = new PushButton(this.scorecontainer, "ok", null, 100, 200, 80, 80, new mc.Star(6, 2.5, 30));
-        this.button4 = new PushButton(this.scorecontainer, "ok", null, 200, 200, 80, 40, new mc.Ellipse());
-        this.button5 = new PushButton(this.scorecontainer, "ok1", null, 650, 300, 80, 80, new mc.Arrow(45));
+        this.button = new PushButton(this.scorecontainer.container, "ok", null, 50, 50);
+        this.button1 = new PushButton(this.scorecontainer.container, "ok", null, 50, 100, 60, 20, new mc.RoundRect(25));
+        this.button2 = new PushButton(this.scorecontainer.container, "ok", null, 50, 150, 60, 60, new mc.Circle());
+        this.button3 = new PushButton(this.scorecontainer.container, "ok", null, 100, 200, 80, 80, new mc.Star(6, 2.5, 30));
+        this.button4 = new PushButton(this.scorecontainer.container, "ok", null, 200, 200, 80, 40, new mc.Ellipse());
+        this.button5 = new PushButton(this.scorecontainer.container, "ok1", null, 650, 300, 80, 80, new mc.Arrow(45));
         mc.style.fontSize = 24;
-        this.checkbox = new CheckBox(this.scorecontainer, "黑色", () => {
+        this.checkbox = new CheckBox(this.scorecontainer.container, "黑色", () => {
             console.log(this.checkbox.selected);
         }, false, 50, 700, 40, 40, new mc.Circle);
         // this.checkbox1 = new CheckBox(this.scorecontainer, "黑色", () => {
@@ -57,9 +59,9 @@ export class Mctest extends Game {
         //     console.log(this.checkbox2.selected);
         // }, false, 50, 800, 40, 40, new mc.Star);
         //RadioButton单选框  Rect RoundRect Circle Star
-        var radiobutton1 = new RadioButton(this.scorecontainer, "白色", handle, true, 450, 800, 40, 40);
-        var radiobutton2 = new RadioButton(this.scorecontainer, "蓝色", handle, false, 450, 850, 40, 40);
-        var radiobutton3 = new RadioButton(this.scorecontainer, "红色", handle, false, 450, 900, 40, 40);
+        var radiobutton1 = new RadioButton(this.scorecontainer.container, "白色", handle, true, 450, 800, 40, 40);
+        var radiobutton2 = new RadioButton(this.scorecontainer.container, "蓝色", handle, false, 450, 850, 40, 40);
+        var radiobutton3 = new RadioButton(this.scorecontainer.container, "红色", handle, false, 450, 900, 40, 40);
 
         function handle() {
             switch (RadioButton.selectedButton) {
@@ -79,10 +81,10 @@ export class Mctest extends Game {
             }
         }
         //slider  Rect RoundRect
-        this.slider = new Slider(this.scorecontainer, "分数", () => {
+        this.slider = new Slider(this.scorecontainer.container, "分数", () => {
             console.log(this.slider.value);
         }, 50, 1000, 230, 24, new mc.Rect, true);
-        this.slider1 = new Slider(this.scorecontainer, "分数", () => {
+        this.slider1 = new Slider(this.scorecontainer.container, "分数", () => {
             console.log(this.slider1.value);
         }, 200, 1000, 230, 24, new mc.RoundRect(12), false);
     }

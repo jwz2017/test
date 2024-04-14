@@ -1,5 +1,5 @@
 import { Game } from "../../classes/Game.js";
-import { CirActor } from "../../classes/actor.js";
+import { Actor, CirActor } from "../../classes/actor.js";
 import { stage } from "../../classes/gframe.js";
 
 var numDots = 50, friction = 0.95, dots, shape;
@@ -14,6 +14,7 @@ export class Brownian extends Game {
         dots = [];
         for (let i = 0; i < numDots; i++) {
             const dot = new CirActor(0,0,1);
+            dot.edgeBehavior=Actor.WRAP;
             dot.x = Math.random() * stage.width;
             dot.y = Math.random() * stage.height;
             dots.push(dot);
@@ -31,9 +32,7 @@ export class Brownian extends Game {
             dot.speed.x *= friction;
             dot.speed.y *= friction;
             shape.graphics.lineTo(dot.x, dot.y);
-            if (dot.outOfBounds()) {
-                dot.placeInBounds();
-            }
+            this.checkBounds(dot)
         }
     }
 

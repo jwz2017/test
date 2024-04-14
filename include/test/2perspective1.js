@@ -7,8 +7,7 @@ var ball, xpos, ypos, zpos, vpX, vpY,
 export class Perspective1 extends Game {
     constructor() {
         super("透视1");
-        this.instructionScreen.updateTitle("w,s放大缩小")
-        this.keyboard=true;
+        this.instructionText="w,s放大缩小";
     }
     waitComplete() {
         xpos = ypos = zpos = 0;

@@ -14,13 +14,14 @@ export class GetMass extends Game {
 
         impulse = new b2Vec2(10, -10);
         isApplyForce=false;
-        force=copyVec2(world.GetGravity());
+        force=new b2Vec2(0,world.GetGravity().y)
         force.y = -force.y;
-        scaleVec2(force,bird.GetMass())
+        force.op_mul(bird.GetMass())
     }
     waitComplete() {
         stage.on("stagemousedown", () => {
-            impulse=scaledVec2(bird.GetLinearVelocity(),10)
+            let v=bird.GetLinearVelocity();
+            impulse.Set(v.x,v.y*10);
             bird.ApplyLinearImpulse(impulse, bird.GetPosition());
             isApplyForce = true;
         })

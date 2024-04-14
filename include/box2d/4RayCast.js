@@ -3,7 +3,7 @@ import { Game } from "../../classes/Game.js";
 import {  BoxBall} from "../../classes/actor.js";
 //游戏变量;
 var ball, closeBody;
-var point1, point2, closePoint, rayAngle = Math.PI / 2, rayLength = 500 / PTM;
+var point1, point2, closePoint=new createjs.Point(), rayAngle = Math.PI / 2, rayLength = 500 / PTM;
 var ANGLE_MAX = Math.PI * 8 / 9;
 var ANGLE_MIN = Math.PI / 9;
 var angle_speed = Math.PI / 200;
@@ -16,10 +16,10 @@ export class RayCast extends Game {
         EasyBody.createRectangle(0, 0, stage.width, stage.height);
 
         ball = new BoxBall(200, 400,25)
-        ball.body.SetUserData(USER_DATA_PLAYER);
         ball.body.GetFixtureList().SetRestitution(0);
         // ball.body.SetAwake(false)
         this.addToPlayer(ball);
+
         
 
         var ground = EasyBody.createBox(380, 650, 550, 100, 0,);
@@ -33,7 +33,7 @@ export class RayCast extends Game {
         raycastCallback.ReportFixture = function (fixture, point, normal, fraction) {
             var p = Box2D.wrapPointer(point, b2Vec2)
             var f = Box2D.wrapPointer(fixture, b2Fixture)
-            closePoint = copyVec2(p);
+            closePoint.setValues(p.x,p.y);
             closeBody = f.GetBody();
             return fraction
         }
@@ -43,8 +43,6 @@ export class RayCast extends Game {
 
         this.moveRay();
         world.RayCast(raycastCallback, point1, point2);
-        debugDraw.DrawSegment(new b2Vec2(1, 1).a, new b2Vec2(5, 5).a)
-
         ball.act(keys);
     }
     moveRay() {
@@ -61,9 +59,9 @@ export class RayCast extends Game {
     }
     containerDebugDraw() {
         super.containerDebugDraw();
-        debugDraw.DrawSegment(point1.a, closePoint.a, new b2Color(255, 0, 0).a);
-        if (closeBody != null && closeBody.GetUserData() == USER_DATA_PLAYER) {
-            debugDraw.DrawCircle(closeBody.GetPosition().a, 50 / PTM, new b2Color(255, 255, 255).a);
+        drawSegment1(point1,closePoint);
+        if (closeBody != null && closeBody.GetUserData() == USER_DATA_BALL) {
+            drawCircle1(closeBody.GetPosition(),50/PTM,false,"255,255,255")
         }
     }
 }

@@ -1,8 +1,9 @@
 import { Game } from "../../classes/Game.js";
-import { Actor, SteeredActor } from "../../classes/actor.js";
+import { Actor, MoveManage, SteeredActor } from "../../classes/actor.js";
 import { stage } from "../../classes/gframe.js";
 
 var vehicleA, vehicleB, vehicleC;
+var moveManage=new MoveManage();
 export class FleeTest2 extends Game {
     constructor() {
         super("逃离测试2");
@@ -19,17 +20,18 @@ export class FleeTest2 extends Game {
         stage.addChild(vehicleA, vehicleB, vehicleC);
     }
     runGame() {
-        vehicleA.seek(vehicleB);
-        vehicleA.flee(vehicleC);
-
-        vehicleB.seek(vehicleC);
-        vehicleB.flee(vehicleA);
-
-        vehicleC.seek(vehicleA);
-        vehicleC.flee(vehicleB);
+        moveManage.seek(vehicleA,vehicleB);
+        moveManage.flee(vehicleA,vehicleC);
         vehicleA.act();
+
+        moveManage.seek(vehicleB,vehicleC);
+        moveManage.flee(vehicleB,vehicleA);
         vehicleB.act();
+
+        moveManage.seek(vehicleC,vehicleA);
+        moveManage.flee(vehicleC,vehicleB);
         vehicleC.act();
+        this.checkBounds(stage);
     }
 
 }

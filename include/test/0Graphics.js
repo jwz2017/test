@@ -4,7 +4,7 @@ import { BarGraph,drawSmile} from "../../classes/shape.js";
 export class Graphics extends Game {
     constructor() {
         super("绘画工具");
-        this.instructionScreen.title.text = "1:画虚线\r2:画扇形\r3:画同心圆";
+        this.instructionText = "1:画虚线\r2:画扇形\r3:画同心圆";
     }
     waitComplete() {
         super.waitComplete();

@@ -1,6 +1,6 @@
 var fps = document.createElement("span");
 var fpsE;
-fps.style.color = "#fff";
+fps.style.color = "#ff0";
 fps.style.font = "20px Arial";
 fps.style.position = "absolute";
 fps.style.top = "8px";

@@ -1,8 +1,9 @@
 import { Game } from "../../classes/Game.js";
-import { Actor, SteeredActor } from "../../classes/actor.js";
+import { Actor, MoveManage, SteeredActor } from "../../classes/actor.js";
 import { stage } from "../../classes/gframe.js";
 
 var pursuer, evader;
+var moveManage=new MoveManage();
 export class PursueEvade extends Game {
     constructor() {
         super("追捕和躲避测试");
@@ -16,9 +17,11 @@ export class PursueEvade extends Game {
         stage.addChild(pursuer, evader);
     }
     runGame() {
-        pursuer.pursue(evader);
-        evader.evade(pursuer);
+        moveManage.pursue(pursuer,evader);
+        moveManage.evade(evader,pursuer);
         pursuer.act();
         evader.act();
+        this.checkBounds(stage);
+        
     }
 }

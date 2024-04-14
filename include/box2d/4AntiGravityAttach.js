@@ -25,6 +25,8 @@ export class AniGravityAttach extends Game {
         this.contactListener = new Listen();
 
         this.trail = new Trail(this.container, player);
+
+        this.tempV=new b2Vec2();
     }
     waitComplete() {
         stage.on("stagemousedown", () => {
@@ -48,10 +50,11 @@ export class AniGravityAttach extends Game {
     }
     attachPlayerToPlanet(plant) {
         var localDistanceToAttach = playerSize / 2 + planetRadius;
-        var distancePlayerToPlanet = subVec2(player.GetPosition(), plant.GetPosition());
-        localVectorPlayerOnPlant = plant.GetLocalVector(distancePlayerToPlanet);
+        let d=Vector.sub(player.GetPosition(), plant.GetPosition());
+        this.tempV.Set(d.x,d.y);
+        localVectorPlayerOnPlant = plant.GetLocalVector(this.tempV);
         localVectorPlayerOnPlant.Normalize();
-        scaleVec2(localVectorPlayerOnPlant, localDistanceToAttach);
+        localVectorPlayerOnPlant.op_mul(localDistanceToAttach);
 
         var v = new Vector(0, 0);
         v.setValues(localVectorPlayerOnPlant.x, localVectorPlayerOnPlant.y);
@@ -63,21 +66,22 @@ export class AniGravityAttach extends Game {
         player.SetTransform(new b2Vec2(-2, -2), 0);
     }
     playerJump(p) {
-        scaleVec2(localVectorPlayerOnPlant, 1 / PTM)
+        localVectorPlayerOnPlant.op_mul(1/PTM)
         let playerPosition = p.GetWorldPoint(localVectorPlayerOnPlant);
         let playerVector = p.GetWorldVector(localVectorPlayerOnPlant);
         let v = new Vector(0, 0);
         v.setValues(playerVector.x, playerVector.y);
 
         player.SetTransform(playerPosition, v.angle);
-        player.SetLinearVelocity(new b2Vec2(0, 0));
+        playerPosition.SetZero();
+        player.SetLinearVelocity(playerPosition);
         player.SetActive(true)
         isPlayerJumping = true;
         this.trail.startFromHere();
 
-        var impulse = copyVec2(playerVector);
+        var impulse = playerVector;
         impulse.Normalize();
-        scaleVec2(impulse, player.GetMass() * 10);
+        impulse.op_mul(player.GetMass() * 10);
         player.ApplyLinearImpulse(impulse, player.GetPosition());
     }
 }

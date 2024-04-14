@@ -3,14 +3,15 @@
 //to make everything in the Box2D namespace available without
 //needing to do that.
 
-//对象类型转换  mouseJoint = Box2D.castObject(mouseJoint, Box2D.b2MouseJoint);
+//1.对象类型转换  mouseJoint = Box2D.castObject(mouseJoint, Box2D.b2MouseJoint);
 //                          Box2D.wrapPointer(buffer, Box2D.b2Vec2);
-//b2Vec2.op_add +运算 op_sub -运算 op_mul *运算 
+//2.b2Vec2.op_add +运算 op_sub -运算 op_mul *运算 
+//3.b2Vec2返回都为引用，const b2Vec2:自动更新   b2Vec2:手动执行更新
 var context, world, debugDraw, PTM = 32;
-const USER_DATA_PLAYER=9999;
-const USER_DATA_PLANET=9998;
-const USER_DATA_GROUND=9997;
-const USER_DATA_BALL=9996;
+const USER_DATA_PLAYER = 9999;
+const USER_DATA_PLANET = 9998;
+const USER_DATA_GROUND = 9997;
+const USER_DATA_BALL = 9996;
 function using(ns, pattern) {
     if (pattern == undefined) {
         // import all
@@ -29,91 +30,98 @@ function using(ns, pattern) {
         }
     }
 }
-
-//to replace original C++ operator =
-function copyVec2(vec) {
-    return new Box2D.b2Vec2(vec.get_x(), vec.get_y());
+function drawPolygon1(vertices, fill, color = "255,0,0") {
+    context.beginPath();
+    context.fillStyle = "rgba(" + color + ",0.5)";
+    context.strokeStyle = "rgb(" + color + ")";
+    let len = vertices.length;
+    for (let i = 0; i < len; i++) {
+        let vert = vertices[i];
+        if (i == 0) context.moveTo(vert.x, vert.y);
+        else context.lineTo(vert.x, vert.y);
+    }
+    context.closePath();
+    if (fill)
+        context.fill();
+    context.stroke();
 }
-
-//to replace original C++ operator * (float)
-function scaleVec2(vec, scale) {
-    vec.set_x(scale * vec.get_x());
-    vec.set_y(scale * vec.get_y());
+function drawSegment1(vert1, vert2, color = "255,0,0") {
+    context.beginPath();
+    context.fillStyle = "rgba(" + color + ",0.5)";
+    context.strokeStyle = "rgb(" + color + ")";
+    context.moveTo(vert1.x, vert1.y);
+    context.lineTo(vert2.x, vert2.y);
+    context.stroke();
 }
-
-//to replace original C++ operator *= (float)
-function scaledVec2(vec, scale) {
-    return new Box2D.b2Vec2(scale * vec.get_x(), scale * vec.get_y());
-}
-function subVec2(vec1, vec2) {
-    return new b2Vec2(vec1.x - vec2.x, vec1.y - vec2.y);
-}
-function addVec2(vec1,vec2){
-    return new b2Vec2(vec1.x+vec2.x,vec1.y+vec2.y);
+function drawCircle1(center, radius, fill = false, color = "255,0,0") {
+    context.beginPath();
+    context.fillStyle = "rgba(" + color + ",0.5)";
+    context.strokeStyle = "rgb(" + color + ")";
+    context.arc(center.x, center.y, radius, 0, 2 * Math.PI, false);
+    if (fill) context.fill();
+    context.stroke();
 }
 
 // http://stackoverflow.com/questions/12792486/emscripten-bindings-how-to-create-an-accessible-c-c-array-from-javascript
-function createChainShape(vertices, closedLoop) {
-    var shape = new Box2D.b2ChainShape();
-    var buffer = Box2D._malloc(vertices.length * 8);
+function arrayToMalloc(vertices, buffer) {
     var offset = 0;
     for (var i = 0; i < vertices.length; i++) {
-        Box2D.HEAPF32[buffer + offset >> 2] = vertices[i].get_x();
-        Box2D.HEAPF32[buffer + (offset + 4) >> 2] = vertices[i].get_y();
+        Box2D.HEAPF32[buffer + offset >> 2] = vertices[i].x;
+        Box2D.HEAPF32[buffer + (offset + 4) >> 2] = vertices[i].y;
         offset += 8;
     }
-    var ptr_wrapped = Box2D.wrapPointer(buffer, Box2D.b2Vec2);
+    return buffer;
+}
+function createChainShape(vertices, closedLoop) {
+    var shape = new Box2D.b2ChainShape();
+    var buffer = Box2D._malloc(vertices.length * 8)
+    var ptr_wrapped = Box2D.wrapPointer(arrayToMalloc(vertices, buffer), Box2D.b2Vec2);
     if (closedLoop)
         shape.CreateLoop(ptr_wrapped, vertices.length);
-    else
-        shape.CreateChain(ptr_wrapped, vertices.length);
+    else shape.CreateChain(ptr_wrapped, vertices.length);
     return shape;
 }
 //任意边形
 function createPolygonShape(vertices) {
     var shape = new Box2D.b2PolygonShape();
-    var buffer = Box2D._malloc(vertices.length * 8);
-    var offset = 0;
-    for (var i = 0; i < vertices.length; i++) {
-        Box2D.HEAPF32[buffer + offset >> 2] = vertices[i].get_x();
-        Box2D.HEAPF32[buffer + (offset + 4) >> 2] = vertices[i].get_y();
-        offset += 8;
-    }
-    var ptr_wrapped = Box2D.wrapPointer(buffer, Box2D.b2Vec2);
+    var buffer = Box2D._malloc(vertices.length * 8)
+    var ptr_wrapped = Box2D.wrapPointer(arrayToMalloc(vertices, buffer), Box2D.b2Vec2);
     shape.Set(ptr_wrapped, vertices.length);
     return shape;
 }
-//随机多边形
-function createRandomPolygonShape(radius) {
-    var numVerts = 3.5 + Math.random() * 5;
-    numVerts = numVerts | 0;
-    var verts = [];
-    for (var i = 0; i < numVerts; i++) {
-        var angle = i / numVerts * 360.0 * 0.0174532925199432957;
-        verts.push(new b2Vec2(radius * Math.sin(angle), radius * -Math.cos(angle)));
-    }
-    return createPolygonShape(verts);
-}
+
 /****************************************************************
  * 
  ****************************************************************/
 var EasyShape = {
+    _tempV: null,
     createCircle(radius, localX = 0, localY = 0) {
         radius /= PTM;
         localX /= PTM;
         localY /= PTM;
         let circle = new b2CircleShape();
         circle.set_m_radius(radius);
-        circle.set_m_p(localX, localY);
+        circle.m_p.Set(localX, localY);
         return circle;
     },
+    /**
+     * 矩形形状
+     * @param {number} w 
+     * @param {number} h 
+     * @param {0} localX 
+     * @param {0} localY 
+     * @param {0} angle 
+     * @returns 
+     */
     createBox(w, h, localX = 0, localY = 0, angle = 0) {
         w /= PTM;
         h /= PTM;
         localX /= PTM;
         localY /= PTM;
         let box = new b2PolygonShape();
-        box.SetAsBox(w / 2, h / 2, new b2Vec2(localX, localY), angle);
+        this._tempV = this._tempV || new b2Vec2();
+        this._tempV.Set(localX, localY)
+        box.SetAsBox(w / 2, h / 2, this._tempV, angle);
         return box;
     },
     //梯形
@@ -122,10 +130,10 @@ var EasyShape = {
         bw /= PTM;
         h /= PTM;
         let vertices = [];
-        vertices.push(new b2Vec2(-tw / 2, -h / 2));
-        vertices.push(new b2Vec2(tw / 2, -h / 2));
-        vertices.push(new b2Vec2(bw / 2, h / 2));
-        vertices.push(new b2Vec2(-bw / 2, h / 2));
+        vertices.push(new createjs.Point(-tw / 2, -h / 2));
+        vertices.push(new createjs.Point(tw / 2, -h / 2));
+        vertices.push(new createjs.Point(bw / 2, h / 2));
+        vertices.push(new createjs.Point(-bw / 2, h / 2));
         let shape = createPolygonShape(vertices);
         return shape;
     },
@@ -134,39 +142,37 @@ var EasyShape = {
         radius /= PTM;
         var angle = Math.PI * 2 / verticesCount;//每个顶点之间的角度间隔
         var vertices = [];
-        var vertix;
         //移动到第一个顶点
-        for (var i = 0; i < verticesCount; i++) {
+        for (var i = 0, vertix; i < verticesCount; i++) {
             //计算每个顶点
-            vertix = new b2Vec2(radius * Math.cos(i * angle + (Math.PI - angle) / 2), radius * Math.sin(i * angle + (Math.PI - angle) / 2));
+            vertix = new createjs.Point(radius * Math.cos(i * angle + (Math.PI - angle) / 2), radius * Math.sin(i * angle + (Math.PI - angle) / 2));
             vertices.push(vertix);
         }
         var regularShape = createPolygonShape(vertices);
-
         return regularShape;
     },
     //扇形
     createFan(radius, angleSize) {
         if (angleSize >= 180) angleSize = 180;
         radius /= PTM;
-        let arcSimulateAnglePrecise = angleSize / 6;
+        let arcSimulateAnglePrecise = angleSize / 5;
         angleSize = angleSize / 180 * Math.PI;
         arcSimulateAnglePrecise = arcSimulateAnglePrecise * Math.PI / 180;
         var verticesList = [];
-        var tempVertex = new b2Vec2();
+        var tempVertex = new createjs.Point();
         verticesList.push(tempVertex);
 
         // var verticesCount = Math.floor(Math.PI * 2 / arcSimulateAnglePrecise * angleSize / Math.PI / 2) + 1;
-        for (var i = 0; i < 6; i++) {
-            tempVertex = copyVec2(tempVertex);
-            tempVertex.Set(
+        for (var i = 0; i < 5; i++) {
+            tempVertex = tempVertex.clone();
+            tempVertex.setValues(
                 radius * Math.cos(arcSimulateAnglePrecise * i + (Math.PI - angleSize) / 2),
                 radius * Math.sin(arcSimulateAnglePrecise * i + (Math.PI - angleSize) / 2)
             );
             verticesList.push(tempVertex);
         }
-        tempVertex = copyVec2(tempVertex);
-        tempVertex.Set(
+        tempVertex = tempVertex.clone();
+        tempVertex.setValues(
             radius * Math.cos(angleSize + (Math.PI - angleSize) / 2),
             radius * Math.sin(angleSize + (Math.PI - angleSize) / 2)
         );
@@ -183,19 +189,19 @@ var EasyShape = {
         var r = (h * h + w * w / 4) / h / 2
         var angleSize = Math.acos((r - h) / r) * 2;
         if (angleSize < arcSimulateAnglePrecise) throw Error("the angle of semicircle is too small");
-        var verticesList = new Array();
-        var tempVertex = new b2Vec2();
+        var verticesList = [];
+        var tempVertex = new createjs.Point();
 
         for (var i = 0; i < 6; i++) {
-            tempVertex = copyVec2(tempVertex);
-            tempVertex.Set(
+            tempVertex = tempVertex.clone();
+            tempVertex.setValues(
                 r * Math.cos(arcSimulateAnglePrecise * i + (Math.PI - angleSize) / 2),
                 r * Math.sin(arcSimulateAnglePrecise * i + (Math.PI - angleSize) / 2) - r + h
             );
             verticesList.push(tempVertex);
         }
-        tempVertex = copyVec2(tempVertex);
-        tempVertex.Set(
+        tempVertex = tempVertex.clone();
+        tempVertex.setValues(
             r * Math.cos(angleSize + (Math.PI - angleSize) / 2),
             r * Math.sin(angleSize + (Math.PI - angleSize) / 2) - r + h
         );
@@ -217,12 +223,12 @@ var EasyShape = {
         w /= PTM;
         h /= PTM;
         var px, py;
-        var verticesList = new Array();
+        var verticesList = [];
         var verticesCount = Math.floor(Math.PI * 2 / arcSimulateAnglePrecise);
         for (var i = 0; i < verticesCount; i++) {
             px = w / 2 * Math.cos(arcSimulateAnglePrecise * i);
             py = h / 2 * Math.sin(arcSimulateAnglePrecise * i);
-            verticesList.push(new b2Vec2(px, py));
+            verticesList.push(new createjs.Point(px, py));
         }
 
         var shape = createPolygonShape(verticesList);
@@ -233,50 +239,90 @@ var EasyShape = {
         w /= PTM;
         h /= PTM;
         var verticesList = [];
-        verticesList.push(new b2Vec2(-w / 2, -h / 2));
-        verticesList.push(new b2Vec2(w / 2, -h / 2));
-        verticesList.push(new b2Vec2(w / 2, h / 2));
-        verticesList.push(new b2Vec2(0, h / 2 + 10 / 30));
-        verticesList.push(new b2Vec2(-w / 2, h / 2));
+        verticesList.push(new createjs.Point(-w / 2, -h / 2));
+        verticesList.push(new createjs.Point(w / 2, -h / 2));
+        verticesList.push(new createjs.Point(w / 2, h / 2));
+        verticesList.push(new createjs.Point(0, h / 2 + 10 / 30));
+        verticesList.push(new createjs.Point(-w / 2, h / 2));
         var shape = createPolygonShape(verticesList);
         return shape;
+    },
+    //随机多边形
+    createRandomPolygonShape(radius) {
+        radius /= PTM;
+        var numVerts = 3.5 + Math.random() * 5;
+        numVerts = numVerts | 0;
+        var verts = [];
+        for (var i = 0; i < numVerts; i++) {
+            var angle = i / numVerts * 360.0 * 0.0174532925199432957;
+            verts.push(new createjs.Point(radius * Math.sin(angle), radius * -Math.cos(angle)));
+        }
+        return createPolygonShape(verts);
     }
 }
 
 var EasyBody = {
+    bodyDef: null, fixtureDef: null,
     getEmptyBody(xpos = 0, ypos = 0, type = 0) {
         xpos /= PTM;
         ypos /= PTM;
-        let bodyDef = new b2BodyDef();
-        bodyDef.type = type;
-        bodyDef.position.Set(xpos, ypos);
-        return world.CreateBody(bodyDef);
+        this.bodyDef = this.bodyDef || new b2BodyDef();
+        this.bodyDef.type = type;
+        this.bodyDef.allowSleep = true;
+        this.bodyDef.fixedRotation = false;
+        this.bodyDef.bullet = false;
+        this.bodyDef.position.Set(xpos, ypos);
+        this.bodyDef.angle = 0;
+        this.bodyDef.awake = true;
+        this.bodyDef.angularDamping = 0;
+        this.bodyDef.linearDamping = 0;
+        this.bodyDef.linearVelocity.Set(0, 0);
+        this.bodyDef.angularVelocity = 0;
+
+        return world.CreateBody(this.bodyDef);
     },
-    _getFixtureDef() {
-        var fixtureDefine = new b2FixtureDef();
-        fixtureDefine.density = 3;
-        fixtureDefine.friction = 0.3;
-        fixtureDefine.restitution = 0.3;
-        return fixtureDefine;
+    /**
+    * 复制刚体属性
+    * @param {*} body 
+    * @returns 
+    */
+    getCopyBodyDef(body) {
+        this.bodyDef = this.bodyDef || new b2BodyDef();
+        this.bodyDef.type = body.GetType();
+        this.bodyDef.allowSleep = body.IsSleepingAllowed();
+        this.bodyDef.angle = body.GetAngle();
+        this.bodyDef.angularDamping = body.GetAngularDamping();
+        this.bodyDef.angularVelocity = body.GetAngularVelocity();
+        this.bodyDef.fixedRotation = body.IsFixedRotation();
+        this.bodyDef.bullet = body.IsBullet();
+        this.bodyDef.awake = body.IsAwake();
+        this.bodyDef.linearDamping = body.GetLinearDamping();
+        this.bodyDef.linearVelocity = body.GetLinearVelocity();
+        this.bodyDef.position = body.GetPosition();
+        return this.bodyDef;
+    },
+    _createFixtureDef() {
+        this.fixtureDef = this.fixtureDef || new b2FixtureDef();
+        this.fixtureDef.density = 3;
+        this.fixtureDef.friction = 0.3;
+        this.fixtureDef.restitution = 0.3;
     },
     createBodyFromShape(xpos, ypos, shape, type = 2) {
-        var fixtureDefine = this._getFixtureDef();
-        fixtureDefine.shape = shape;
-
+        this._createFixtureDef();
+        this.fixtureDef.shape = shape;
         var body = this.getEmptyBody(xpos, ypos, type);
-        body.CreateFixture(fixtureDefine);
-
+        body.CreateFixture(this.fixtureDef);
         return body;
     },
     /**
-         * 创建并返回一个标准矩形刚体
-         * @param posX	坐标x
-         * @param posY	坐标y
-         * @param boxWidth	宽度
-         * @param boxHeight 高度
-         * @param type	刚体类型，b2Body中刚体类型常量之一
-         * @return 
-         */
+    * 创建并返回一个标准矩形刚体
+    * @param posX	坐标x
+    * @param posY	坐标y
+    * @param boxWidth	宽度
+    * @param boxHeight 高度
+    * @param {2}type	刚体类型，b2Body中刚体类型常量之一
+    * @return body
+    */
     createBox(posX, posY, boxWidth, boxHeight, type = 2) {
         var shape = EasyShape.createBox(boxWidth, boxHeight);
         var body = this.createBodyFromShape(posX, posY, shape, type);
@@ -292,7 +338,18 @@ var EasyBody = {
         var body = this.createBodyFromShape(xpos, ypos, shape, type);
         return body;
     },
+    /**
+     * 
+     * @param {Array} points 
+     * @param {false} colsedLoop 
+     * @param {0} type 
+     * @returns body
+     */
     createChain(points, colsedLoop, type = 0) {
+        for (let i = 0; i < points.length; i++) {
+            points[i].x /= PTM;
+            points[i].y /= PTM;
+        }
         var shape = createChainShape(points, colsedLoop);
         var body = this.createBodyFromShape(0, 0, shape, type);
         return body;
@@ -337,11 +394,18 @@ var EasyBody = {
         var body = this.createBodyFromShape(0, 0, shape, type);
         return body;
     },
-    /*
-    * 在Box2D世界中创建围绕canvas四周的静态墙体，
-    * @param	world 承载所有刚体的Box2D世界
-    * @param	canvas	要用静态墙体包围的舞台
-    */
+    /**
+     * 创建墙体
+     * @param {*} x 
+     * @param {*} y 
+     * @param {*} w 
+     * @param {*} h 
+     * @param {false} topOpen 
+     * @param {false} bottomOpen 
+     * @param {0} type 默认静态刚体
+     * @param {20} thinkness 
+     * @param {true} isFullFilter 
+     */
     createRectangle(x, y, w, h, topOpen = false, bottomOpen = false, type = 0, thinkness = 20, isFullFilter = true) {
         //设置filterData，让该Rectangle对所有刚体进行碰撞检测
         var fullFilter = new b2Filter();
@@ -366,31 +430,56 @@ var EasyBody = {
         //right
         wall = this.createBox(x + w, y + h / 2, thinkness, h, type);
         wall.GetFixtureList().SetFilterData(fullFilter);
+    },
+    /**
+    * 分裂刚体
+    * @param {*} body 
+    * @param {*} callback 
+    */
+    splitsBody(body, callback) {
+        var fixture = body.GetFixtureList();
+        while (fixture.a) {
+            let next = fixture.GetNext();
+            if (callback(fixture)) {
+                let body1 = world.CreateBody(this.getCopyBodyDef(body));
+                body1.CreateFixture(fixture.GetShape(), 3);
+                body.DestroyFixture(fixture);
+            }
+            fixture = next;
+        }
     }
 };
-var mouseJoint = null;
 var EasyWorld = {
+    mouseJoint: null,
+    _point: null,
+    _callback: null,
+    _ab: null,
+    _mouseJointDef: null,
+    _fixedPoint: null,
+    _revoluteJointDef: null,
     getBodyAt(px, py) {
         px /= PTM;
         py /= PTM;
-        let point = new b2Vec2(px, py);
+        this._point = this._point || new b2Vec2();
+        this._point.Set(px, py);
         let returnbody = null;
-        var callback = new Box2D.JSQueryCallback();
-        callback.ReportFixture = function (fixture) {
+        this._callback = this._callback || new Box2D.JSQueryCallback();
+        let t = this;
+        this._callback.ReportFixture = function (fixture) {
             let f = Box2D.wrapPointer(fixture, b2Fixture);
             let body = f.GetBody();
             let shape = f.GetShape();
-            if (shape.TestPoint(body.GetTransform(), point)) {
+            if (shape.TestPoint(body.GetTransform(), t._point)) {
                 returnbody = body;
                 return false;
             }
             return true;
         }
-        let ab = new b2AABB();
+        this._ab = this._ab || new b2AABB();
         let abSize = 1 / PTM;
-        ab.lowerBound.Set(point.x - abSize, point.y - abSize);
-        ab.upperBound.Set(point.x + abSize, point.y + abSize);
-        world.QueryAABB(callback, ab);
+        this._ab.lowerBound.Set(this._point.x - abSize, this._point.y - abSize);
+        this._ab.upperBound.Set(this._point.x + abSize, this._point.y + abSize);
+        world.QueryAABB(this._callback, this._ab);
         return returnbody;
     },
     /**
@@ -401,48 +490,51 @@ var EasyWorld = {
      * @param {false} isStrictDrag 是否开启精确拖拽
      * @returns 
      */
-    drawBodyTo(body, mouseX, mouseY, isStrictDrag = false) {
-        var mouseVector = new b2Vec2();
+    drawBodyTo(body, mouseX, mouseY, maxForce = 20, isStrictDrag = false) {
+        this._point = this._point || new b2Vec2();
         if (body == null) return;
         if (body.GetType() != b2_dynamicBody) return;
         mouseX /= PTM;
         mouseY /= PTM;
-        if (mouseJoint == null) {
-            //创建鼠标关节需求
-            var mouseJointDef = new b2MouseJointDef();
-            mouseJointDef.bodyA = world.CreateBody(new b2BodyDef());//设置鼠标关节的一个节点为空刚体，GetGroundBody()可以理解为空刚体
-            mouseJointDef.bodyB = body;//设置鼠标关节的另一个刚体为鼠标点击的刚体
-            mouseJointDef.target.Set(mouseX, mouseY);//更新鼠标关节拖动的点
-            mouseJointDef.maxForce = 1000 * body.GetMass();//设置鼠标可以施加的最大的力
-            // mouseJointDef.collideConnected(true);
-            //创建鼠标关节
-            mouseJoint = world.CreateJoint(mouseJointDef);
-            mouseJoint=Box2D.castObject(mouseJoint,Box2D.b2MouseJoint);
+        if (isStrictDrag) {
+            body.SetTransform(this._point, body.GetAngle());
+        } else {
+            if (this.mouseJoint == null) {
+                //创建鼠标关节需求
+                this._mouseJointDef = this._mouseJointDef || new b2MouseJointDef();
+                this._mouseJointDef.bodyA = EasyBody.getEmptyBody();//设置鼠标关节的一个节点为空刚体，GetGroundBody()可以理解为空刚体
+                this._mouseJointDef.bodyB = body;//设置鼠标关节的另一个刚体为鼠标点击的刚体
+                this._mouseJointDef.target.Set(mouseX, mouseY);//更新鼠标关节拖动的点
+                this._mouseJointDef.maxForce = maxForce * body.GetMass();//设置鼠标可以施加的最大的力
+                // mouseJointDef.collideConnected(true);
+                //创建鼠标关节
+                this.mouseJoint = world.CreateJoint(this._mouseJointDef);
+                this.mouseJoint = Box2D.castObject(this.mouseJoint, Box2D.b2MouseJoint);
+            }
+            this._point.x = mouseX;
+            this._point.y = mouseY;
+            this.mouseJoint.SetTarget(this._point);
         }
-        mouseVector.x = mouseX;
-        mouseVector.y = mouseY;
-        if (isStrictDrag || body.GetJointList() == null) {
-            body.SetTransform(mouseVector, body.GetAngle());
-        }
-        mouseJoint.SetTarget(mouseVector);
+        this._point.x = mouseX;
+        this._point.y = mouseY;
     },
     stopDragBody() {
-        if (mouseJoint != null) {
-            world.DestroyJoint(mouseJoint);
-            mouseJoint = null;
+        if (this.mouseJoint != null) {
+            world.DestroyJoint(this.mouseJoint);
+            this.mouseJoint = null;
         }
     },
-    fixBodyAt(body, posX, posY, force = 0) {
+    fixBodyAt(body, posX, posY, force = 0, motorSpeed = 0) {
         posX /= PTM;
         posY /= PTM;
-        var fixedPoint = new b2Vec2(posX, posY);
-        var revoluteJointDef = new b2RevoluteJointDef();
-        revoluteJointDef.Initialize(world.CreateBody(new b2BodyDef()), body, fixedPoint);
-        revoluteJointDef.localAnchorB = body.GetLocalPoint(fixedPoint);
-        revoluteJointDef.enableMotor = true;
-        revoluteJointDef.motorSpeed = 0;
-        revoluteJointDef.maxMotorTorque = force;
-        world.CreateJoint(revoluteJointDef);
+        this._fixedPoint = this._fixedPoint || new b2Vec2();
+        this._fixedPoint.Set(posX, posY);
+        this._revoluteJointDef = this._revoluteJointDef || new b2RevoluteJointDef();
+        this._revoluteJointDef.Initialize(EasyBody.getEmptyBody(this._fixedPoint.x * PTM, this._fixedPoint.y * PTM), body, this._fixedPoint);
+        this._revoluteJointDef.enableMotor = true;
+        this._revoluteJointDef.motorSpeed = motorSpeed;
+        this._revoluteJointDef.maxMotorTorque = force;
+        world.CreateJoint(this._revoluteJointDef);
     },
     releaseBody(body) {
         if (body == null) return;
@@ -463,14 +555,16 @@ class Trail extends createjs.Shape {
         this.trailColor = "rgba(255,255,255,0.5)";
         this._dotSize = 1;
         this._bird = body;
-        this._birdPrePos = copyVec2(body.GetPosition());
+        let p = body.GetPosition();
+        this._birdPrePos = new createjs.Point(p.x, p.y);
     }
     update() {
         this._drawDotTo(this._bird.GetPosition())
     }
     startFromHere() {
         this.graphics.clear();
-        this._birdPrePos = copyVec2(this._bird.GetPosition())
+        let p = this._bird.GetPosition();
+        this._birdPrePos.setValues(p.x, p.y);
     }
     _drawDotTo(birdCurPos) {
         this.graphics.setStrokeStyle(1).beginStroke(this.trailColor);
@@ -497,8 +591,6 @@ class Trail extends createjs.Shape {
  */
 class ContactListener {
     constructor() {
-        this._tempBodyA = null;
-        this._tempBodyB = null;
         this.contactListener = new Box2D.JSContactListener();
         world.SetContactListener(this.contactListener);
         this.contactListener.PreSolve = (contactPtr, b2ManifoldPtr) => {
@@ -520,33 +612,52 @@ class ContactListener {
             this.EndContact(contact);
         }
     }
-    PreSolve(contact,manifold) { };
+    PreSolve(contact, manifold) { };
     BeginContact(contact) { }
-    PostSolve(contact,impulse) { };
+    PostSolve(contact, impulse) { };
     EndContact(contact) { }
+    /**
+     * 查找目标对象
+     * @param {*} contact 
+     * @param {number} targetA 
+     * @returns 
+     */
     sortByOneBody(contact, targetA) {
-        this._tempBodyA = contact.GetFixtureA().GetBody();
-        this._tempBodyB = contact.GetFixtureB().GetBody();
-        var userDataA = this._tempBodyA.GetUserData();
-        var userDataB = this._tempBodyB.GetUserData();
+        let _tempBodyA = contact.GetFixtureA().GetBody();
+        let _tempBodyB = contact.GetFixtureB().GetBody();
+        var userDataA = _tempBodyA.GetUserData();
+        var userDataB = _tempBodyB.GetUserData();
         var result;
         if (userDataA == targetA) {
-            result = [this._tempBodyA, this._tempBodyB];
+            result = [_tempBodyA, _tempBodyB];
         } else if (userDataB == targetA) {
-            result = [this._tempBodyB, this._tempBodyA];
+            result = [_tempBodyB, _tempBodyA];
+        }
+        return result;
+    }
+    sortByOneFixture(contact, userData) {
+        let tempFA = contact.GetFixtureA();
+        let tempFB = contact.GetFixtureB();
+        let userDataA = tempFA.GetUserData();
+        let userDataB = tempFB.GetUserData();
+        let result;
+        if (userDataA == userData) {
+            result = [tempFA, tempFB]
+        } else if (userDataB == userData) {
+            result = [tempFB, tempFA];
         }
         return result;
     }
     sortByTwoBody(contact, targetA, targetB) {
         var checkResult;
-        this._tempBodyA = contact.GetFixtureA().GetBody();
-        this._tempBodyB = contact.GetFixtureB().GetBody();
-        var userDataA = this._tempBodyA.GetUserData();
-        var userDataB = this._tempBodyB.GetUserData();
+        let _tempBodyA = contact.GetFixtureA().GetBody();
+        let _tempBodyB = contact.GetFixtureB().GetBody();
+        var userDataA = _tempBodyA.GetUserData();
+        var userDataB = _tempBodyB.GetUserData();
         if (userDataA == targetA && userDataB == targetB) {
-            checkResult = [this._tempBodyA, this._tempBodyB];
+            checkResult = [_tempBodyA, _tempBodyB];
         } else if (userDataB == targetA && userDataA == targetB) {
-            checkResult = [this._tempBodyB, this._tempBodyA];
+            checkResult = [_tempBodyB, _tempBodyA];
         }
         return checkResult;
     }
@@ -558,7 +669,7 @@ class ContactListener {
     getContactNomal(contact) {
         var wm = new b2WorldManifold();
         contact.GetWorldManifold(wm);
-        return wm.normal;
+        return wm.get_normal();
     }
     getContactPoint(contact) {
         let wm = new b2WorldManifold();
@@ -571,37 +682,35 @@ class BallMoveContactListener extends ContactListener {
         super()
     }
     PreSolve(contact) {
-        var checkResult = this.sortByOneBody(contact,USER_DATA_PLAYER);
+        var checkResult = this.sortByOneBody(contact, USER_DATA_BALL);
         if (!checkResult) return;
-        let player=checkResult[0];
+        let player = checkResult[0];
         let another = checkResult[1];
         if (another.GetUserData() == USER_DATA_GROUND) {
             let velocity = player.GetLinearVelocity();
             if (velocity.y >= 0) {
-                this.checkIsReadyToJump(contact,player);
+                this.checkIsReadyToJump(contact, player);
             }
-        } else if (another.GetUserData() ==USER_DATA_PLANET) {
-            this.isContactWithPlatform(contact,player);
+        } else if (another.GetUserData() == USER_DATA_PLANET) {
+            this.isContactWithPlatform(contact, player);
         }
     }
     EndContact(contact) {
-        var checkResult = this.sortByOneBody(contact,USER_DATA_PLAYER);
+        var checkResult = this.sortByOneBody(contact, USER_DATA_BALL);
         if (!checkResult) return;
         checkResult[0].isReadyToJump = false;
     }
-    isContactWithPlatform(contact,player) {
+    isContactWithPlatform(contact, player) {
         let velocity = player.GetLinearVelocity();
         if (velocity.y < 0) {
             contact.SetEnabled(false);
         } else {
-            this.checkIsReadyToJump(contact,player);
+            this.checkIsReadyToJump(contact, player);
         }
     }
-    checkIsReadyToJump(contact,player) {
+    checkIsReadyToJump(contact, player) {
         contact.SetRestitution(0)
-        let wm = new b2WorldManifold();
-        contact.GetWorldManifold(wm);
-        let v = wm.get_normal();
+        let v = this.getContactNomal(contact);
         let contactAngle = Math.atan2(v.y, v.x);
         if (contactAngle < -Math.PI / 4 && contactAngle > -Math.PI * 3 / 4) player.isReadyToJump = true;
     }
@@ -623,13 +732,17 @@ class BirdThrower extends createjs.Container {
         this._mousePoint = new b2Vec2();
         this._activeSize = 70;
         this._distanceToCenter = new b2Vec2();
-        this._center = copyVec2(bird.body.GetPosition());
+        let p = bird.body.GetPosition();
+        this._center = new createjs.Point(p.x, p.y);
 
         this._trail = new Trail(this, bird.body)
         this._dragLine = new createjs.Shape();
         this.addChild(this._dragLine);
         parent.addChild(this._trail)
         this.drawActiveSize();
+
+        this.impulse = new b2Vec2();
+
         this.addEvent();
     }
     addEvent() {
@@ -644,11 +757,12 @@ class BirdThrower extends createjs.Container {
             if (this._isBirdPressed) {
                 this._isBirdPressed = false;
                 this._bird.body.SetActive(true);
-                var impulse = copyVec2(this._distanceToCenter);
+                // var impulse = copyVec2(this._distanceToCenter);
+                this.impulse.Set(this._distanceToCenter.x, this._distanceToCenter.y);
                 let mass = this._bird.body.GetMass();
-                impulse.Set(-impulse.x * mass * this.maxThrowImpulse, -impulse.y * mass * this.maxThrowImpulse)
+                this.impulse.Set(-this.impulse.x * mass * this.maxThrowImpulse, -this.impulse.y * mass * this.maxThrowImpulse)
 
-                this._bird.body.ApplyLinearImpulse(impulse, this._bird.body.GetPosition());
+                this._bird.body.ApplyLinearImpulse(this.impulse, this._bird.body.GetPosition());
                 this.isBirdMoveing = true;
                 this._trail.startFromHere();
                 this._dragLine.graphics.clear();
@@ -698,46 +812,5 @@ class BirdThrower extends createjs.Container {
         this._bird.body.SetAngularVelocity(0);
         this._bird.body.SetTransform(new b2Vec2(this.x / PTM, this.y / PTM), 0);
         this._bird.body.SetActive(false);
-    }
-
-}
-/**
- * 复制刚体属性
- * @param {*} body 
- * @returns 
- */
-function getDefinition(body) {
-    var bd = new b2BodyDef();
-    bd.type = body.GetType();
-    bd.allowSleep = body.IsSleepingAllowed();
-    bd.angle = body.GetAngle();
-    bd.angularDamping = body.GetAngularDamping();
-    bd.angularVelocity = body.GetAngularVelocity();
-    bd.fixedRotation = body.IsFixedRotation();
-    bd.bullet = body.IsBullet();
-    bd.awake = body.IsAwake();
-    bd.linearDamping = body.GetLinearDamping();
-    bd.linearVelocity = body.GetLinearVelocity();
-    bd.position = body.GetPosition();
-    // bd.userData = body.GetUserData();
-    return bd;
-}
-/**
- * 分裂刚体
- * @param {*} body 
- * @param {*} callback 
- */
-function splits(body, callback) {
-    var fixture = body.GetFixtureList();
-    var next;
-    while (fixture.a) {
-        next = fixture.GetNext();
-        if (callback(fixture)) {
-            let body1 = world.CreateBody(getDefinition(body));
-            body1.CreateFixture(fixture.GetShape(), 3);
-            
-            body.DestroyFixture(fixture);
-        }
-        fixture = next;
     }
 }

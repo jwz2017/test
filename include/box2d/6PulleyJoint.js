@@ -6,7 +6,7 @@ var contactListener;
 var player;
 export class PulleyJoint extends Game {
     constructor() {
-        super("PulleyJoint");
+        super("滑轮关节");
         gframe.buildWorld(true);
         this.createJoint();
         this.createBodies();
@@ -44,7 +44,6 @@ export class PulleyJoint extends Game {
         EasyBody.createBox(500,150,100,20,0).SetUserData(USER_DATA_GROUND);
 
         player=new BoxBall(50,100,15);
-        player.body.SetUserData(USER_DATA_PLAYER);
         this.addChild(player);
     }
 

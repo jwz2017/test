@@ -75,25 +75,27 @@ import { PulleyJoint } from "./box2d/6PulleyJoint.js";
 import { FrictionJoint } from "./box2d/6FrictionJoint.js";
 import { GearJoint } from "./box2d/6GearJoint.js";
 import { WheelJoint } from "./box2d/6WheelJoint.js";
-Box2D().then(function (r) {
-    Box2D = r;
-    using(Box2D, 'b2.+');
-    window.onload = function () {
-        /*************游戏入口*****/
-        gframe.buildStage('canvas');
-    };
-});
+import { RopeJoint } from "./box2d/6RopeJoint.js";
+import { MotorJoint } from "./box2d/6MotorJoint.js";
+import { SoftBody1 } from "./box2d/7SoftBody1.js";
+import { SoftBody2 } from "./box2d/7SoftBody2.js";
+import { ClipperDemo } from "./box2d/7Clipper.js";
+import { WaterDome } from "./box2d/7waterDome.js";
+import { IceBreaker } from "./box2d/7IceBreakerDemo.js";
+window.onload = function () {
+    Box2D().then(function (r) {
+        Box2D = r;
+        using(Box2D, 'b2.+');
+    })
+    /*************游戏入口*****/
+    gframe.buildStage('canvas');
+};
 //关闭按钮点击
 closeGame.onclick = function (e) {
     e.target.parentNode.style.display = "none";
     //应许滚动
     document.getElementsByTagName('body')[0].setAttribute('style', 'position:relative;');
-    if (queue && !queue.loaded) {
-        queue.removeAllEventListeners();
-        stage.removeAllChildren();
-    } else {
-        gframe.reset();
-    }
+    gframe.reset();
 }
 //收缩，展开
 var genduo1 = document.getElementById("genduo1"),
@@ -122,5 +124,5 @@ window.productClick = function (a) {
     containerDiv.style.display = "block";
     //禁止滚动
     document.getElementsByTagName('body')[0].setAttribute('style', 'position:fixed; width:100%;');
-    gframe.preload(eval(a.title),true);
+    gframe.preload(eval(a.title), true);
 }

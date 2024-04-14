@@ -1,5 +1,6 @@
 import { stage, gframe } from "../../classes/gframe.js";
 import { Game, } from "../../classes/Game.js";
+import { Vector } from "../../classes/actor.js";
 //游戏变量;
 var planetRadius = 60, playerSize = 20;
 var planet1, planet2, player, trail;
@@ -7,7 +8,7 @@ var contactListener;
 var weldJoint;
 export class WeldJoint extends Game {
     constructor() {
-        super("WeldJoint");
+        super("粘贴关节");
         gframe.buildWorld(true);
 
         planet1 = EasyBody.createCircle(120, 200, planetRadius, 1);
@@ -24,6 +25,8 @@ export class WeldJoint extends Game {
         contactListener = new WeldContactListener();
 
         trail = new Trail(this.container, player);
+        this.tempV = new b2Vec2();
+        this.jointDef = new b2WeldJointDef();
     }
     waitComplete() {
         stage.on("stagemousedown", () => {
@@ -44,31 +47,36 @@ export class WeldJoint extends Game {
         if (!contactListener.contactPlanet) trail.update();
     }
     resumePlayerAndJump() {
-        player.SetLinearVelocity(new b2Vec2());
+        this.tempV.SetZero()
+        player.SetLinearVelocity(this.tempV);
 
-        let impulse = subVec2(player.GetPosition(), contactListener.contactPlanet.GetPosition());
-        impulse.Normalize();
-        scaleVec2(impulse, player.GetMass() * 10);
-        player.ApplyLinearImpulse(impulse, player.GetPosition());
+        let impulse = Vector.sub(player.GetPosition(), contactListener.contactPlanet.GetPosition());
+        impulse.normalize();
+        impulse.mul(player.GetMass() * 10)
+        this.tempV.Set(impulse.x, impulse.y)
+        player.ApplyLinearImpulse(this.tempV, player.GetPosition());
     }
     attachPlayerToPlanet() {
         let localDistanceToAttach = playerSize / 2 + planetRadius;
-        let distancePlayerToPlanet = subVec2(player.GetPosition(), contactListener.contactPlanet.GetPosition());
-        distancePlayerToPlanet.Normalize();
-        scaleVec2(distancePlayerToPlanet, localDistanceToAttach / PTM);
-        let worldPositionOfPlayer = addVec2(contactListener.contactPlanet.GetPosition(), distancePlayerToPlanet);
-        player.SetTransform(worldPositionOfPlayer, Math.atan2(distancePlayerToPlanet.y, distancePlayerToPlanet.x));
+        let distancePlayerToPlanet = Vector.sub(player.GetPosition(), contactListener.contactPlanet.GetPosition());
+        distancePlayerToPlanet.normalize();
+        distancePlayerToPlanet.mul(localDistanceToAttach / PTM)
+        let angle = distancePlayerToPlanet.angle;
+        distancePlayerToPlanet.add(contactListener.contactPlanet.GetPosition());
+        this.tempV.Set(distancePlayerToPlanet.x, distancePlayerToPlanet.y)
+        player.SetTransform(this.tempV, angle);
 
         let anchor = player.GetPosition();
-        let jointDef = new b2WeldJointDef();
-        jointDef.Initialize(contactListener.contactPlanet, player, anchor);
-        weldJoint = world.CreateJoint(jointDef);
+        this.jointDef.Initialize(contactListener.contactPlanet, player, anchor);
+        weldJoint = world.CreateJoint(this.jointDef);
     }
     checkBoundary() {
         let p = player.GetPosition();
         if (p.y * PTM > 400 || p.x * PTM < -20 || p.x * PTM > 520) {
-            player.SetTransform(new b2Vec2(150 / PTM, -20 / PTM), 0);
-            player.SetLinearVelocity(new b2Vec2());
+            this.tempV.Set(150 / PTM, -20 / PTM)
+            player.SetTransform(this.tempV, 0);
+            this.tempV.SetZero();
+            player.SetLinearVelocity(this.tempV);
             player.SetAngularVelocity(0);
             trail.startFromHere();
         }

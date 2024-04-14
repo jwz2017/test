@@ -9,8 +9,7 @@ var xpos, ypos, zpos, ball, vpX, vpY,
 export class Velocity3D extends Game {
     constructor() {
         super("3d速度");
-        this.instructionScreen.updateTitle("wasd,shift,ctrl")
-        this.keyboard=true;
+        this.instructionText="wasd,shift,ctrl"
     }
     waitComplete() {
         xpos = ypos = zpos = 0;

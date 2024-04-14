@@ -22,7 +22,7 @@ export class LoadBitmap extends Game {
         spriteSheet1 = queue.getResult("loadspritedata");
         super("资源加载01");
         this.titleScreen = new lib.Title();
-        this.instructionScreen.title.text = "1:图片预加载\r2:九宫格使用\r3:animate库加载\r4:animate制作sprite\r5:dom加入到舞台\r6:dom加入到animate\r7:位图字体\r8:sprite animation随机播放速度";
+        this.instructionText = "1:图片预加载\r2:九宫格使用\r3:animate库加载\r4:animate制作sprite\r5:dom加入到舞台\r6:dom加入到animate\r7:位图字体\r8:sprite animation随机播放速度";
 
         /** *******************************************预加载图片**********************************************
          * 直接使用地址  queue()设置false后和getResult等同
@@ -59,7 +59,6 @@ export class LoadBitmap extends Game {
          */
         this.ma = new ma();
         this.ma.y = 100;
-        console.log(this.ma.getBounds());
 
         /*******************************************dom加入到animate******************************************************
          * 

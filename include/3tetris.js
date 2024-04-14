@@ -15,12 +15,10 @@ var nextLayer = new createjs.Container(), nextLayerLIst = [];
 var speedIndex = 0, speed = 30,maxSpeed=10;
 export class Tetris extends Game {
     static LINES="lines";
-    //static loadItem = null;
-    //static loadId = null;
     constructor() {
         super("俄罗斯方块", 300, 600, step, step);
         this.lines=0;
-        this.instructionScreen.updateTitle("w:旋转<br>asd:方向")
+        this.instructionText="w:旋转<br>asd:方向";
         this.x=stage.width-this.width>>1;
         this.y=50;
         //创建方块spritesheet
@@ -42,7 +40,7 @@ export class Tetris extends Game {
                         color="#ffff00";
                         break;
                 }
-                shape.graphics.clear().setStrokeStyle(1).beginStroke("#000").beginFill(color).drawRect(-step/2,-step/2,step,step);
+                shape.graphics.clear().setStrokeStyle(1).beginStroke("#555").beginFill(color).drawRect(-step/2,-step/2,step,step);
             }, i);
         }
         sheet = builder.build();
@@ -70,36 +68,18 @@ export class Tetris extends Game {
     }
     //初始化游戏数据
     newGame() {
-        map = [
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        ];
-
+        map=[];
+        for (let i = 0; i <19; i++) {
+            const element = new Array(10).fill(0);
+            map.push(element);
+        }
         speedIndex = 0;
         this.createGridMap(map,(ch, node) => {
             switch (ch) {
                 case 0:
                     node.actor = new Actor(node.x * step, node.y * step);
                     node.actor.setSpriteData(sheet);
-                    this.addChild(node.actor);
+                    this.addToPlayer(node.actor);
                     break;
             }
         })
@@ -116,6 +96,7 @@ export class Tetris extends Game {
         this.plusBox();
     }
     runGame() {
+        // return;
         this.minusBox();
         let key = pressed[pressed.length - 1];
         if (key && keys.stepindex-- <= 0) {

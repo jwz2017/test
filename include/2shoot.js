@@ -108,9 +108,10 @@ class Shoot extends Game {
         //创建敌机
         this.createEnemy()
         //渲染敌机
-        for (const enemy of enemys) {
-            if(enemy.active) enemy.act();
-        }
+        // for (const enemy of enemys) {
+        //     if(enemy.active) enemy.act();
+        // }
+        this.moveActors(this.enemyLayer);
         //爆炸
         for (const exploy of exployeds) {
             if (exploy.active) exploy.act();
@@ -155,7 +156,7 @@ class Shoot extends Game {
                 enemy.x = Math.random() * (stage.width - enemy.rect.width) + enemy.rect.width / 2;
                 enemy.y = -enemy.rect.height / 2;
                 enemy.updateRect();
-                stage.addChild(enemy);
+                this.addToEnemy(enemy);
                 numEnemy++;
                 this.scoreboard.update(NUMENEMY, maxEnemys - numEnemy);
             }
@@ -181,7 +182,6 @@ class Exploy extends CirActor {
     constructor(xpos, ypos) {
         super(xpos, ypos,0,0,false);
         this.setSpriteData(spriteSheet, "exployed");
-        this.hit = 54;
         this.multiple = 0;
 
     }
@@ -190,7 +190,7 @@ class Exploy extends CirActor {
             this.recycle();
             this.multiple = 0;
         } else {
-            let o = this.hitActors(enemys,this.rect,true);
+            let o = this.hitActors(game.enemyLayer.children,this.rect,true);
             if (o) {
                 this.multiple++;
                game.score += 10 * this.multiple;
@@ -211,6 +211,7 @@ class Ship extends Actor {
 class Enemy extends Actor {
     constructor(xpos, ypos) {
         super(xpos, ypos,0,0,false);
+        this.edgeBehavior=Actor.RECYCLE;
         this.setSpriteData(spriteSheet, "enemy1", 1);
         this.speed.y = 3;
         this.edgeBehavior = Actor.RECYCLE;

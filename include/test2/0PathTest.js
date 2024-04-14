@@ -1,8 +1,9 @@
 import { Game } from "../../classes/Game.js";
-import { SteeredActor, Vector } from "../../classes/actor.js";
+import { MoveManage, SteeredActor, Vector } from "../../classes/actor.js";
 import { stage } from "../../classes/gframe.js";
 
 var vehicle, path, shape;
+var moveManage=new MoveManage();
 export class PathTest extends Game {
     constructor() {
         super("路径跟随");
@@ -18,7 +19,7 @@ export class PathTest extends Game {
         });
     }
     runGame() {
-        vehicle.followPath(path, true);
+        moveManage.followPath(vehicle,path, true);
         vehicle.act();
     }
     mouseDown(e) {
