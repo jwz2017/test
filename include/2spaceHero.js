@@ -3,13 +3,12 @@ import { Actor, MoveManage, Weapon } from "../classes/actor.js";
 import { game, gframe, keys, queue, stage } from "../classes/gframe.js";
 
 window.onload = function () {
-    gframe.buildStage('canvas', true);
+    gframe.buildStage('canvas',true);
     gframe.preload(SpaceHero, true);
 };
 var spriteSheet;
 var timeToEnemy, enemyIdex;
-var enemys = [], DIFFICULTY = 2;
-var explodes = [];
+var DIFFICULTY = 2;
 var moveManage=new MoveManage();
 class SpaceHero extends Game {
     static loadItem = [{
@@ -22,9 +21,11 @@ class SpaceHero extends Game {
     }];
     constructor() {
         super();
+        // SpaceHero.style.backgroundColor="#fff"
         spriteSheet = queue.getResult("all");
         //游戏背景
-        this.background = new Background("back", this);
+        let bitmap=new createjs.Bitmap(queue.getResult("back"));
+        this.background = new Background(this,bitmap,3);
         //标题
         this.titleText = new createjs.Sprite(queue.getResult("all"), "title");
         //介绍
@@ -53,42 +54,46 @@ class SpaceHero extends Game {
     }
     //移动背景
     runGame() {
-        this.background.run();
+        this.background.update();
         //加入敌机
         this.addEnemy();
         //移动元素
         this.moveActors(this.playerLayer);
-        // this.moveActors(this.enemyLayer);
+        this.moveActors(this.enemyLayer);
     }
     addEnemy() {
         if (enemyIdex-- <= 0) {
             timeToEnemy -= DIFFICULTY;
             timeToEnemy = Math.max(timeToEnemy, 10);
-            let enemy = SpaceHero.getActor(enemys, Enemy,this.enemyLayer);
+            let enemy = SpaceHero.getActor(Enemy,this.enemyLayer);
             enemy.init();
-            enemy.setPos(300,400);
-            // enemyIdex = timeToEnemy + timeToEnemy * Math.random();
+            // enemy.setPos(300,400);
+            enemyIdex = timeToEnemy + timeToEnemy * Math.random();
         }
-        enemyIdex=5;
+        // enemyIdex=5;
 
     }
 }
-class Background {
-    constructor(urlId, parent) {
-        this.bitmap1 = new createjs.Bitmap(queue.getResult(urlId));
-        this.bitmap2 = this.bitmap1.clone();
-        this.bitmap2.regY = stage.height / 2;
-        this.bitmap2.y = -stage.height / 2;
-        this.bitmap2.scaleY = -1;
-        parent.addChildAt(this.bitmap1, 0);
-        parent.addChildAt(this.bitmap2, 0);
+class Background{
+    constructor(parent,bitmap,num=2,step=1){
+        this.bitmaps=[];
+        this.step=step;
+        this._gameheight=parent.height;
+        this._height=bitmap.getBounds().height;
+        for (let i = 0; i < num; i++) {
+            this.bitmaps.push(bitmap.clone());
+            this.bitmaps[i].y=i*this._height;
+            parent.addChildAt(this.bitmaps[i],0);
+        }
     }
-    run() {
-        this.bitmap1.y += 1;
-        this.bitmap2.y += 1;
-        if (this.bitmap1.y > stage.height) {
-            this.bitmap1.y = this.bitmap2.y - stage.height / 2;
-            this.bitmap2.y = this.bitmap1.y - stage.height / 2;
+    update(){
+        let len=this.bitmaps.length;
+        for (let i = 0; i < this.bitmaps.length; i++) {
+            let bitmap = this.bitmaps[i];
+            if(bitmap.y>this._gameheight){
+                bitmap.y-=this._height*(len);
+            }
+            bitmap.y+=this.step;
         }
     }
 }
@@ -120,7 +125,7 @@ class Ship extends Actor {
             if (actor) {
                 if (actor.type == "enemy") {
                     actor.recycle();
-                    let explode = SpaceHero.getActor(explodes, Explode, stage);
+                    let explode = SpaceHero.getActor(Explode, stage);
                     explode.x = actor.x;
                     explode.y = actor.y;
                 } else if (actor.type == "enemybullet") {
@@ -129,7 +134,7 @@ class Ship extends Actor {
                 this.image.gotoAndPlay("heroHit");
                 this.hp--;
                 if (this.hp <= 0) {
-                    let ex = SpaceHero.getActor(explodes, Explode, stage);
+                    let ex = SpaceHero.getActor(Explode, stage);
                     ex.x = this.x;
                     ex.y = this.y;
                     game.lives--
@@ -180,7 +185,7 @@ class Enemy extends Actor {
                 if (this.hp <= 0) {
                     game.score += 10;
                     game.scoreboard.update(SpaceHero.SCORE, game.score);
-                    let explode = SpaceHero.getActor(explodes, Explode, stage);
+                    let explode = SpaceHero.getActor(Explode, stage);
                     explode.x = this.x;
                     explode.y = this.y;
                     this.recycle();

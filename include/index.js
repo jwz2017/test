@@ -89,6 +89,8 @@ window.onload = function () {
     })
     /*************游戏入口*****/
     gframe.buildStage('canvas');
+    queue.loadManifest(gframe.loadItem);
+    gframe.loadItem=null;
 };
 //关闭按钮点击
 closeGame.onclick = function (e) {
@@ -124,5 +126,5 @@ window.productClick = function (a) {
     containerDiv.style.display = "block";
     //禁止滚动
     document.getElementsByTagName('body')[0].setAttribute('style', 'position:fixed; width:100%;');
-    gframe.preload(eval(a.title), true);
+    gframe._preload(eval(a.title), true);
 }

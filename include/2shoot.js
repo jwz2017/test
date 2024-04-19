@@ -9,14 +9,10 @@ window.onload = function () {
 const NUMENEMY = "plane",
     SHOTS = "shots";
 var crosshairs, spriteSheet;
-var playerBullets = [],
-    numPlayerBullets,//玩家弹药量
-    exployeds = [],
+var numPlayerBullets,//玩家弹药量
     //船只
-    ships=[],//出场船只数组
     shipStore=3,
     //敌机
-    enemys=[],
     enemyFrameCount,
     enemyWaveDely,
     enemyWaveChance,
@@ -58,7 +54,7 @@ class Shoot extends Game {
         this.scoreboard.update(SHOTS, numPlayerBullets);
         //初始化出场船只
         for (let i = 0; i <shipStore; i++) {
-            Shoot.getActor(ships,Ship);
+            Shoot.getActor(Ship);
         }
         maxEnemys = 10 + this.level * 5;
         this.scoreboard.update(NUMENEMY, maxEnemys);
@@ -75,7 +71,7 @@ class Shoot extends Game {
         //鼠标点击发射子弹
         stage.on("stagemousedown", (e) => {
             if (numPlayerBullets <= 0) return;
-            let shoot = Game.getActor(playerBullets, Shot);
+            let shoot = Game.getActor(Shot);
             numPlayerBullets--;
             this.scoreboard.update(SHOTS, numPlayerBullets)
             stage.addChild(shoot);
@@ -89,7 +85,7 @@ class Shoot extends Game {
                 y: e.stageY
             }, dis / shoot.speed.length).call(() => {
                 shoot.recycle();
-                let exploy = Game.getActor(exployeds, Exploy);
+                let exploy = Game.getActor(Exploy);
                 exploy.x=shoot.x;
                 exploy.y=shoot.y;
                 exploy.updateRect();
@@ -113,11 +109,11 @@ class Shoot extends Game {
         // }
         this.moveActors(this.enemyLayer);
         //爆炸
-        for (const exploy of exployeds) {
+        for (const exploy of Exploy.array) {
             if (exploy.active) exploy.act();
         }
         //检测是否过关
-        let isenemy = enemys.some(function (enemy) {
+        let isenemy = Enemy.array.some(function (enemy) {
             return enemy.active == true;
         });
         if (numEnemy == maxEnemys && !isenemy) {
@@ -126,11 +122,11 @@ class Shoot extends Game {
     }
     
     placeShip() {
-        let l = ships.length;
+        let l = Ship.array.length;
         let spacing = stage.width / shipStore;
         let j=0;
         for (let i = 0; i < l; i++) {
-            const ship = ships[i];
+            const ship = Ship.array[i];
             if(ship.active){
                 ship.x = spacing * (j + 1) - spacing / 2;
                 ship.y = stage.height - ship.rect.height / 2;
@@ -152,11 +148,10 @@ class Shoot extends Game {
                 enemiesToCreate = maxEnemys - numEnemy;
             }
             for (let i = 0; i < enemiesToCreate; i++) {
-                let enemy = Game.getActor(enemys, Enemy);
+                let enemy = Game.getActor(Enemy,this.enemyLayer);
                 enemy.x = Math.random() * (stage.width - enemy.rect.width) + enemy.rect.width / 2;
                 enemy.y = -enemy.rect.height / 2;
                 enemy.updateRect();
-                this.addToEnemy(enemy);
                 numEnemy++;
                 this.scoreboard.update(NUMENEMY, maxEnemys - numEnemy);
             }
@@ -171,6 +166,7 @@ class Shoot extends Game {
 }
 //玩家子弹
 class Shot extends CirActor {
+    static array=[];
     constructor() {
         super(0,0,0,false);
         this.speed.length = 0.5;
@@ -179,6 +175,7 @@ class Shot extends CirActor {
 }
 //子弹爆炸
 class Exploy extends CirActor {
+    static array=[];
     constructor(xpos, ypos) {
         super(xpos, ypos,0,0,false);
         this.setSpriteData(spriteSheet, "exployed");
@@ -202,6 +199,7 @@ class Exploy extends CirActor {
 }
 //船
 class Ship extends Actor {
+    static array=[];
     constructor(xpos, ypos) {
         super(xpos, ypos,0,0,false);
         this.setSpriteData(spriteSheet, "ship", 1, 90);
@@ -209,6 +207,7 @@ class Ship extends Actor {
 }
 //敌机
 class Enemy extends Actor {
+    static array=[];
     constructor(xpos, ypos) {
         super(xpos, ypos,0,0,false);
         this.edgeBehavior=Actor.RECYCLE;
@@ -218,7 +217,7 @@ class Enemy extends Actor {
     }
     act() {
         super.act();
-        let ob = this.hitActors(ships);
+        let ob = this.hitActors(Ship.array);
         if (ob) {
             ob.recycle();
             shipStore--;

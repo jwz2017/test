@@ -1,4 +1,4 @@
-import { stage } from "../../classes/gframe.js";
+import { queue, stage } from "../../classes/gframe.js";
 import {Vector,Actor } from "../../classes/actor.js";
 import { OBB, detectorOBBvsOBB } from "../../classes/hitTest.js";
 import { Game } from "../../classes/Game.js";
@@ -11,6 +11,7 @@ export class RectRotate extends Game {
         rect0 = new Actor(350,400,200,80);
         rect1 = new Actor(350,580,200,50);
         stage.addChild(rect0, rect1);
+    
     }
     runGame() {
         rect0.rotation += 1;

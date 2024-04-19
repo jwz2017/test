@@ -97,7 +97,7 @@ function _systemLevelIn() {
 };
 //通关
 function _systemLevelOut() {
-  game.levelOutScreen.y=0;
+  game.levelOutScreen.y = 0;
   stage.addChild(game.levelOutScreen);
   _nextSystemState = Game.state.STATE_TITLE;
   game.levelOutScreen.on("okbutton", _okButton, null, true);
@@ -225,7 +225,7 @@ function _initGame(GClass, keydown) {
     document.onkeyup = null;
   }
   game = new GClass();
-  stage.canvas.style.backgroundColor=GClass.style.backgroundColor;
+  stage.canvas.style.backgroundColor = GClass.style.backgroundColor;
   game.createTitleScreen();
   game.createInstructionScreen();
   game.createLevelInScreen();
@@ -387,7 +387,7 @@ var gframe = {
     //自适应
     _adapt();
     if (this.guiProps.isPannel) createPannel();
-    
+
     queue = new createjs.LoadQueue(true, "./assets/");
     queue.installPlugin(createjs.Sound); //注册声音插件
   },
@@ -397,13 +397,17 @@ var gframe = {
   * @param {false} widthKeyDown 是否支持键盘事件
   */
   preload(GClass, widthKeyDown) {
+    queue.loadManifest(this.loadItem)
+    this._preload(GClass, widthKeyDown)
+  },
+  _preload(GClass, widthKeyDown) {
     let manifest = null;
-    if (queue != null) queue.close();
-    if (this.loadItem) {
-      manifest = JSON.parse(JSON.stringify(this.loadItem));
-      queue.loadManifest(manifest);
-      // queue.loadManifest(this.loadItem);
-    }
+
+    // if (this.loadItem) {
+    //   manifest = JSON.parse(JSON.stringify(this.loadItem));
+    //   queue.loadManifest(manifest);
+    //   // queue.loadManifest(this.loadItem);
+    // }
     if (GClass.loadBarItem) {
       manifest = JSON.parse(JSON.stringify(GClass.loadBarItem));
       queue.loadManifest(manifest);
@@ -418,7 +422,7 @@ var gframe = {
     }
   },
   _preloadGame(GClass, widthKeyDown) {
-    if (!GClass.loadItem && !GClass.loadId) _initGame(GClass, widthKeyDown);
+    if (!GClass.loadItem && !GClass.loadId && !this.loadItem) _initGame(GClass, widthKeyDown);
     else {
       let loaderBar;
       if (GClass.LoaderBar) loaderBar = new GClass.LoaderBar();
@@ -528,21 +532,22 @@ var gframe = {
   },
   reset() {
     _switchSystemState(Game.state.STATE_WAIT_FOR_CLOSE);
-    if(game){
+    if (game) {
       game._clearBefore();
       game._clearAfter();
-      game=null;
+      game = null;
       stage.removeAllEventListeners();
       Game.style.reset();
-      
-      stage.canvas.style.background="#000";
-    }else stage.removeAllChildren();
+
+      stage.canvas.style.background = "#000";
+    } else stage.removeAllChildren();
     createjs.Ticker.paused = false;
-    if(window.world) {
-      world=null;
+    if (window.world) {
+      world = null;
       debugDraw = null;
     }
-    queue.destroy();
+    if (queue != null) queue.close();
+    // queue.destroy();
   }
 };
 export { stage, game, queue, lib, keys, pressed, gframe };

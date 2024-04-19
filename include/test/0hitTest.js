@@ -1,5 +1,5 @@
 
-import { stage} from "../../classes/gframe.js";
+import { queue, stage} from "../../classes/gframe.js";
 import { Actor } from "../../classes/actor.js";
 import { Game } from "../../classes/Game.js";
 var rect1, rect2;
@@ -18,8 +18,8 @@ export class hitTest extends Game {
         })
     }
     waitComplete() {
-        super.waitComplete();
         stage.addChild(rect1, rect2);
+        // console.log(queue.getResult("spritesheet_button"));
     }
     runGame() {
         //测试矩形碰撞

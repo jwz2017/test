@@ -203,7 +203,7 @@ class JumpPlayer extends JumpActor {
         else if (keys.attack) this.attack();
         else if (keys.skill1) this.skill1();
         else if (keys.down) this.roll();
-        else if (keys.fire) this.fire(bullets, Barrage1, game.playerLayer);
+        else if (keys.fire) this.fire(Barrage1, game.playerLayer);
     }
     startJumpAct() {
         if (keys.attack) this.jumpAttack();

@@ -21,7 +21,6 @@ var obstacleDelay = 30,
     obstacleHeightIncrease=20,
     obstacleSpeed = 1,
     obstacleSpeedMax=4,
-    obstacles=[],
     //中心障碍物几率
     centerFrequency=0.15,
     centerHeight=10,
@@ -30,8 +29,6 @@ var obstacleDelay = 30,
 var startTime,time=0,levelTime=10;
 export class Tunnel extends Game {
     static TIME = "time";
-    //static loadItem = null;
-    //static loadId = null;
     constructor() {
         super("隧道惊魂", stage.width, 380);
         this.instructionText="w:向上";
@@ -76,7 +73,7 @@ export class Tunnel extends Game {
         obstacleTick++;
         if(obstacleTick>obstacleDelay){
             obstacleTick=0;
-            let obstacle=Tunnel.getActor(obstacles,Obstacle);
+            let obstacle=Tunnel.getActor(Obstacle);
             if(Math.random()<centerFrequency){
                 obstacle.init(centerWidth,centerHeight);
                 obstacle.setPos(this.width,this.height/2+Math.random()*100-50);

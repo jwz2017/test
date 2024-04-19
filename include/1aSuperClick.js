@@ -19,8 +19,7 @@ var radius = 8,
     numCreated,
     clicks = 0,
     needed = 0,
-    achieve = 0,
-    balls = [];
+    achieve = 0;
 export class SuperClick extends Game{
     constructor() {
         super("super click");
@@ -101,10 +100,10 @@ export class SuperClick extends Game{
         if (this.playerChildren.length < maxOnScreen && numCreated < numCircles) {
             var circle;
             if (Math.random() * 100 < percentBadCircle) {
-                circle = SuperClick.getActor(balls, Ball);
+                circle = SuperClick.getActor(Ball);
                 circle.init(BAD)
             } else {
-                circle = SuperClick.getActor(balls, Ball);
+                circle = SuperClick.getActor(Ball);
                 circle.init(GOOD);
                 numCreated++;
             }

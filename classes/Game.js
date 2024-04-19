@@ -321,24 +321,23 @@ class Game extends ScrollContainer {
     static LEVEL = "level";
     static LIVES = "lives";
     //创建元素
-    static getActor(array, Actor, parent) {
-        let len = array.length,
-            i = 0;
+    static getActor(Actor, parent) {
+        Actor.array=Actor.array||[];
+        let len = Actor.array.length,i = 0;
         while (i <= len) {
-            if (!array[i]) {
-                array[i] = new Actor();
-                array[i].active = true;
+            if (!Actor.array[i]) {
+                Actor.array[i] = new Actor();
+                Actor.array[i].active = true;
                 break;
-            } else if (!array[i].active) {
-                array[i].active = true;
+            } else if (!Actor.array[i].active) {
+                Actor.array[i].active = true;
                 break;
             } else {
                 i++;
             }
         }
-        let a = array[i];
-        if (parent) parent.addChild(a)
-        return a;
+        if (parent) parent.addChild(Actor.array[i])
+        return Actor.array[i];
     };
     static clearContainer(container) {
         let l = container.numChildren - 1;

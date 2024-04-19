@@ -61,15 +61,15 @@ export class FloorDown extends Game {
     addFloor(dex) {
         let index = dex || Math.random() * 5;
         if (index < 1.2) {
-            var f = FloorDown.getActor(floor, Floor);
+            var f = FloorDown.getActor(Floor);
         } else if (index < 2) {
-            var f = FloorDown.getActor(floor2, Floor2);
+            var f = FloorDown.getActor(Floor2);
         } else if (index < 3) {
-            var f = FloorDown.getActor(floor3, Floor3);
+            var f = FloorDown.getActor(Floor3);
         } else if (index < 4) {
-            var f = FloorDown.getActor(floor4, Floor4)
+            var f = FloorDown.getActor(Floor4)
         } else if (index < 5) {
-            var f = FloorDown.getActor(floor5, Floor5)
+            var f = FloorDown.getActor(Floor5)
         }
         f.activate();
         f.setPos(Math.random() * 500, 680);

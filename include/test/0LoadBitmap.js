@@ -111,6 +111,7 @@ export class LoadBitmap extends Game {
         })
     }
     waitComplete() {
+        stage.enableMouseOver();
         super.waitComplete();
         this.a = new ScoreBoard(0, 300, true);
         this.a.createTextElement("ddd", 0);

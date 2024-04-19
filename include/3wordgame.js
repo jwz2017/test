@@ -13,8 +13,8 @@ var abc="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 var lettersNeeded=0;
 export class WordGame extends Game{
     constructor() {
-        canvas.style.backgroundColor="#555";
         super("WordGame");
+        WordGame.style.backgroundColor="#555"
         this.maxLevel=answers.length;
         this.x=200;
         this.y=200;

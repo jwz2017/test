@@ -691,9 +691,9 @@ class JumpActor extends Actor {
     }
   }
 
-  fire(bullets, Bullet, parent) {//放子弹
+  fire(Bullet, parent) {//放子弹
     if (this.idle) {
-      let bullet = Game.getActor(bullets, Bullet);
+      let bullet = Game.getActor(Bullet,parent);
       this.status = "fire";
       this.image.on("animationend", this.stopAct, this, true);
       this.changeAct();
@@ -707,7 +707,6 @@ class JumpActor extends Actor {
       bullet.x = this.x;
       bullet.y = this.y;
       bullet.updateRect();
-      parent.addChild(bullet);
     }
   }
 
@@ -806,12 +805,8 @@ class Weapon {
     this._fireIndex = 0;
     this.fireStep = fireStep;
     this.fireType = fireType;
-    this.setBullet(Bullet);
+    this.Bullet=Bullet;
     this._bulletOffAngle = 10 * Math.PI / 180;
-  }
-  setBullet(Bullet){
-    this.Bullet = Bullet;
-    this.Bullet.bullets = this.Bullet.bullets || [];
   }
   /**
    * 开火
@@ -824,10 +819,10 @@ class Weapon {
       if (this._fireIndex-- < 0) {
         this._fireIndex = this.fireStep;
         for (let i = 0; i < this.fireType; i++) {
-          const bullet = Game.getActor(this.Bullet.bullets, this.Bullet, parent||actor.parent);
+          const bullet = Game.getActor(this.Bullet, parent||actor.parent);
           this._activateBullet(i, bullet,actor);
           if (i > 0) {
-            let bullet1 = Game.getActor(this.Bullet.bullets, this.Bullet, parent||actor.parent);
+            let bullet1 = Game.getActor(this.Bullet, parent||actor.parent);
             this._activateBullet(-i, bullet1,actor);
           }
         }

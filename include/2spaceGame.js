@@ -10,7 +10,7 @@ var ROCK_TIME = 500,
     SUB_ROCK_COUNT = 3,
     DIFFICULTY = 2;
 
-var nextRock, rockBelt, timeToRock, bullets;
+var nextRock, timeToRock;
 var ship;
 var moveManage = new MoveManage();
 class SpaceShip extends Game {
@@ -31,8 +31,6 @@ class SpaceShip extends Game {
         this.scoreboard.update("level", this.level);
         nextRock = 0;
         timeToRock = ROCK_TIME;
-        bullets = [];
-        rockBelt = [];
         ship.speed = new Vector(0, 0);
     }
     waitComplete() {
@@ -49,7 +47,7 @@ class SpaceShip extends Game {
         // //石块
         if (nextRock <= 0) {
             timeToRock -= DIFFICULTY;
-            let index = Game.getActor(rockBelt, SpaceRock);
+            let index = Game.getActor( SpaceRock);
             index.init(SpaceRock.LRG_ROCK);
             this.addToEnemy(index);
             index.floatOnScreen(stage.width, stage.height);
@@ -58,7 +56,7 @@ class SpaceShip extends Game {
             nextRock--;
         }
         //石块移动
-        for (const o of rockBelt) {
+        for (const o of SpaceRock.array) {
             if (!o.active) {
                 continue;
             }
@@ -93,7 +91,7 @@ class SpaceShip extends Game {
                         let index;
                         let offset;
                         for (i = 0; i < SUB_ROCK_COUNT; i++) {
-                            index = Game.getActor(rockBelt, SpaceRock);
+                            index = Game.getActor(SpaceRock);
                             this.addToEnemy(index);
                             index.init(newSize);
                             offset = (Math.random() * rect.width * 2) - rect.width;
@@ -109,7 +107,7 @@ class SpaceShip extends Game {
             }
         }
         //检测子弹
-        for (const bullet of bullets) {
+        for (const bullet of Bullet.array) {
             if (bullet.active) {
                 bullet.act();
             }
@@ -120,11 +118,12 @@ class SpaceShip extends Game {
 }
 
 class Bullet extends Actor {
+    static array=[];
     constructor(xpos, ypos) {
         super(xpos, ypos, 6, 2);
         this.edgeBehavior=Actor.RECYCLE;
         this.type = "bullet";
-        this.speed.length = 5;
+        this.speed.length = 3;
         this.color = "#fff";
     }
 }
@@ -162,6 +161,7 @@ class Ship extends SteeredActor {
 }
 //石头
 class SpaceRock extends Actor {
+    static array=[];
     static LRG_ROCK = 60;
     static MED_ROCK = 40;
     static SML_ROCK = 20;
