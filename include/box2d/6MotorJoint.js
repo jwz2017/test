@@ -9,8 +9,7 @@ export class MotorJoint extends Game {
         gframe.buildWorld(true,20);
         this.createbodies();
         this.createJoint();
-    }
-    waitComplete(){
+
         stage.on("stagemousedown",(e)=>{
             bodyAtMouse=EasyWorld.getBodyAt(e.stageX,e.stageY);
             if(bodyAtMouse){
@@ -21,9 +20,6 @@ export class MotorJoint extends Game {
                 motorJoint.SetAngularOffset(angularOffset);
             }
         })
-    }
-    clear(){
-        stage.removeAllEventListeners("stagemousedown");
     }
     createbodies(){
         EasyBody.createRectangle(0,0,stage.width,stage.height);

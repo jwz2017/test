@@ -11,7 +11,7 @@ var slots, shapes;
 class Colordrop extends Game{
     constructor() {
         super("Colordrop");
-        stage.canvas.style.backgroundColor="#A4AB61";
+        this.backgroundColor="#A4AB61";
         slots = [];
         shapes = [];
         for (let i = 0; i < colors.length; i++) {

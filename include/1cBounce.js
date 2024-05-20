@@ -5,7 +5,7 @@ import { Node } from "../classes/Node.js";
 
 window.onload = function () {
     gframe.buildStage('canvas');
-    gframe.preload(Bounce, true);
+    gframe.preload(Bounce);
 };
 var bricks,
     stepWidth = 44,
@@ -42,9 +42,12 @@ var bricks,
     ];
 
 class Bounce extends Game {
+    static codes = {
+        65: "left",
+        68: "right",
+    }
     constructor() {
-        stage.canvas.style.background = Game.style.SCOREBOARD_COLOR;
-        super("弹球06", plans[0][0].length * stepWidth, plans[0].length * stepHeight, stepWidth, stepHeight);
+        super("弹球06",false, plans[0][0].length * stepWidth, plans[0].length * stepHeight, stepWidth, stepHeight);
         this.x = stage.width - this.width >> 1;
         this.maxLevel = plans.length;
         this.playerChars = {
@@ -57,11 +60,11 @@ class Bounce extends Game {
         this.addChildAt(this.backshape, 0);
     }
     createScoreBoard() {
-        this.scoreboard = new ScoreBoard(0, 0, true);
+        this.scoreboard = new ScoreBoard();
         this.scoreboard.createTextElement("score");
         this.scoreboard.createTextElement("level");
         this.scoreboard.createTextElement("lives");
-        this.y = this.scoreboard.height;
+        this.y = this.scoreboard.getBounds().height;
     }
     newLevel() {
         this.scoreboard.update("score", this.score);

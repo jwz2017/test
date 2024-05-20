@@ -7,18 +7,13 @@ export class FrictionJoint extends Game {
     constructor() {
         super("摩擦关节");
         gframe.buildWorld(true, 0);
-    }
-    waitComplete() {
         player = EasyBody.createBox(100, 300, 40, 40);
         player.SetUserData(USER_DATA_PLAYER);
-
+    
         this.createBodies();
         contactListener1 = new FrictionJointContactListener();
         //dragBody
         this.dragBody(USER_DATA_PLAYER,40);
-
-
-        
     }
     runGame() {
         let contactEdge=player.GetContactList();

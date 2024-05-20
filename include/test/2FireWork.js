@@ -12,8 +12,6 @@ var balls, vpX, vpY,
 export class FireWork extends Game {
     constructor() {
         super("烟火");
-    }
-    waitComplete() {
         balls = [];
         vpX =stage.width / 2;
         vpY = stage.height / 2;

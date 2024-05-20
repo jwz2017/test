@@ -14,16 +14,6 @@ export class DestroyFixture extends Game {
         this.body.SetAngularVelocity(Math.PI / 3);
         this.addFixture();
 
-    }
-    addFixture() {
-        var radius = 80;
-        var angle = Math.PI * 2 / 8;
-        for (var i = 0; i < 8; i++) {
-            const circle = EasyShape.createCircle(30, Math.cos(angle * i) * radius, Math.sin(angle * i) * radius);
-            this.body.CreateFixture(circle, 1);
-        }
-    }
-    waitComplete() {
         stage.on("stagemousedown", () => {
             var a=3;
             if (this.body.GetFixtureList()) {
@@ -34,6 +24,18 @@ export class DestroyFixture extends Game {
                 })
             }
         })
+
+    }
+    addFixture() {
+        var radius = 80;
+        var angle = Math.PI * 2 / 8;
+        for (var i = 0; i < 8; i++) {
+            const circle = EasyShape.createCircle(30, Math.cos(angle * i) * radius, Math.sin(angle * i) * radius);
+            this.body.CreateFixture(circle, 1);
+        }
+    }
+    waitComplete() {
+        
 
     }
 

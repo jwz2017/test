@@ -22,7 +22,6 @@ body {
 a {
   background-color: transparent;
   text-decoration: none;
-  color: #333;
 }
 
 ul,
@@ -34,20 +33,21 @@ ol {
   height: 100vh;
   position: relative;
   overflow: hidden;
+  margin: 0 auto;
   background-color: #333;
 }
+
 #gameDiv {
   position: relative;
   overflow: hidden;
-  margin: 0 auto;
   transform-origin: 0 0;
-  /* border: 3px inset #333; */
-  /* align-items: center; */
 }
 #gameDom{
-  margin: 0 auto;
+  position: absolute;
+  top: 0;
+  width: 100%; 
 }
-.close-button{
+.close-button {
   width: 700px;
 }
 
@@ -78,7 +78,7 @@ ol {
   /* transition: background-color 100ms linear; */
 }
 
-/* .game-button::before{
+.game-button::before{
   pointer-events: none;
   content: "";
   position: absolute;
@@ -91,7 +91,7 @@ ol {
   transform: perspective(1em) rotateX(40deg) scale(1, 0.35);
   filter: blur(1em);
   opacity: 0.7;
-} */
+}
 .game-button::after {
   content: "";
   position: absolute;
@@ -105,7 +105,6 @@ ol {
   background: var(--clr-neon);
   z-index: -1;
 }
-
 .game-button:hover,
 .game-button:focus {
   background: var(--clr-neon);
@@ -113,9 +112,30 @@ ol {
   text-shadow: none;
 }
 
-/* .game-button:hover::after{
-  opacity:0.5;
-} */
+.modal {
+  background: rgba(255, 255, 255,0.8);
+  border-radius: 10px;
+  /* overflow: auto; */
+}
+.modal-header{
+  text-align: center;
+  font-weight: bold;
+}
+.modal-buffer{
+  height: 50px;
+}
+.modal-footer{
+  position: fixed;
+  text-align: center;
+  width: 100%;
+  bottom: 0px;
+}
+.modal-action{
+  border-radius: 10px;
+  font-size: 30px;
+  background: yellowgreen;
+  cursor: pointer;
+}
 /* **********************************字体*************************** */
 /* @font-face {
   font-family: "regul";

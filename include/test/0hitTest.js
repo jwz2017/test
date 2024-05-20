@@ -16,10 +16,7 @@ export class hitTest extends Game {
         stage.on("stagemousemove", (e) => {
             rect2.setPos(e.stageX, e.stageY);
         })
-    }
-    waitComplete() {
         stage.addChild(rect1, rect2);
-        // console.log(queue.getResult("spritesheet_button"));
     }
     runGame() {
         //测试矩形碰撞

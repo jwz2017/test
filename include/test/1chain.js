@@ -5,8 +5,6 @@ var chainShape, balls;
 export class Chain extends Game{
     constructor() {
         super("链式运动");
-    }
-    waitComplete() {
         balls = [];
         chainShape = new createjs.Shape();
         stage.addChild(chainShape);

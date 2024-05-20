@@ -27,7 +27,7 @@ class Shoot extends Game {
     static loadId = 'DB0F6E8AA40CA64BB67AC23B3362E66C';
     constructor() {
         super("射击游戏");
-        this.keyboard=true;
+        this.backgroundColor="rgb(0, 67, 171)";
         spriteSheet = new createjs.SpriteSheet(queue.getResult("shoot"));
         //十字光标
         crosshairs = new lib.Cross();
@@ -158,11 +158,6 @@ class Shoot extends Game {
             enemyFrameCount = 0;
         }
     }
-    clear(){
-        super.clear();
-        stage.removeAllEventListeners("stagemousedown");
-    }
-
 }
 //玩家子弹
 class Shot extends CirActor {

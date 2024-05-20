@@ -45,15 +45,13 @@ export class ClipperDemo extends Game {
         drawColor=new b2Color(1,0,0);
         // buffer=Box2D._malloc();
         // this.buffer=Box2D._malloc();
-    }
-    waitComplete() {
         stage.addChild(clipText);
     }
     runGame() {
         intersection=this.clipper.getIntersectionShape(subjectBody.GetFixtureList(), clipBody.GetFixtureList(), typeOfClip);
         // if(this.clipper.paths.length>0)Clipper.arrayToBox2D(this.clipper.paths[0],buffer);
     }
-    onkeydown(){
+    onRunGameKeydown(){
         if(++aryIndex>=clipTypeList.length) aryIndex=0;
         typeOfClip=clipTypeList[aryIndex];
         clipText.text=clipTypeNames[aryIndex];

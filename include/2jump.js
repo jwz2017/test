@@ -5,38 +5,38 @@ import { Node } from "../classes/Node.js";
 import { LoaderBar, ScoreBoard, ScrollMapGame } from "../classes/Game.js";
 class LoaderBar1 extends LoaderBar {
     constructor() {
-        super("加载中...");
-        this.title.y = -100;
-        this.createTitle();
+        super("加载中......");
     }
-    createTitle() {
+    createTitle(titleText,width) {
+        this.title = this.createText(titleText);
+        LoaderBar.setFont(this.title,{fontWeight:"bold"})
+        this.title.x = width - this.title.getBounds().width >> 1;
+        let t=this.title;
         this.title = new createjs.Sprite(queue.getResult("loaderbar"), "title");
-        this.title.regY = this.title.getBounds().height;
-        this.title.regX = this.title.getBounds().width / 2;
+        this.title.regX=this.title.getBounds().width/2;
+        this.title.y=t.getBounds().height;
         this.addChild(this.title);
     }
-    createValue() {
-        this.percent = new createjs.BitmapText("0%", queue.getResult("loaderbar"));
-        this.percent.regX = this.percent.getBounds().width / 2;
-        this.percent.x = this.width / 2 - 10;
-        this.percent.y = this.height + 10;
-        this.addChild(this.percent);
+    createValue(width,height) {
+        this.value = new createjs.BitmapText("000%", queue.getResult("loaderbar"));
+        this.addChild(this.value);
+        this.value.x = width-this.value.getBounds().width>>1;
+        this.value.y = this.bar.y + height+10;
     }
     startLoad(e) {
         this.bar.htmlElement.value = e.progress * 100;
-        this.title.x = e.progress * this.width;
-        this.percent.text = Math.floor(e.progress * 100) + "%";
+        this.title.x = e.progress * this.bar.getBounds().width;
+        this.value.text = Math.floor(e.progress * 100) + "%";
     }
 }
 window.onload = function () {
     /*************游戏入口*****/
-    gframe.buildStage('canvas');
-    // gframe.startFPS();
-    gframe.preload(Jump, true);
+    gframe.buildStage('canvas',false);
+    gframe.preload(Jump);
 };
 
 //游戏变量;
-var spriteSheet, bullets, step = 30, plans;
+var spriteSheet,step = 30, plans;
 export class Jump extends ScrollMapGame {
     static LoaderBar = LoaderBar1;
     static loadBarItem = [{
@@ -50,7 +50,7 @@ export class Jump extends ScrollMapGame {
         type: "spritesheet"
     }, {
         id: "guiqizhan",
-        src: "jump/guiqizhan.png"
+        src: "./assets/jump/guiqizhan.png"
     }, {
         id: "sparkle",
         src: "effect/sparkles.json",
@@ -62,10 +62,24 @@ export class Jump extends ScrollMapGame {
         id: "titlesound",
         src: "sounds/sister.mp3"
     }];
+    static codes = {
+        65: "left",
+        87: "up",
+        68: "right",
+        83: "down",
+        32: "pause",
+        100: "attack",
+        101: "jump",
+        102: "skill1",
+        103: "fire",
+        16: "shift",
+        17: "ctrl"
+    };
     constructor() {
-        super("Jump2", 750, 400, step, step);
+        super("Jump2",false, 750, 400, step, step);
+        gframe.createPannel();
         plans = queue.getResult("levels");
-        this.instructionText = "方向:w,a,s,d <br>小键盘4567:普通攻击，跳跃，技能";
+        this.instructionText = "方向:w,a,s,d <br>小键盘4567:<h3>普通攻击，跳跃，技能";
         this.backSound = createjs.Sound.createInstance("titlesound");
         this.titleSound = createjs.Sound.createInstance("titlesound");
         this.y = stage.height - this.height >> 1;
@@ -81,7 +95,7 @@ export class Jump extends ScrollMapGame {
         this.sparkle = new Sparkles(queue.getResult("sparkle"), stage.width, this.y);
     }
     createScoreBoard() {
-        this.scoreboard = new ScoreBoard(0, 0, true);
+        this.scoreboard = new ScoreBoard();
         this.scoreboard.createTextElement(Jump.SCORE);
         this.scoreboard.createTextElement(Jump.LEVEL);
         this.scoreboard.createTextElement(Jump.LIVES);
@@ -90,7 +104,6 @@ export class Jump extends ScrollMapGame {
         this.scoreboard.update(Jump.SCORE, this.score);
         this.scoreboard.update(Jump.LEVEL, this.level);
         this.scoreboard.update(Jump.LIVES, this.lives);
-        bullets = [];
         let plan = plans[this.level - 1];
         this.createGridMap(plan, (ch, node) => {
             let color = "#555";
@@ -242,7 +255,6 @@ class JumpPlayer extends JumpActor {
         } else {
             this.overhead();
             this.startJumpAct();
-
         }
     }
     moveX() {

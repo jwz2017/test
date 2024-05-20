@@ -6,8 +6,13 @@ var car;
 var startX = 250,
     startY = 230;
 var frontMotor, backMotor;
-var tiltTorque = 0;
 export class WheelJoint extends ScrollMapGame {
+    static codes={
+        65: "left",
+        87: "up",
+        68: "right",
+        32: "pause",
+    }
     constructor() {
         super("中轴关节");
         this.contentSize = {
@@ -23,9 +28,6 @@ export class WheelJoint extends ScrollMapGame {
     }
     runGame() {
         car.act(keys);
-        // car.x=car.GetPosition().x;
-        // car.y=car.GetPosition().y;
-        // chassis.ApplyTorque(tiltTorque)
         this.scrollView()
     }
     createGround() {

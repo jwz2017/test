@@ -3,6 +3,12 @@ import { Game,} from "../../classes/Game.js";
 import {BoxBall } from "../../classes/actor.js";
 var player,contactListener;
 export class PrimaticJoint extends Game {
+    static codes={
+        65: "left",
+        87: "up",
+        68: "right",
+        32: "pause",
+    }
     constructor() {
         super("位移关节");
         gframe.buildWorld(true, 10);

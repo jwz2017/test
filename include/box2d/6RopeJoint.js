@@ -10,15 +10,13 @@ export class RopeJoint extends Game {
         gframe.buildWorld(true);
         this.createBodies();
         this.createJoint();
-    }
-    waitComplete() {
+
         this.drawMouseMove(() => {
             if (crossPoint) {
                 world.DestroyJoint(ropeJoint);
                 ropeJoint = null;
                 crossPoint = null;
             }
-
         });
     }
     createBodies() {

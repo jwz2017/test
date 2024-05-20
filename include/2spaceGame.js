@@ -3,8 +3,8 @@ import { Actor, MoveManage, SteeredActor, Vector, Weapon } from "../classes/acto
 import { gframe, keys, stage } from "../classes/gframe.js";
 
 window.onload = function () {
-    gframe.buildStage('canvas');
-    gframe.preload(SpaceShip, true);
+    gframe.buildStage('canvas',false,true);
+    gframe.preload(SpaceShip);
 };
 var ROCK_TIME = 500,
     SUB_ROCK_COUNT = 3,
@@ -14,13 +14,18 @@ var nextRock, timeToRock;
 var ship;
 var moveManage = new MoveManage();
 class SpaceShip extends Game {
+    static codes = {
+        65: "left",
+        87: "up",
+        68: "right",
+        83: "down",
+        100:"attack",
+        32:"pause"
+    }
     constructor() {
         super("飞机游戏");
         ship = new Ship();
     }
-    /**建立游戏元素游戏初始化
-     * 在构造函数内建立
-     */
     createScoreBoard() {
         this.scoreboard = new ScoreBoard();
         this.scoreboard.createTextElement("score");
@@ -43,7 +48,7 @@ class SpaceShip extends Game {
         // 控制飞船
         this.moveActors(this.playerLayer);
         // 开火
-        ship.weapon.fire(keys.attack,ship);
+        ship.weapon.fire(keys.attack);
         // //石块
         if (nextRock <= 0) {
             timeToRock -= DIFFICULTY;
@@ -133,7 +138,7 @@ class Ship extends SteeredActor {
         this.thrust = 0;
         this.timeout = 0;
         this.toggle = 60;
-        this.weapon = new Weapon(Bullet, 20);
+        this.weapon = new Weapon(this,Bullet, 30);
     }
     act() {
         moveManage.driveShip(this,keys);

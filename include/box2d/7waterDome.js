@@ -1,5 +1,5 @@
-import { stage,gframe } from "../../classes/gframe.js";
-import { Game, ScoreBoard } from "../../classes/Game.js";
+import { gframe } from "../../classes/gframe.js";
+import { Game } from "../../classes/Game.js";
 import { WaterManager } from "../../classes/Clipper-help.js";
 var waterManager;
 export class WaterDome extends Game {
@@ -11,8 +11,6 @@ export class WaterDome extends Game {
         this.createStuff();
         this.createWater();
         this.listener=new WaterDomeListener(waterManager);
-    }
-    waitComplete(){
         this.dragBody();
     }
     runGame() {

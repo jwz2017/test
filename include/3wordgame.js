@@ -14,7 +14,7 @@ var lettersNeeded=0;
 export class WordGame extends Game{
     constructor() {
         super("WordGame");
-        WordGame.style.backgroundColor="#555"
+        this.backgroundColor="#555"
         this.maxLevel=answers.length;
         this.x=200;
         this.y=200;

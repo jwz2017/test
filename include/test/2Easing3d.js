@@ -7,8 +7,6 @@ var ball, tx, ty, tz, vpX, vpY,
 export class Easing3d extends Game{
     constructor() {
         super("3d缓动");
-    }
-    waitComplete() {
         vpX =stage.width / 2;
         vpY = stage.height / 2;
         ball = new CirActor(0,0,25);

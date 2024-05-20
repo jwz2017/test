@@ -8,10 +8,9 @@ var segment0, segment1, segment2, segment3,
     calfRangeSlider, calfOffsetSlider, gravitySlider,
     cycle = 0, vx = 0, vy = 0;
 export class SegmentWalk extends Game {
+    static backgroundColor="#fff"
     constructor() {
         super("关节行走");
-    }
-    waitComplete() {
         segment0 = new Segment(0,0,100,30);
         segment0.x = 400;
         segment0.y = 100;
@@ -25,7 +24,7 @@ export class SegmentWalk extends Game {
         segment3.x = segment2.getPin().x;
         segment3.y = segment2.getPin().y;
         stage.addChild(segment0, segment1, segment2, segment3);
-
+    
         mc.style.fontSize = 18;
         speedSlider = new Slider(stage, "speed", null, 100, 350, 300, 30);
         speedSlider.setMmum(0.3, 0);

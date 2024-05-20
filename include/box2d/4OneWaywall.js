@@ -3,6 +3,12 @@ import { Game,} from "../../classes/Game.js";
 import {BoxBall } from "../../classes/actor.js";
 var player, ground, platform, contactListener;
 export class OneWayWall extends Game {
+    static codes={
+        65: "left",
+        87: "up",
+        68: "right",
+        32: "pause",
+    }
     constructor() {
         super("OneWayWall");
         gframe.buildWorld(true, 10);
@@ -27,7 +33,6 @@ export class OneWayWall extends Game {
         contactListener = new BallMoveContactListener();
     }
     runGame() {
-        world.ClearForces();
         player.act(keys)
     }
 

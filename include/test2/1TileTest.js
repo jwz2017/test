@@ -9,7 +9,7 @@ export class TileTest extends Game {
     }
     waitComplete() {
         this.container.x =stage.width / 2;
-        this.y = 100;
+        // this.y = 100;
         for (let i = 0; i < 20; i++) {
             for (let j = 0; j < 20; j++) {
                 var tile = new DrawnIsoTile(20, "#cccccc");

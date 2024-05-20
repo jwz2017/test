@@ -27,8 +27,7 @@ export class WeldJoint extends Game {
         trail = new Trail(this.container, player);
         this.tempV = new b2Vec2();
         this.jointDef = new b2WeldJointDef();
-    }
-    waitComplete() {
+
         stage.on("stagemousedown", () => {
             if (contactListener.contactPlanet) {
                 world.DestroyJoint(weldJoint);

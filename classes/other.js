@@ -1,5 +1,5 @@
 import { stage } from "./gframe.js";
-  export class ShapeBackground extends createjs.Container {
+  class ShapeBackground extends createjs.Container {
     constructor(centerX, centerY) {
       super();
       // Alpha Rectangle, applied each frame at the bottom, fading out the previous content over time.
@@ -60,7 +60,7 @@ import { stage } from "./gframe.js";
   }
 
   //复制对象
-  export function getFXBitmap(source, filters, x, y, w, h) {
+  function getFXBitmap(source, filters, x, y, w, h) {
 		// cache the source, so we can grab a rasterized image of it:
 		source.cache(x, y, w, h);
 		
@@ -84,3 +84,64 @@ import { stage } from "./gframe.js";
 		return bmp;
 	}
   
+  class BackgroundV{
+    /**
+     * 背景图片
+     * @param {*} parent game
+     * @param {*} bitmap 
+     * @param {2} num 
+     * @param {1} step 
+     */
+    constructor(parent,bitmap,num=2,step=1){
+        this.bitmaps=[];
+        this.step=step;
+        this._gameheight=parent.height;
+        this._height=bitmap.getBounds().height;
+        for (let i = 0; i < num; i++) {
+            this.bitmaps.push(bitmap.clone());
+            this.bitmaps[i].y=i*this._height;
+            parent.addChildAt(this.bitmaps[i],0);
+        }
+    }
+    update(){
+        let len=this.bitmaps.length;
+        for (let i = 0; i < this.bitmaps.length; i++) {
+            let bitmap = this.bitmaps[i];
+            if(bitmap.y>this._gameheight){
+                bitmap.y-=this._height*(len);
+            }
+            bitmap.y+=this.step;
+        }
+    }
+}
+  class BackgroundH{
+    /**
+     * 背景图片
+     * @param {*} parent game
+     * @param {*} bitmap 
+     * @param {2} num 
+     * @param {1} step 
+     */
+    constructor(parent,bitmap,num=2,step=1){
+        this.bitmaps=[];
+        this.step=step;
+        this._gameWidth=parent.width;
+        this._width=bitmap.getBounds().width;
+        for (let i = 0; i < num; i++) {
+            this.bitmaps.push(bitmap.clone());
+            this.bitmaps[i].x=i*this._width;
+            parent.addChildAt(this.bitmaps[i],0);
+        }
+    }
+    update(){
+        let len=this.bitmaps.length;
+        for (let i = 0; i < this.bitmaps.length; i++) {
+            let bitmap = this.bitmaps[i];
+            if(bitmap.x>this._gameWidth){
+                bitmap.x-=this._width*(len);
+            }
+            bitmap.x+=this.step;
+        }
+    }
+}
+export{ShapeBackground,getFXBitmap,BackgroundV,BackgroundH}

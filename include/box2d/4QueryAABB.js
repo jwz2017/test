@@ -9,6 +9,16 @@ export class QueryAABB extends Game {
         
         EasyBody.createRectangle(0, 0, stage.width, stage.height);
         this.createBodies();
+
+        stage.on("stagemousedown", (e) => {
+            var p = this.globalToLocal(e.stageX, e.stageY);
+            let body=EasyWorld.getBodyAt(p.x,p.y);
+            if(body){
+                if(body.GetUserData()!=-1){
+                    world.DestroyBody(body);
+                }
+            }
+        })
     }
     createBodies() {
         EasyBody.createBox(205, 630, 30, 30);
@@ -21,16 +31,4 @@ export class QueryAABB extends Game {
         b = EasyBody.createBox(250, 500, 120, 60);
         b.SetUserData(-1);
     }
-    waitComplete() {
-        stage.on("stagemousedown", (e) => {
-            var p = this.globalToLocal(e.stageX, e.stageY);
-            let body=EasyWorld.getBodyAt(p.x,p.y);
-            if(body){
-                if(body.GetUserData()!=-1){
-                    world.DestroyBody(body);
-                }
-            }
-        })
-    }
-
 }

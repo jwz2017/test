@@ -1,11 +1,11 @@
-import { ScoreBoard, ScrollMapGame } from "../classes/Game.js";
+import { Game, ScoreBoard} from "../classes/Game.js";
 import { Node } from "../classes/Node.js";
 import { Actor, CirActor, MoveManage, Weapon } from "../classes/actor.js";
 import { game, gframe, keys, pressed, queue, stage } from "../classes/gframe.js";
 
 window.onload = function () {
-    gframe.buildStage('canvas');
-    gframe.preload(Tanke, true);
+    gframe.buildStage('canvas',false);
+    gframe.preload(Tanke);
 };
 var spriteData, spriteSheet;
 var moveManage = new MoveManage();
@@ -30,19 +30,27 @@ var step = 32,
         ]
     ];
 
-class Tanke extends ScrollMapGame {
+class Tanke extends Game {
     static loadItem = [{
         id: "tanke",
         src: "tanke/q.png"
     }];
+    static backgroundColor= "#A4AB61";
+    static codes = {
+        65: "left",
+        87: "up",
+        68: "right",
+        83: "down",
+        100:"attack",
+        32:"pause"
+    }
     constructor() {
-        super("坦克大战", plans[0][0].length * step, plans[0].length * step, step, step);
+        super("坦克大战",false, plans[0][0].length * step, plans[0].length * step, step, step);
         this.enemyBulletLayer=this.createrContainer();
         this.playerBulletLayer=this.createrContainer();
-        Tanke.style.backgroundColor= "#A4AB61";
         this.x = stage.width - this.width >> 1;
         this.y = stage.height - this.height >> 1;
-        this.instructionText = "方向w,a,s,d<br>小键盘4开火攻击";
+        this.instructionText = "方向w,a,s,d小键盘4开火攻击";
         this.playerChars = {
             "1": Player,
         };
@@ -80,8 +88,8 @@ class Tanke extends ScrollMapGame {
 
     }
     createScoreBoard() {
-        this.scoreboard = new ScoreBoard(0, 0, true);
-        this.scoreboard.createTextElement("score", "00000");
+        this.scoreboard = new ScoreBoard();
+        this.scoreboard.createTextElement("score");
         this.scoreboard.createTextElement("level");
     }
     newLevel() {
@@ -154,13 +162,13 @@ class Player extends Actor {
         this.setSpriteData(spriteSheet, "player", 1, 90);
         this.image.paused = true;
         this.rotation = -90;
-        this.weapon = new Weapon(PlayerBullet);
+        this.weapon = new Weapon(this,PlayerBullet);
     }
     act() {
         //移动
         moveManage.tankMove(this, pressed[pressed.length - 1])
         //开火
-        this.weapon.fire(keys.attack,this,game.playerBulletLayer);
+        this.weapon.fire(keys.attack,game.playerBulletLayer);
         //与地图碰撞
         let rect = this.rect.clone();
         rect.x += this.speed.x;
@@ -194,7 +202,7 @@ class Enemy extends Actor {
         this.key = 80;
         this.type = "enemy";
         this.image.paused = true;
-        this.weapon = new Weapon(EnemyBullet);
+        this.weapon = new Weapon(this,EnemyBullet);
     }
     act() {
         this.tick++;
@@ -203,7 +211,7 @@ class Enemy extends Actor {
             this.tick1 = this.tick;
             this.tick = 0;
         }
-        if (this.tick1 >= 100) this.weapon.fire(true,this,game.enemyBulletLayer);
+        if (this.tick1 >= 100) this.weapon.fire(true,game.enemyBulletLayer);
         if (this.key <= 10) this.key = "up";
         else if (this.key > 10 && this.key <= 40) this.key = "down";
         else if (this.key > 40 && this.key <= 65) this.key = "right";

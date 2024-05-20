@@ -4,12 +4,16 @@ import { pressed, stage } from "../../classes/gframe.js";
 
 var box, speed = 4;
 export class Collision extends Game {
+    static codes = {
+        65: "left",
+        87: "up",
+        68: "right",
+        83: "down",
+    }
     constructor() {
         super("碰撞测试");
-        this.keyboard=true;
     }
     waitComplete() {
-        stage.addChild(this);
         this.container.x =stage.width / 2;
         this.y = 100;
 

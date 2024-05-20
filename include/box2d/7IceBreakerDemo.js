@@ -11,8 +11,7 @@ export class IceBreaker extends Game {
 
         this.rayCast=new BodyToSlice();
         this.rayCast.setBody(this.body);
-    }
-    waitComplete(){
+
         this.drawMouseMove(()=>{
             this.rayCast.rayCast(this.mouseStart,this.mouseEnd);
         });

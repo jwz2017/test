@@ -6,187 +6,169 @@ import { checkPixelCollision } from "./hitTest.js";
 import { Actor } from "./actor.js";
 /**********************************事件************************************** */
 class Okbutton extends createjs.Event {
-    static TYPE = 'okbutton';
-    constructor(id) {
-        super(Okbutton.TYPE, false);
-        this.id = id;
+    static ADD_INSTRUCTION="addinstruction";
+    constructor(nextState) {
+        super("okbutton",true);
+        // console.log(this.bubbles);
+        this.nextState = nextState;
     }
 }
 /*****************************************游戏界面**************************** */
+
 class BasicScreen extends createjs.Container {
-    constructor(title = null, width = canvas.width, height = canvas.height, titleFont = Game.style.titleFont) {
-        super();
-        this._width = width;
-        this._height = height;
-        this.backSound = null;
-        if (typeof (title) == "string") {
-            this.title = this.createText(title, true, titleFont, Game.style.TEXT_COLOR);
-            this.title.x = width - this.title.htmlElement.clientWidth >> 1;
-            this.title.y = height / 3;
-        } else if (title) {
-            this.title = title;
-            this.title.x = width - title.getBounds().width >> 1;
-            this.title.y = height / 3;
-            this.addChild(this.title);
-        }
-        this.addEventListener("added", () => {
-            this.children.forEach(element => {
-                if (element.htmlElement) {
-                    element.visible = true;
-                    element.htmlElement.style.visibility = "visible";
-                }
-            });
-            if (this.backSound) this.backSound.play();
-        });
-        this.addEventListener("removed", () => {
-            this.children.forEach(element => {
-                if (element.htmlElement) {
-                    element._oldStage = null;
-                    element.visible = false;
-                    element.htmlElement.style.visibility = "hidden";
-                }
-            });
-            if (this.backSound) this.backSound.stop();
-        });
+    //style
+    static style = {
+        fontFamily: "regul,Arial,宋体",
+        fontSize:40,
+        color: "#fff",
+        titleFontSize:60,
+        scoreFontSize:30,
+    };
+    static setFont(obj,{ fontSize = BasicScreen.style.fontSize, color = BasicScreen.style.color,fontFamily=BasicScreen.style.fontFamily,fontWeight}={}) {
+        let ele = obj.htmlElement;
+        ele.style.fontSize = fontSize+"px";
+        ele.style.fontFamily=fontFamily;
+        if(color)ele.style.color = color;
+        if(fontWeight)ele.style.fontWeight=fontWeight;
+        obj.setBounds(0, 0, ele.clientWidth, ele.clientHeight);
     }
-    createDom(element) {
+    constructor() {
+        super();
+        this.backSound = null;
+        this.on("added", this.onAdded);
+        this.on("removed", this.onRemove);
+    }
+    createDom(element,domParent=gameScaleDom) {
         let e = document.createElement(element);
-        e.style.position = "absolute";
         e.style.visibility = "hidden";
-        e.style.top = 0;
-        e.style.left = 0;
-        gameDiv.appendChild(e);
+        domParent.appendChild(e);
         let a = new createjs.DOMElement(e);
+        this.addChild(a);
+        // else this.children.push(a);//不随容器移动，但随容器加入和删除
         return a;
     }
-    createText(text, isChild = true, font = Game.style.textFont, color = Game.style.TEXT_COLOR) {
+    onAdded() {
+        this.children.forEach(element => {
+            if (element.htmlElement) {
+                element.visible = true;
+                element.htmlElement.style.visibility = "visible";
+            }
+        });
+        if (this.backSound) this.backSound.play();
+    }
+    onRemove() {
+        this.children.forEach(element => {
+            if (element.htmlElement) {
+                element._oldStage = null;
+                element.visible = false;
+                element.htmlElement.style.visibility = "hidden";
+            }
+        });
+        if (this.backSound) this.backSound.stop();
+    }
+    createText(text) {
         let txt = this.createDom("span");
-        txt.htmlElement.innerHTML = text;
-        txt.htmlElement.style.font = font;
-        txt.htmlElement.style.color = color;
-        txt.htmlElement.style.userSelect = "none";
-        if (isChild) this.addChild(txt);//在容器内随容器移动而移动
-        else this.children.push(div);//不随容器移动，但随容器加入和删除
+        let ele = txt.htmlElement;
+        if(text!=null)ele.innerHTML = text;
+        ele.style.userSelect = "none";
+        BasicScreen.setFont(txt);
         return txt;
     }
-    createDOMcheckbox(label, { top = 0, left = 0, right = null, bottom = null } = {}) {
-        let div = this.createDom("div");
-        let style = div.htmlElement.style;
-        style.top = top;
-        style.left = left;
-        style.right = right;
-        style.bottom = bottom;
-        style.fontSize = "20px";
-        this.children.push(div);
-
-        let input = document.createElement("input");
-        input.setAttribute("type", "checkbox");
-        div.htmlElement.appendChild(input);
-        input.style.verticalAlign = "middle";
-        input.style.width = "22px";
-        input.style.height = "22px";
-        input.style.cursor = "pointer";
-
-        let lab = document.createElement("label");
-        lab.innerHTML = label;
-        div.htmlElement.appendChild(lab);
-        lab.style.userSelect = "none";
-        lab.style.verticalAlign = "middle";
-        lab.style.fontSize = "20px";
-
-        return input;
+    createBar(width, height) {
+        let bar = this.createDom("progress");
+        let ele = bar.htmlElement;
+        bar.setBounds(0, 0, width, height);
+        ele.value = 0;
+        ele.max = 100;
+        ele.style.width = width + "px";
+        ele.style.height = height + "px";
+        ele.style.backgroundColor = "blue";
+        return bar;
     }
-    createDOMbutton(label, id = null, className = "game-button") {
-        let button = this.createDom("span");
-        button.htmlElement.setAttribute("class", className);
-        button.htmlElement.innerHTML = label;
-        this.addChild(button);
-        button.id = id;
-        button.htmlElement.onclick = () => {
-            this.dispatchEvent(new Okbutton(id));
-        }
-        return button;
+    createScreen(title, content, actions, width, height) {
+        const modal = this.createDom('div');
+        let ele = modal.htmlElement;
+        ele.classList.add('modal');
+        if (width) ele.style.width = width + "px";
+        if (height) ele.style.height = height + "px";
+        ele.style.maxWidth = stage.width + "px";
+        ele.style.maxHeight = stage.height + "px";
+
+        const header = document.createElement('div');
+        header.classList.add('modal-header');
+        header.innerHTML = title;
+
+        const body = document.createElement('div');
+        body.classList.add('modal-body');
+        body.innerHTML = content
+
+        const buffer = document.createElement('div');
+        buffer.classList.add('modal-buffer');
+
+        const footer = document.createElement('div');
+        footer.classList.add('modal-footer');
+
+        actions.forEach(action => {
+            const button = document.createElement('button');
+            button.classList.add('modal-action');
+            button.innerHTML = action.text;
+            button.onclick = action.onclick;
+            footer.appendChild(button);
+        });
+        modal.htmlElement.appendChild(header);
+        modal.htmlElement.appendChild(body);
+        modal.htmlElement.appendChild(buffer);
+        modal.htmlElement.appendChild(footer);
+        BasicScreen.setFont(modal,{fontSize:BasicScreen.style.fontSize,fontFamily:BasicScreen.style.fontFamily,color:null});
+        return modal;
     }
-    /**创建按钮
-     * 
-     * @param {number} xpos 按钮x坐标
-     * @param {number} ypos 按钮y坐标
-     * @param {string} label 按钮标签文本内容
-     * @param {[number]} width 按钮宽度 默认100
-     * @param {[number]} height 按钮高度 默认20
+    /**
+     * dom按钮
+     * @param {*} label 
+     * @param {*} nextState 
+     * @param {"game-button"} className 
+     * @param {*} onClick 
+     * @returns 
      */
-    createOkButton(xpos, ypos, button, { id, label, graphics, width, height } = {}) {
-        if (button) {
-            var btn = button;
-            btn.x = xpos;
-            btn.y = ypos;
-            this.addChild(btn);
-        } else {
-            var btn = new PushButton(this, label, null, xpos, ypos, width, height, graphics)
-        }
-        btn.on("pressup", (e) => {
-            if (e.target.hitTest(e.localX, e.localY)) {
-                this.dispatchEvent(new Okbutton(id));
-            }
-        })
-    }
-    get width() {
-        return this._width;
-    }
-    get height() {
-        return this._height;
-    }
-}
-class LevelInScreen extends BasicScreen {
-    constructor(text = "level:0", width, height) {
-        super(text, width, height);
-        if (!stage.isWebGL) this.bg = new ShapeBackground(stage.width / 2, stage.height / 2);
-        this.addChild(this.bg);
-    }
-    updateTitle(text) {
-        this.title.htmlElement.innerHTML = text;
-        this.title.x = this._width - this.title.htmlElement.offsetWidth >> 1;
-    }
-    updateWaitBg() {
-        this.bg.updateWaitBg();
-    }
-    clearBg() {
-        this.bg.clearBg();
+    createDOMbutton(label, onClick, className = "game-button") {
+        let button = this.createDom("span");
+        let element = button.htmlElement;
+        element.classList.add(className);
+        element.innerHTML = label;
+        element.onclick = onClick
+        button.setBounds(0, 0, element.clientWidth, element.clientHeight);
+        return button;
     }
 }
 class ScoreBoard extends BasicScreen {
-    constructor(xpos = 0, ypos = 0, isBackgoundColor = false, { width = stage.width, justifyContent = "space-around", border = false } = {}) {//space-around
-        super(null, width, 0);
-        this.div = this.createDom("div");
-        let div = this.div.htmlElement.style;
+    constructor(width = stage.width, justifyContent = "space-around") {//space-around
+        super();
+        this.back = this.createDom("div");
+        let div = this.back.htmlElement.style;
         div.display = "flex";
         div.flexWrap = "wrap";
         div.justifyContent = justifyContent;
         div.alignItems = "center";
         div.userSelect = "none";
         div.width = width + "px";
-        if (border) div.border = "2px solid #999";
-        if (isBackgoundColor) div.backgroundColor = Game.style.SCOREBOARD_COLOR;
-        this.addChild(this.div);
-        this.x = xpos;
-        this.y = ypos;
         this._textElements = new Map();
     }
-    createTextElement(key, val, xpos = 0, ypos = 0, { titleImg, borderFont, valueType = "span", width = 150, height = 50, max = 5 } = {}) {
+    createTextElement(key, val, xpos = null, ypos = null, { titleImg, borderFont, valueType = "span", width = 150, height = 50, max = 5 } = {}) {
         let c = document.createElement('div');
-        if (xpos || ypos) {
+        if (xpos != null && ypos != null) {
             c.style.position = "absolute";
             c.style.left = xpos + "px";
             c.style.top = ypos + "px";
         } else {
-            if (this.div.htmlElement.style.justifyContent == "space-between") {
+            if (this.back.htmlElement.style.justifyContent == "space-between") {
                 c.style.flex = "30%";
             }
             c.style.margin = "0 10px";
         }
         if (borderFont) c.style.border = borderFont;
-        c.style.font = Game.style.scoreFont;
-        c.style.color = Game.style.SCORE_TEXT_COLOR;
+        c.style.fontSize = BasicScreen.style.scoreFontSize+"px";
+        c.style.fontFamily = BasicScreen.style.fontFamily;
+        c.style.color = BasicScreen.style.color;
         c.style.display = "flex";
         c.style.alignItems = "center";
         let title;
@@ -208,89 +190,110 @@ class ScoreBoard extends BasicScreen {
             value.style.width = width + "px";
             value.style.height = height + "px";
         }
-        this.div.htmlElement.appendChild(c);
+        this.back.htmlElement.appendChild(c);
         this._textElements.set(key, value);
-        return value;
+        // this.height = this.back.htmlElement.clientHeight;
+        this.back.setBounds(0,0,this.back.htmlElement.clientWidth,this.back.htmlElement.clientHeight);
+        return c;
     }
     update(label, val) {
-        this._textElements.get(label).innerHTML = val;
-        this._textElements.get(label).value = val;
+        let v = this._textElements.get(label);
+        if (v.tagName == "METER") {
+            v.value = val;
+        }
+        else if(v)v.innerHTML = val;
     }
-    get width() {
-        return this.div.htmlElement.clientWidth;
+}
+class TitleScreen extends BasicScreen {
+    constructor(titleText) {
+        super()
+        if(titleText instanceof createjs.DisplayObject){
+            this.title=titleText;
+            this.addChild(this.title);
+        }else{
+            this.title = this.createText(titleText);
+            BasicScreen.setFont(this.title,{fontSize:BasicScreen.style.titleFontSize,fontWeight:"bold"});
+        }
+        this.title.x = canvas.width - this.title.getBounds().width >> 1;
+        this.title.y = canvas.height / 3+20;
     }
-    get height() {
-        return this.div.htmlElement.clientHeight;
+    createButton(text,onclick = () => {
+        this.dispatchEvent(new Okbutton());
+    }) {
+        let btn;
+        if (!stage.isWebGL) {
+            btn = new PushButton(this, text, onclick, 0, 0, 250, 60, new mc.RoundRect(30));
+        }else{
+            btn=this.createDOMbutton(text,onclick);
+        }
+        return btn;
+    }
+}
+class LevelInScreen extends ScoreBoard {
+    constructor() {
+        super();
+        let div = this.createTextElement(Game.LEVEL, "0", 0, 0);
+        div.style.fontSize=BasicScreen.style.titleFontSize+"px";
+        div.style.fontWeight="bold";
+        div.style.left = (stage.width - div.clientWidth >> 1) + "px";
+        div.style.top = (stage.height - div.clientHeight >> 1 )+ "px";
+        if (!stage.isWebGL) {
+            this.bg = new ShapeBackground(stage.width / 2, stage.height / 2);
+            this.addChild(this.bg);
+        }
+    }
+    onRemove() {
+        super.onRemove();
+        if(!stage.isWebGL)this.bg.clearBg();
+    }
+    update(label,val) {
+        if(label)super.update(label,val);
+        else if(!stage.isWebGL){
+            this.bg.updateWaitBg();
+        }
     }
 }
 //--------------------------------------------------进度条----------------------------------------------------------------------
 class LoaderBar extends BasicScreen {
-    constructor(title = "loading...", width = 500, height = 30) {
-        super(title, width, height, Game.style.laoderFont);
-        this.title.x = width - this.title.htmlElement.clientWidth >> 1;
-        this.title.y = -this.title.htmlElement.offsetHeight - 8;
-        this.createBar();
-        this.createValue();
+    constructor(titleText = "loading...",width = 500, height = 30) {
+        super();
+        this.createTitle(titleText, width);
+        this.bar = this.createBar(width, height);
+        this.bar.y = this.title.getBounds().height + this.title.y;
+        this.createValue(width, height);
     }
-    createBar() {
-        this.bar = this.createDom("progress");
-        this.addChild(this.bar);
-        this.bar.htmlElement.value = 0;
-        this.bar.htmlElement.max = 100;
-
-        let style = this.bar.htmlElement.style;
-        style.width = this.width + "px";
-        style.height = this.height + "px";
-        style.backgroundColor = "blue";
+    createTitle(titleText, width) {
+        this.title = this.createText(titleText);
+        BasicScreen.setFont(this.title,{fontWeight:"bold",fontSize:BasicScreen.style.titleFontSize})
+        this.title.x = width - this.title.getBounds().width >> 1;
     }
-    createValue() {
-        this.value = this.createDom("span");
-        this.value.htmlElement.innerHTML = "000%";
-        this.addChild(this.value);
-
-        let style = this.value.htmlElement.style;
-        style.font = Game.style.laoderFont;
-        style.color = Game.style.TEXT_COLOR;
-
-        this.value.x = this.width - this.value.htmlElement.offsetWidth >> 1;
-        this.value.y = this.height;
+    createValue(width, height) {
+        this.value = this.createText("000%");
+        this.value.x = width - this.value.getBounds().width >> 1;
+        this.value.y = this.bar.y + height;
     }
-    /**
-     * 开始加载
-     */
     startLoad(e) {
         this.bar.htmlElement.value = e.progress * 100;
         this.value.htmlElement.innerHTML = Math.floor(e.progress * 100).toString() + "%";
     }
 }
 /***************************************游戏基类****************************** */
-var _fontFamily = "regul,pfrondaseven,Arial,宋体";
 class Game extends ScrollContainer {
-    static LoaderBar = null;
+    static backgroundColor = "#000";//游戏背景颜色
+    static LoaderBar = LoaderBar;
     static loadBarItem = null;
     static loadItem = null;
     static loadId = null;
-    static style = {
-        backgroundColor: "#000",
-        titleFont: "bold " + "60px " + _fontFamily,
-        textFont: "40px " + _fontFamily,
-        laoderFont: "bold 40px Arial,宋体",
-        TEXT_COLOR: "#fff",
-        //分数板样式
-        scoreFont: "30px " + _fontFamily,
-        SCORE_TEXT_COLOR: "#FFFFFF",
-        SCOREBOARD_COLOR: "#555",
-        reset: function () {
-            this.backgroundColor = "#000";
-            this.titleFont = "bold " + "60px " + _fontFamily;
-            this.textFont = "40px " + _fontFamily;
-            this.laoderFont = "bold 40px Arial,宋体";
-            this.TEXT_COLOR = "#fff";
-            this.scoreFont = "30px " + _fontFamily;
-            this.SCORE_TEXT_COLOR = "#FFFFFF";
-            this.SCOREBOARD_COLOR = "#555";
-        }
-    };
+    static loadFontItem = [{
+        src: "fonts/regul-book.woff",
+        type: "font",
+    }, {
+        src: "fonts/pf_ronda_seven.ttf",
+        type: "font"
+    }, {
+        src: "fonts/regul-bold.woff",
+        type: "font",
+    }];
     static state = {
         STATE_WAIT_FOR_CLOSE: "statewaitforclose",
         STATE_TITLE: "statetitle",
@@ -304,26 +307,28 @@ class Game extends ScrollContainer {
         STATE_WAIT: "statewait"
     };
     //键盘按键
-    static codes = {
-        65: "left",
-        87: "up",
-        68: "right",
-        83: "down",
-        32: "pause",
-        100: "attack",
-        101: "jump",
-        102: "skill1",
-        103: "fire",
-        16: "shift",
-        17: "ctrl"
-    };
+    static codes=null;
+    // static codes = {
+    //     65: "left",
+    //     87: "up",
+    //     68: "right",
+    //     83: "down",
+    //     32: "pause",
+    //     100: "attack",
+    //     101: "jump",
+    //     102: "skill1",
+    //     103: "fire",
+    //     16: "shift",
+    //     17: "ctrl"
+    // };
+    
     static SCORE = "score";
     static LEVEL = "level";
     static LIVES = "lives";
     //创建元素
     static getActor(Actor, parent) {
-        Actor.array=Actor.array||[];
-        let len = Actor.array.length,i = 0;
+        Actor.array = Actor.array || [];
+        let len = Actor.array.length, i = 0;
         while (i <= len) {
             if (!Actor.array[i]) {
                 Actor.array[i] = new Actor();
@@ -360,15 +365,18 @@ class Game extends ScrollContainer {
     /**
      * Game类
      * @param {string} titleText 
+     * @param {false} enableMouseOver 开启鼠标经过；
      * @param {stage.width} width 
      * @param {stage.height} height 
      * @param {0} stepWidth 
      * @param {0} stepHeight 
      */
-    constructor(titleText, width = stage.width, height = stage.height, stepWidth = 0, stepHeight = 0) {
+    constructor(titleText,enableMouseOver=false, width = stage.width, height = stage.height, stepWidth = 0, stepHeight = 0) {
         super(null, 0, 0, width, height, 0, 0, false, false);
         this.titleText = titleText;
-        this.instructionText = "介绍界面";
+        this.instructionText = "说明内容";
+        this.backgroundColor=null;
+        this._enableMouseOver=enableMouseOver;
         this.mouseStart = new createjs.Point();
         this.mouseEnd = new createjs.Point();
         //游戏层
@@ -410,60 +418,56 @@ class Game extends ScrollContainer {
     };
 
     /************************界面初始化*************************** */
-
     createTitleScreen() {
-        this.titleScreen = new BasicScreen(this.titleText);
-        if (!stage.isWebGL) {
-            this.titleScreen.createOkButton((stage.canvas.width - 250) / 2, stage.canvas.height * 0.6, null, { label: 'start', width: 250, height: 60, graphics: new mc.RoundRect(30) });
-            this.titleScreen.createOkButton((stage.canvas.width - 250) / 2, stage.canvas.height * 0.6 + 80, null, { label: '游戏说明', width: 250, height: 60, graphics: new mc.RoundRect(30), id: Game.state.STATE_INSTRUCTION });
-            // this.titleScreen=new lib.Title();//协作animate使用-------------------1
-        } else {
-            let b = this.titleScreen.createDOMbutton("start");
-            b.x = stage.width - b.htmlElement.clientWidth >> 1;
-            b.y = stage.canvas.height * 0.52;
-
-            b = this.titleScreen.createDOMbutton("简介", Game.state.STATE_INSTRUCTION);
-            b.x = stage.width - b.htmlElement.clientWidth >> 1;
-            b.y = stage.canvas.height * 0.52 + b.htmlElement.clientHeight + 20;
+        this.titleScreen=new TitleScreen(this.titleText);
+        let btn1=this.titleScreen.createButton("start");
+        btn1.x=stage.width-btn1.getBounds().width>>1;
+        btn1.y=canvas.height*0.6;
+        let btn2;
+        if(!stage.isWebGL){
+            btn2=this.titleScreen.createButton("游戏介绍",()=>{
+                stage.addChild(this.instructionScreen)
+            });
+        }else{
+            btn2=this.titleScreen.createDOMbutton("简介",()=>{
+                stage.addChild(this.instructionScreen)
+            })
         }
+        btn2.x=stage.width-btn2.getBounds().width>>1;
+        btn2.y=btn1.y+btn1.getBounds().height+20;
     }
     createInstructionScreen() {
-        this.instructionScreen = new BasicScreen(this.instructionText, stage.width, stage.height, Game.style.textFont);
-        if (!stage.isWebGL) {
-            this.instructionScreen.createOkButton((this.instructionScreen.width - 150) / 2, this.instructionScreen.height * 0.6, null, { label: '返回', width: 150, height: 150, graphics: new mc.Star(6, 0.35) });
-        } else {
-            let b = this.instructionScreen.createDOMbutton("返回");
-            b.x = stage.width - b.htmlElement.clientWidth >> 1;
-            b.y = this.instructionScreen.height * 0.6;
-        }
+        this.instructionScreen = new BasicScreen();
+        this.instructionScreen.createScreen("游戏介绍", this.instructionText, [
+            {
+                text: "cancel",
+                onclick: () => {
+                    stage.removeChild(this.instructionScreen);
+                }
+            }
+        ], stage.width * .6)
+        let b = this.instructionScreen.getBounds();
+        this.instructionScreen.x = stage.width - b.width >> 1;
+        this.instructionScreen.y = stage.height - b.height >> 1;
     }
     createLevelInScreen() {
-        this.levelInScreen = new LevelInScreen('level:0', stage.width, stage.height);
-        this.levelInScreen.title.y = this.levelInScreen.height / 2 - this.levelInScreen.title.htmlElement.offsetHeight / 2;
+        this.levelInScreen = new LevelInScreen();
     }
     createGameOverScreen() {
-        this.gameOverScreen = new BasicScreen('game over');
-        if (!stage.isWebGL) {
-            this.gameOverScreen.createOkButton((stage.canvas.width - 150) / 2, stage.canvas.height * 0.6, null, { label: '结束', width: 150, height: 150, graphics: new mc.Star(6, 0.35) });
-        } else {
-            let b = this.gameOverScreen.createDOMbutton("结束");
-            b.x = stage.width - b.htmlElement.clientWidth >> 1;
-            b.y = stage.canvas.height * 0.6;
-        }
+        this.gameOverScreen = new TitleScreen("game over");
+        let btn1=this.gameOverScreen.createButton("结束");
+        btn1.x=stage.width-btn1.getBounds().width>>1;
+        btn1.y=canvas.height*0.6;
     }
     createLevelOutScreen() {
-        this.levelOutScreen = new BasicScreen('you win');
-        if (!stage.isWebGL) {
-            this.levelOutScreen.createOkButton((stage.canvas.width - 150) / 2, stage.canvas.height * 0.6, null, { label: '通关', width: 150, height: 150, graphics: new mc.Star(6, 0.35) });
-        } else {
-            let b = this.levelOutScreen.createDOMbutton("通关");
-            b.x = stage.width - b.htmlElement.clientWidth >> 1;
-            b.y = stage.canvas.height * 0.6;
-        }
+        this.levelOutScreen=new TitleScreen("you win");
+        let btn1=this.levelOutScreen.createButton("再来一次");
+        btn1.x=stage.width-btn1.getBounds().width>>1;
+        btn1.y=canvas.height*0.6;
     }
     createPauseScreen() {
-        this.pauseScreen = new BasicScreen("pause", stage.width, stage.height);
-        this.pauseScreen.title.y = stage.height - this.pauseScreen.title.htmlElement.offsetHeight >> 1;
+        this.pauseScreen = new TitleScreen("pause");
+        this.pauseScreen.title.y = stage.height - this.pauseScreen.title.getBounds().height >> 1;
     }
     createScoreBoard() { }
     /***************************游戏开始状态************************ */
@@ -471,8 +475,25 @@ class Game extends ScrollContainer {
     newLevel() { }
     waitComplete() { }
     runGame() { }
-    onkeydown(key) { }
+    onTitleKeydown() { }
+    onRunGameKeydown() { }
     clear() { }
+    //levelIn结束
+    _waitComplete(){
+        if(this.levelInScreen)stage.removeChild(this.levelInScreen);
+        if (this.scoreboard) stage.addChild(this.scoreboard);
+        stage.addChild(this);
+        stage.children.forEach(element => {
+          if (element.htmlElement) {
+            element.visible = true;
+            element.htmlElement.style.visibility = "visible";
+          }
+        });
+        if (this.backSound) this.backSound.play();
+        if(!this._enableMouseOver)stage.enableMouseOver(0);
+        if(this.backgroundColor)containerDiv.style.backgroundColor = this.backgroundColor;
+        this.waitComplete();
+    }
     //结束时立即清除
     _clearBefore() {
         if (this.backSound) this.backSound.stop();
@@ -484,7 +505,7 @@ class Game extends ScrollContainer {
     _clearAfter() {
         stage.alpha = 1;
         createjs.Tween.removeAllTweens();
-        stage.enableMouseOver();
+        if(!this._enableMouseOver)stage.enableMouseOver();
         //清除游戏内容元素
         Game.clearContainer(this.container);
         //清除舞台元素
@@ -581,8 +602,10 @@ class Game extends ScrollContainer {
             }
         }
     }
-    updateLives(live) {
-        this.scoreboard.update(Game.LIVES, live == 3 ? "🧡🧡🧡" : live == 2 ? "🧡🧡" : live == 1 ? "🧡" : "");
+    _transformRect(r) {
+        let p = this.container.localToGlobal(r.x, r.y);
+        r.x = p.x;
+        r.y = p.y;
     }
     updateScore(key, val) {
         this.scoreboard.update(key, val);
@@ -836,11 +859,6 @@ class Game extends ScrollContainer {
     addToEnemy(child) {
         this.enemyLayer.addChild(child);
     }
-    _transformRect(r) {
-        let p = this.container.localToGlobal(r.x, r.y);
-        r.x = p.x;
-        r.y = p.y;
-    }
     /*********************************box2d*********************************** */
     containerDebugDraw() {
         this.superDraw(context)//this-->container
@@ -893,9 +911,6 @@ class Game extends ScrollContainer {
             }
         })
     }
-    // dragFun(drawbody) {
-
-    // }
     drawMouseMove(onMouseUp) {
         let mouseMove;
         this.mouseStart = new b2Vec2();
@@ -925,8 +940,8 @@ class Game extends ScrollContainer {
  * **************************滚动游戏类 **************************************************
  */
 class ScrollMapGame extends Game {
-    constructor(titleText, width, height, stepWidth, stepHeight) {
-        super(titleText, width, height, stepWidth, stepHeight);
+    constructor(titleText,enableMouseOver, width, height, stepWidth, stepHeight) {
+        super(titleText,enableMouseOver, width, height, stepWidth, stepHeight);
         //滚动
         this.mapleft = 0;
         this.maptop = 0;
@@ -982,4 +997,4 @@ class ScrollMapGame extends Game {
         return rect.x + rect.width < this.mapleft || rect.x > this.mapright || rect.y + rect.height < this.maptop || rect.y > this.mapbottom;
     }
 }
-export { BasicScreen, LevelInScreen, ScoreBoard, LoaderBar, Game, ScrollMapGame };
+export { BasicScreen,TitleScreen,Okbutton, ScoreBoard, LoaderBar, Game, ScrollMapGame };

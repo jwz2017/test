@@ -6,11 +6,15 @@ var trees, vpX, vpY,
     numTrees = 100, fl = 250, floor = 50, friction = 0.98,
     vx = 0, vy = 0, vz = 0, ax = 0, ay = 0, az = 0, gravity = 0.3;
 export class Trees extends Game {
+    static codes = {
+            65: "left",
+            87: "up",
+            68: "right",
+            83: "down",
+            101: "jump",
+        };
     constructor() {
         super("屏幕环绕3d");
-        this.keyboard=true;
-    }
-    waitComplete() {
         vpX = stage.width / 2;
         vpY = stage.height / 2;
         trees = [];

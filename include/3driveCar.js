@@ -6,14 +6,21 @@ import { game, gframe, keys, queue, stage } from "../classes/gframe.js";
 window.onload = function () {
     /*************游戏入口*****/
     gframe.buildStage('canvas', true);
-    stage.setClearColor(0x00000000);
-    gframe.preload(DriveCar, true);
+    // stage.setClearColor(0x000000ff);
+    gframe.preload(DriveCar);
 };
 //游戏变量;
 var step = 32;
 var levels, sprite;
 var moveManage = new MoveManage();
 export class DriveCar extends ScrollMapGame {
+    static codes = {
+        65: "left",
+        87: "up",
+        68: "right",
+        83: "down",
+        32:"pause"
+    }
     static loadItem = [{
         id: "drivecar",
         src: "drivecar/drivercar.json",
@@ -23,7 +30,7 @@ export class DriveCar extends ScrollMapGame {
         src: "drivecar/level.json"
     }];
     constructor() {
-        super("DriveCar", stage.width, stage.height, step, step);
+        super("DriveCar",false, stage.width, stage.height, step, step);
         this.instructionText = "上下左右：w,a,s,d";
         levels = queue.getResult("levels");
         sprite = new createjs.Sprite(queue.getResult("drivecar"));
@@ -40,8 +47,9 @@ export class DriveCar extends ScrollMapGame {
         this.scoreboard.createTextElement(DriveCar.SCORE);
         this.scoreboard.createTextElement(DriveCar.LEVEL);
         this.scoreboard.createTextElement(DriveCar.LIVES);
-        this.setSize(stage.width, stage.height - this.scoreboard.height);
-        this.y = this.scoreboard.height;
+        let h=this.scoreboard.getBounds().height;
+        this.setSize(stage.width, stage.height - h);
+        this.y = h;
     }
     newLevel() {
         this.scoreboard.update(DriveCar.SCORE, this.score);

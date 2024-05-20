@@ -8,7 +8,7 @@ var player,numCols = 30,numRows = 30, step = 20,astar=new AStar(),
     path = [],index = 0,shape;
 export class AstarMove extends Game {
     constructor() {
-        super("AstarMove",numCols*step,numRows*step,step,step);
+        super("AstarMove",false,numCols*step,numRows*step,step,step);
         this.x=stage.width-this.width>>1;
         this.y=stage.height-this.height>>1;
         shape = new createjs.Shape();
@@ -22,7 +22,6 @@ export class AstarMove extends Game {
                 const node = this.getNode(i, j);
                 shape.graphics.beginFill(this.getColor(node)).drawRect(i * step, j * step, step, step);
             }
-
         }
     }
     getColor(node) {
@@ -31,7 +30,7 @@ export class AstarMove extends Game {
         if (node == this.endNode) return "#cccccc";
         return "#ffffff";
     }
-    newLevel() {
+    waitComplete() {
         // makePlayer
         player = new CirActor(Math.random() * numCols * step, Math.random() * numRows * step,8);
         player.color = "#ff0000"

@@ -27,8 +27,7 @@ export class AniGravityAttach extends Game {
         this.trail = new Trail(this.container, player);
 
         this.tempV=new b2Vec2();
-    }
-    waitComplete() {
+
         stage.on("stagemousedown", () => {
             let p = this.contactListener.contactedPlanet;
             if (p != null) {

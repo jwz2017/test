@@ -9,8 +9,6 @@ var numParticles = 40,
 export class NodeGarden extends Game {
     constructor() {
         super("节点花园");
-    }
-    waitComplete() {
         particles = [];
         shape = new createjs.Shape();
         stage.addChild(shape);
@@ -18,12 +16,12 @@ export class NodeGarden extends Game {
             let size = Math.random() * 20 + 4;
             const particle = new CirActor(Math.random() * stage.width, Math.random() * stage.height,size/2);
             particle.edgeBehavior = Actor.WRAP;
-
+    
             particle.speed.setValues(Math.random() * 6 - 3, Math.random() * 6 - 3);
             particle.mass = size;
             stage.addChild(particle);
             particles.push(particle);
-
+    
         }
     }
     runGame() {

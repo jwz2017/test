@@ -16,7 +16,6 @@ export class GraphicsTileTest extends Game {
         this.container.y=10;
     }
     waitComplete() {
-        stage.addChild(this);
         for (let i = 0; i < 20; i++) {
             for (let j = 0; j < 20; j++) {
                 let tile_01 = new createjs.Bitmap(queue.getResult("tile_01"));
@@ -33,7 +32,7 @@ export class GraphicsTileTest extends Game {
             pos.z = Math.round(pos.z / 20) * 20;
             box.position = pos;
             this.addToPlayer(box);
-            this.sortDepth(this.world);
+            this.sortDepth(this.playerLayer);
         });
     }
 }

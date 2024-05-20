@@ -12,6 +12,7 @@
     <script src="classes/embox2d-helpers.js"></script>
     <script src="classes/embox2d-html5canvas-debugDraw.js"></script>
     <script src="classes/clipper.js"></script>
+    <script src="assets/lib.js"></script>
     
     <!-- 修改 -->
     <script src="include/3stageGL.js" type="module"></script>
@@ -20,14 +21,16 @@
 <body>
     <div id="containerDiv">
         <div id="gameDiv">
-            <!-- <canvas id="debug" width="750" height="1334" style="position: absolute;top: 0;">
+            <div id="gameScaleDom">
+                <!-- 随舞台缩放 -->
 
-            </canvas> -->
-            <canvas id="canvas" width="750" height="750">
+            </div>
+            <canvas id="canvas" width="750" height="1334">
             </canvas>
         </div>
-        <!-- 不随舞台缩放 dom -->
         <div id="gameDom">
+            <!-- 不随舞台缩放 dom -->
+
         </div>
     </div>
 </body>

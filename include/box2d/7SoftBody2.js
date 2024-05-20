@@ -4,6 +4,12 @@ import { BoxBall } from "../../classes/actor.js";
 var contactListener;
 var anchor;
 export class SoftBody2 extends Game {
+    static codes={
+        65: "left",
+        87: "up",
+        68: "right",
+        32: "pause",
+    }
     constructor() {
         super("SoftBody2");
         gframe.buildWorld(true);

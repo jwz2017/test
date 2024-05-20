@@ -5,13 +5,10 @@ var ball0, ball1;
 export class Billiard extends Game {
     constructor() {
         super("单轴动量碰撞");
-    }
-    waitComplete() {
-        super.waitComplete();
         ball0 = new CirActor(100,400,40);
         ball0.mass = 2;
         ball0.speed.x = 1;
-
+    
         ball1 = new CirActor(600,420,20);
         ball1.mass = 1;
         ball1.speed.x = -1;

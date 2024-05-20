@@ -8,8 +8,6 @@ var balls, vpX, vpY, numBalls = 50, fl = 250,
 export class MultiBounce3D extends Game {
     constructor() {
         super("多球反弹");
-    }
-    waitComplete() {
         balls = [];
         vpX = stage.width / 2;
         vpY =stage.height / 2;

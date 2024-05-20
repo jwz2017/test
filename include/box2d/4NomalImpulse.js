@@ -25,8 +25,8 @@ export class NomalImpulse extends Game {
         stone.life = 13;
         stone.SetUserData(NomalImpulse.STONE)
 
-        // bird = new BoxActor(0,0,20,20);
-        bird=new BoxBall(0,0,10);
+        bird = new BoxActor(0,0,20,20);
+        // bird=new Box(0,0,10);
         bird.body.SetUserData(NomalImpulse.PLAYER)
         this.addToPlayer(bird);
         birdManager = new BirdThrower(this, bird, 100, 600);
@@ -38,11 +38,9 @@ export class NomalImpulse extends Game {
 
     }
     createScoreBoard() {
-        this.scoreboard = new ScoreBoard(0, 20, false);
-        this.scoreboard.createTextElement(NomalImpulse.STONELIFE, 0);
-    }
-    newGame() {
-        this.scoreboard.update(NomalImpulse.STONELIFE, stone.life);
+        this.scoreboard = new ScoreBoard();
+        this.scoreboard.createTextElement(NomalImpulse.STONELIFE, stone.life);
+        stage.addChild(this.scoreboard);
     }
     runGame() {
         // this.moveActors(this.playerLayer);
@@ -66,7 +64,7 @@ export class NomalImpulse extends Game {
         if (contactListener.isContact) {
             contactListener.isContact = false;
             stone.life += contactListener.imp;
-            game.scoreboard.update(NomalImpulse.STONELIFE, stone.life);
+            game.updateScore(NomalImpulse.STONELIFE, stone.life);
             if (stone.life <= 0) {
                 EasyBody.splitsBody(stone, function (f) {
                     return true;

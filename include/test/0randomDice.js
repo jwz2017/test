@@ -8,18 +8,12 @@ export class RandomDice extends Game {
         src: "fakezee/fakezee.json",
         type:"spritesheet"
     }];
-    //static loadId = null;
     constructor() {
-        super("RandomDice");
+        super("RandomDice",true);
 
-    }
-    //初始化游戏数据
-    newGame() {
         this.sprite=new createjs.Sprite(queue.getResult("dice"),"die");
         this.sprite.paused=true;
-    }
-    waitComplete() {
-        stage.enableMouseOver();
+        
         button = new PushButton(stage, "ok", this.onMouseDown, 200, 400,200,40);
         button.x = stage.width - button.getBounds().width >> 1;
         button.y = stage.height - button.getBounds().height >> 1;
@@ -33,6 +27,7 @@ export class RandomDice extends Game {
             xpos += offX;
             stage.addChild(element);
         }
+
     }
     onMouseDown() {
         if (button.selected) {

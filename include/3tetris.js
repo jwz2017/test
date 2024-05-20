@@ -4,7 +4,7 @@ import { Game, ScoreBoard } from "../classes/Game.js";
 window.onload = function () {
     /*************游戏入口*****/
     gframe.buildStage('canvas',true);
-    gframe.preload(Tetris, true);
+    gframe.preload(Tetris);
 };
 //游戏变量;
 var sheet;
@@ -14,21 +14,26 @@ var nextBox, nowBox, pointBox = new createjs.Point();
 var nextLayer = new createjs.Container(), nextLayerLIst = [];
 var speedIndex = 0, speed = 30,maxSpeed=10;
 export class Tetris extends Game {
+    static codes = {
+        65: "left",
+        87: "up",
+        68: "right",
+        83: "down",
+    }
     static LINES="lines";
     constructor() {
-        super("俄罗斯方块", 300, 600, step, step);
+        super("俄罗斯方块",false, 300, 600, step, step);
         this.lines=0;
         this.instructionText="w:旋转<br>asd:方向";
         this.x=stage.width-this.width>>1;
-        this.y=50;
+        this.y=stage.height-this.height>>1;
         //创建方块spritesheet
-        let square = new createjs.Container();
-        let shape = square.addChild(new createjs.Shape());
+        let shape = new createjs.Shape();
         let color="#555";
         let builder = new createjs.SpriteSheetBuilder();
-        square.bounds = new createjs.Rectangle(-step/2, -step/2, step, step);
+        shape.bounds = new createjs.Rectangle(-step/2, -step/2, step, step);
         for (let i = 0; i < 4; i++) {
-            builder.addFrame(square, null, 1, function (target, data) {
+            builder.addFrame(shape, null, 1, function (target, data) {
                 switch (data) {
                     case 1:
                         color="#00ff00";
@@ -69,15 +74,15 @@ export class Tetris extends Game {
     //初始化游戏数据
     newGame() {
         map=[];
-        for (let i = 0; i <19; i++) {
-            const element = new Array(10).fill(0);
+        for (let i = 0; i <this.height/step; i++) {
+            const element = new Array(this.width/step).fill(0);
             map.push(element);
         }
         speedIndex = 0;
         this.createGridMap(map,(ch, node) => {
             switch (ch) {
                 case 0:
-                    node.actor = new Actor(node.x * step, node.y * step);
+                    node.actor = new Actor(node.x * step, node.y * step,0,0,false);
                     node.actor.setSpriteData(sheet);
                     this.addToPlayer(node.actor);
                     break;

@@ -9,15 +9,8 @@ export class MouseJoint extends Game {
         EasyBody.createRectangle(0, 0, stage.width, stage.height);
         this.body=EasyBody.createBox(200, 400, 30, 40);
         this.p=this.body.GetLinearVelocityFromLocalPoint(new b2Vec2(1,0))
-        console.log(this.p.x,this.p.y);
-    }
-    waitComplete() {
+        
         this.dragBody();
-
-    }
-    runGame(){
-        let q=this.body.GetLinearVelocityFromLocalPoint(new b2Vec2(1,0))
-        console.log(this.p.x,this.p.y);
     }
 }
 

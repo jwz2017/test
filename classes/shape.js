@@ -1,4 +1,3 @@
-import { stage } from "./gframe.js";
 import { Actor, Vector } from "./actor.js";
 //画个笑脸
 function drawSmile(g, x, y, bounds) {
@@ -177,9 +176,9 @@ class BarGraph extends createjs.Container {
 class Segment extends Actor {
     constructor(xpos, ypos,width,height,IsShape) {
         super(xpos, ypos,width,height,IsShape);
-        this._color = "#ffffff";
+        this.color = "#ffffff";
     }
-    drawShape(width, height) {
+    drawShape(width, height) {console.log(this.color);
         this.image.graphics.clear().beginStroke("#000").beginFill(this.color).drawRoundRect(-height / 2, -height / 2, width, height, height / 2).endFill();
         this.image.setBounds(-height / 2, -height / 2, width, height);
         //绘制轴

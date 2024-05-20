@@ -9,7 +9,6 @@ export class MotionTest2 extends Game {
         super("移动测试2");
     }
     waitComplete() {
-        stage.addChild(this);
         this.container.x =stage.width / 2;
         this.y = 100;
         for (let i = 0; i < 20; i++) {

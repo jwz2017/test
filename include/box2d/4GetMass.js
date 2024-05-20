@@ -17,17 +17,15 @@ export class GetMass extends Game {
         force=new b2Vec2(0,world.GetGravity().y)
         force.y = -force.y;
         force.op_mul(bird.GetMass())
-    }
-    waitComplete() {
+
         stage.on("stagemousedown", () => {
             let v=bird.GetLinearVelocity();
-            impulse.Set(v.x,v.y*10);
+            impulse.Set(v.x*10,v.y);
             bird.ApplyLinearImpulse(impulse, bird.GetPosition());
             isApplyForce = true;
         })
     }
     runGame() {
-        world.ClearForces();
         if(isApplyForce){
             bird.ApplyForce(force,bird.GetPosition());
         }

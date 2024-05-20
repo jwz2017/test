@@ -2,12 +2,10 @@ import { Game } from "../../classes/Game.js";
 import { stage } from "../../classes/gframe.js";
 import { BarGraph,drawSmile} from "../../classes/shape.js";
 export class Graphics extends Game {
+
     constructor() {
         super("绘画工具");
-        this.instructionText = "1:画虚线\r2:画扇形\r3:画同心圆";
-    }
-    waitComplete() {
-        super.waitComplete();
+        
         var shape = stage.addChild(new createjs.Shape());
         //画条形图
         var data = [["a", 30], ["张芳", 32], ["c", 50], ["dd", 14], ["e", 44], ["c", 50], ["dd", 14], ["e", 44]];
@@ -19,7 +17,6 @@ export class Graphics extends Game {
         shape.graphics.setStrokeDash();
         //笑脸
         drawSmile(shape.graphics, 200, 60, 50);
-        //
     }
     runGame() {
         this.comset.offset++;

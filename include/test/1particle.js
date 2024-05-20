@@ -5,11 +5,9 @@ import { Game } from "../../classes/Game.js";
 var particles, gridSize = 80, grid,
     numParticles = 100;
 export class Particle extends Game {
+    static backgroundColor="#fff"
     constructor() {
         super("Particle");
-        console.log(this.width,this.contentSize.width);
-    }
-    waitComplete() {
         grid = new GridCollision(stage.width, stage.height, gridSize);
         grid.drawGrid();
         particles = [];

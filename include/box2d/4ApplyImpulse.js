@@ -16,8 +16,7 @@ export class ApplyImpulse extends Game {
         impulse.Set(bird.GetMass() * 5, -bird.GetMass() * 10);
 
         this.trail=new Trail(this.container,bird);
-    }
-    waitComplete() {
+
         stage.on("stagemousedown", () => {
             bird.ApplyLinearImpulse(impulse, bird.GetPosition());
             var bullet = EasyBody.createCircle(bird.GetPosition().x * PTM, bird.GetPosition().y * PTM + 20, 5);
@@ -26,7 +25,6 @@ export class ApplyImpulse extends Game {
         })
     }
     runGame() {
-        world.ClearForces();
         this.trail.update();
     }
 

@@ -164,8 +164,6 @@ class Actor extends createjs.Container {
     this.friction = 1;
     //质量
     this.mass = 1;
-    //路径
-    this.pathIndex = 0;
     //进入视野距离
     this.inSightDist = 200;
 
@@ -320,7 +318,7 @@ class Actor extends createjs.Container {
   }
   /**
    * 是否进入视野
-   * @param {SteeredActor} vehicle 
+   * @param {Actor} vehicle 
    * @returns boolen
    */
   inSight(vehicle) {
@@ -794,52 +792,103 @@ class BoxBall extends BoxActor {
   }
 }
 
-class Weapon {
+class Weapon extends createjs.Container {
   /**
    * 武器
+   * @param {*} actor 武器拥有者
    * @param {*} Bullet 子弹类型
    * @param {40} fireStep 开火节奏
-   * @param {1} fireType 开火方式，单发或散弹
+   * @param {1} fireType 开火方式，单发或散弹max=19
    */
-  constructor(Bullet, fireStep = 40, fireType = 1) {
+  constructor(parent,Bullet, fireStep = 40, fireType = 1) {
+    super();
     this._fireIndex = 0;
     this.fireStep = fireStep;
     this.fireType = fireType;
     this.Bullet=Bullet;
+    parent.addChild(this);
+    this.x=parent.hit;
     this._bulletOffAngle = 10 * Math.PI / 180;
   }
   /**
    * 开火
    * @param {*} attackKey 
-   * @param {*} actor 
    * @param {null} parent null:=actor.parent
    */
-  fire(attackKey,actor,parent) {
+  fire(attackKey,parent) {
     if (attackKey) {
       if (this._fireIndex-- < 0) {
         this._fireIndex = this.fireStep;
         for (let i = 0; i < this.fireType; i++) {
-          const bullet = Game.getActor(this.Bullet, parent||actor.parent);
-          this._activateBullet(i, bullet,actor);
+          const bullet = Game.getActor(this.Bullet,parent||this.parent.parent);
+          this._activateBullet(i, bullet);
           if (i > 0) {
-            let bullet1 = Game.getActor(this.Bullet, parent||actor.parent);
-            this._activateBullet(-i, bullet1,actor);
+            let bullet1 = Game.getActor(this.Bullet,parent||this.parent.parent);
+            this._activateBullet(-i, bullet1);
           }
         }
       }
-    } else {
+    } else if(this._fireIndex>=0){
       this._fireIndex--;
     }
   }
-  _activateBullet(i, bullet,actor) {
-    let angle = actor.rotation * Math.PI / 180;
+  _activateBullet(i, bullet) {
+    let p=this.parent.localToLocal(this.x,this.y,bullet.parent);
+    bullet.x=p.x;
+    bullet.y=p.y;
+    let angle=this.parent.rotation*Math.PI / 180;
     bullet.speed.angle = i * this._bulletOffAngle + angle;
-    bullet.x = actor.x + Math.cos(angle) * actor.hit;
-    bullet.y = actor.y + Math.sin(angle) * actor.hit;
     bullet.rotation = bullet.speed.angle * 180 / Math.PI;
     bullet.updateRect();
   }
 }
+// class Weapon {
+//   /**
+//    * 武器
+//    * @param {*} actor 武器拥有者
+//    * @param {*} Bullet 子弹类型
+//    * @param {40} fireStep 开火节奏
+//    * @param {1} fireType 开火方式，单发或散弹max=19
+//    */
+//   constructor(actor,Bullet, fireStep = 40, fireType = 1) {
+//     this._fireIndex = 0;
+//     this.fireStep = fireStep;
+//     this.fireType = fireType;
+//     this.Bullet=Bullet;
+//     this.actor=actor;
+//     this._bulletOffAngle = 10 * Math.PI / 180;
+//   }
+//   /**
+//    * 开火
+//    * @param {*} attackKey 
+//    * @param {null} parent null:=actor.parent
+//    */
+//   fire(attackKey,parent) {
+//     if (attackKey) {
+//       if (this._fireIndex-- < 0) {
+//         this._fireIndex = this.fireStep;
+//         for (let i = 0; i < this.fireType; i++) {
+//           const bullet = Game.getActor(this.Bullet, parent||this.actor.parent);
+//           this._activateBullet(i, bullet);
+//           if (i > 0) {
+//             let bullet1 = Game.getActor(this.Bullet, parent||this.actor.parent);
+//             this._activateBullet(-i, bullet1);
+//           }
+//         }
+//       }
+//     } else if(this._fireIndex>=0){
+//       this._fireIndex--;
+//     }
+//   }
+//   _activateBullet(i, bullet) {
+//     let angle = this.actor.rotation * Math.PI / 180;
+//     bullet.speed.angle = i * this._bulletOffAngle + angle;
+//     bullet.x = this.actor.x + Math.cos(angle) * this.actor.hit;
+//     bullet.y = this.actor.y + Math.sin(angle) * this.actor.hit;
+//     bullet.rotation = bullet.speed.angle * 180 / Math.PI;
+//     bullet.updateRect();
+//   }
+// }
 
 class MoveManage {
   constructor() {
@@ -858,10 +907,8 @@ class MoveManage {
     this.avoidDistance = 300;
     this.avoidBuffer = 20;//回避缓冲 准备避开时，自身和障碍物间的预留距离
     //路径
-    // this.pathIndex = 0;
     this.pathThreshold = 20;
-    //群落 进入视野距离和最小距离
-    // this.inSightDist = 200;
+    //群落 最小距离
     this.tooCloseDist = 60;
   }
   /**
@@ -1093,6 +1140,7 @@ class MoveManage {
    * @param {Boolean} loop false
    */
   followPath(actor, path, loop = false) {
+    actor.pathIndex=actor.pathIndex||0;
     let wayPoint = path[actor.pathIndex];
     let centerPos = new Vector(actor.x, actor.y);
     if (!wayPoint) return;

@@ -7,17 +7,24 @@ var xpos, ypos, zpos, ball, vpX, vpY,
     top = -200, bottom = 200, left = -200, right = 200,
     front = 200, back = -200;
 export class Velocity3D extends Game {
+    static codes = {
+            65: "left",
+            87: "up",
+            68: "right",
+            83: "down",
+            16: "shift",
+            17: "ctrl"
+        };
     constructor() {
         super("3d速度");
-        this.instructionText="wasd,shift,ctrl"
-    }
-    waitComplete() {
         xpos = ypos = zpos = 0;
         vpX = stage.width / 2;
         vpY = stage.height / 2;
         ball = new CirActor(0,0,25);
         ball.speed.z = 0;
         stage.addChild(ball);
+    }
+    waitComplete() {
     }
     runGame() {
         //键盘事件

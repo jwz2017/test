@@ -5,14 +5,18 @@ import { BoxBall } from "../../classes/actor.js";
 var player;
 var contactListener;
 export class GearJoint extends Game {
+    static codes={
+        65: "left",
+        87: "up",
+        68: "right",
+        32: "pause",
+    }
     constructor() {
         super("齿轮关节");
         gframe.buildWorld(true);
-    }
-    waitComplete(){
         this.createBodies();
         this.createGearJoint();
-
+    
         contactListener=new BallMoveContactListener();
     }
     runGame(){

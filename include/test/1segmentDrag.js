@@ -6,8 +6,6 @@ var segments, numSegments = 30;
 export class SegmentDrag extends Game {
     constructor() {
         super("关节拖拽");
-    }
-    waitComplete() {
         segments = [];
         for (let i = 0; i < numSegments; i++) {
             const segment = new Segment(0,0,50,10);

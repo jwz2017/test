@@ -5,6 +5,12 @@ import { BoxBall } from "../../classes/actor.js";
 //游戏变量;
 var player,contactListener;
 export class DistanceJoint extends Game {
+    static codes={
+        65: "left",
+        87: "up",
+        68: "right",
+        32: "pause",
+    }
     constructor() {
         super("距离关节");
         gframe.buildWorld(true);
@@ -15,7 +21,6 @@ export class DistanceJoint extends Game {
         contactListener=new BallMoveContactListener();
     }
     runGame(){
-        world.ClearForces();
         player.act(keys);
     }
     createJoint(){
@@ -30,8 +35,8 @@ export class DistanceJoint extends Game {
         jointDef.Initialize(bodyA,bodyB,anchorA,anchorB);
         world.CreateJoint(jointDef);
         //位移关节
-        bodyA=world.CreateBody(new b2BodyDef());
         let anchor=bodyB.GetPosition();
+        bodyA=EasyBody.getEmptyBody(anchor.x*PTM,anchor.y*PTM);
         let verticalAxis=new b2Vec2(0,1);
         let verticalJointDef=new b2PrismaticJointDef();
         verticalJointDef.Initialize(bodyA,bodyB,anchor,verticalAxis);

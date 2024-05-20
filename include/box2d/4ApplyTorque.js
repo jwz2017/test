@@ -4,6 +4,10 @@ import { Game } from "../../classes/Game.js";
 var ground,body;
 var torque=0,TORQUE=80,SPEEDMAX=5*PTM*Math.PI/180;
 export class ApplyTorque extends Game {
+    static codes={
+        65: "left",
+        68: "right",
+    }
     constructor() {
         super("ApplyTorque");
         gframe.buildWorld(true);
@@ -16,7 +20,6 @@ export class ApplyTorque extends Game {
         body.SetSleepingAllowed(false)
     }
     runGame() {
-        world.ClearForces();
         torque=0;
         if(keys.left)torque=-TORQUE;
         if(keys.right)torque=TORQUE;

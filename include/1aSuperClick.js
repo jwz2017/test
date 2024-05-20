@@ -27,15 +27,16 @@ export class SuperClick extends Game{
         
     }
     createScoreBoard() {
-        this.scoreboard = new ScoreBoard(0, 0, false, { justifyContent: "space-between" });
+        this.scoreboard = new ScoreBoard(stage.width,"space-between");
         this.scoreboard.x=50;
         this.scoreboard.createTextElement("score");
         this.scoreboard.createTextElement("level");
         this.scoreboard.createTextElement(CLICKS);
         this.scoreboard.createTextElement(NEEDED);
         this.scoreboard.createTextElement(ACHIEVE);
-        this.setSize(stage.width, stage.height - this.scoreboard.height);
-        this.y = this.scoreboard.height;
+        let h=this.scoreboard.getBounds().height;
+        this.setSize(stage.width, stage.height -h);
+        this.y = h;
     }
     newLevel() {
         this.scoreboard.update("score", this.score);

@@ -5,7 +5,7 @@ import { Game, ScoreBoard } from "../classes/Game.js";
 window.onload = function () {
     /*************游戏入口*****/
     gframe.buildStage('canvas');
-    gframe.preload(Tunnel, true);
+    gframe.preload(Tunnel);
 };
 //游戏变量;
 var player,gravity=0.15,playerSpeed=0.3;
@@ -28,9 +28,13 @@ var obstacleDelay = 30,
 //分数版
 var startTime,time=0,levelTime=10;
 export class Tunnel extends Game {
+    static codes = {
+        87: "up",
+        32:"pause"
+    }
     static TIME = "time";
     constructor() {
-        super("隧道惊魂", stage.width, 380);
+        super("隧道惊魂",false, stage.width, 380);
         this.instructionText="w:向上";
         this.y = stage.height - this.height >> 1;
         //创建飞船

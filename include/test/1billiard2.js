@@ -5,14 +5,12 @@ var ball0, ball1;
 export class Billiard2 extends Game {
     constructor() {
         super("动量碰撞");
-    }
-    waitComplete() {
         ball0 = new CirActor(300, 300,100);
         ball0.edgeBehavior = Actor.BOUNCE
         ball0.mass = 2;
         ball0.speed.x = Math.random() * 10 - 5;
         ball0.speed.y = Math.random() * 10 - 5;
-
+    
         ball1 = new CirActor(200, 200,90);
         ball1.edgeBehavior = Actor.BOUNCE;
         ball1.mass = 1;

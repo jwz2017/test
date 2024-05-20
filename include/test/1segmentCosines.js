@@ -6,8 +6,6 @@ var segment0, segment1;
 export class SegmentCosines extends Game {
     constructor() {
         super("余弦定理");
-    }
-    waitComplete() {
         segment0 = new Segment(0,0,100,20);
         segment1 = new Segment(0,0,100,20);
         segment1.x = stage.width / 2;

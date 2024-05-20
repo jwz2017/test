@@ -5,10 +5,9 @@ import { Segment } from "../../classes/shape.js";
 
 var segment0, segment1, slider0, slider1;
 export class SingleSegment extends Game {
+    static backgroundColor="#fff"
     constructor() {
         super("关节运动");
-    }
-    waitComplete() {
         segment0 = new Segment(200, 150,100,20);
         let p=segment0.getPin();
         segment1 = new Segment(0,0,100,20);

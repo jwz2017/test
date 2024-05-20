@@ -4,15 +4,18 @@ import { Game, ScoreBoard } from "../classes/Game.js";
 window.onload = function () {
     /*************游戏入口*****/
     gframe.buildStage('canvas');
-    //stage.setClearColor(0x00000000);
-    gframe.preload(FloorDown, true);
+    gframe.preload(FloorDown);
 };
 //游戏变量;
 var stagestep;
-var floor = [], floor2 = [], floor3 = [], floor4 = [], floor5 = [];
 var step = 100, stepindex;
 var player;
 export class FloorDown extends Game {
+    static codes = {
+        65: "left",
+        68: "right",
+        32:"pause",
+    }
     static loadItem = [{
         id: "back",
         src: "spacehero/bg.png"
@@ -21,7 +24,6 @@ export class FloorDown extends Game {
         src: "../assets/jump/spriteData.json",
         type: "spritesheet"
     }];
-    //static loadId = null;
     constructor() {
         super("是男人就下100层");
         this.instructionText="ad:左右方向";
@@ -40,10 +42,13 @@ export class FloorDown extends Game {
         let f = this.addFloor(0.5);
         player.setPos(f.x, f.y - f.rect.height / 2 - player.rect.height / 2 - 100);
         this.addToPlayer(player);
-        this.updateLives(player.hp);
+        this.updateScore(FloorDown.LIVES,this.getLives());
     }
+    getLives(){
+        return player.hp == 3 ? "🧡🧡🧡" : player.hp == 2 ? "🧡🧡" : player.hp == 1 ? "🧡" : "";
+     }
     newLevel() {
-        this.scoreboard.update(FloorDown.LEVEL, this.level);
+        this.updateScore(FloorDown.LEVEL, this.level);
     }
     runGame() {
         //移动背景
@@ -153,7 +158,7 @@ class Floor3 extends Floor {
         if (!this.hited) {
             this.hited = true;
             actor.hp--;
-            game.updateLives(actor.hp);
+            game.updateScore(FloorDown.LIVES,game.getLives());
             if (actor.hp == 0) {
                 game.gameOver = true;
             }
@@ -199,9 +204,6 @@ class Player extends JumpActor {
     act() {
         this.moveY();
         this.moveX();
-        this.rebounds();
-    }
-    rebounds() {
         game.rebounds(this,false);
     }
     changeAct() {

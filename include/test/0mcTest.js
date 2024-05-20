@@ -2,15 +2,11 @@ import { Game } from "../../classes/Game.js";
 import { stage } from "../../classes/gframe.js";
 import { mc,PushButton,CheckBox,RadioButton,Slider,ScrollContainer } from "../../classes/mc.js";
 export class Mctest extends Game {
+    static backgroundColor="#fff"
     constructor() {
-        super("mc组件测试");
+        super("mc组件测试",true);
+
         mc.style.fontSize=16;
-    }
-    clear(){
-        mc.style.fontSize=32;
-    }
-    waitComplete() {
-        stage.enableMouseOver();
         /**
         * 颜色parseColor
         */
@@ -87,5 +83,8 @@ export class Mctest extends Game {
         this.slider1 = new Slider(this.scorecontainer.container, "分数", () => {
             console.log(this.slider1.value);
         }, 200, 1000, 230, 24, new mc.RoundRect(12), false);
+    }
+    clear(){
+        mc.style.fontSize=32;
     }
 }

@@ -373,7 +373,7 @@
                 <h5>功能测试</h5>
                 <a href="shoot.html">射击游戏</a>
                 <a href="colordrop1.html">魔法方块</a>
-                <a href="stageGL.html">SGL&Box2d测试</a>
+                <a href="stageGL.html">animat界面制作</a>
                 <a href="driveCar.html">DriveCar</a>
                 <a href="tunnel.html">隧道惊魂</a>
                 <a href="worldGame.html">文字游戏</a>
@@ -413,19 +413,21 @@
     <div id="containerDiv" style="position: absolute;width:100%;z-index:1000;display: none;top:0;left: 0;">
       <!-- 游戏界面 -->
       <div id="gameDiv">
-        <input type="text" id="inputText" placeholder="请输入姓名" style="position: absolute;visibility: hidden;">
-        <!-- 背景音乐图标 -->
-        <span href="#" class="iconfont icon-shengyin" id="bmusic"></span>
+        <!-- <input type="text" id="inputText" placeholder="请输入姓名" style="position: absolute;visibility: hidden;"> -->
+        <div id="gameScaleDom">
+          <!-- 随舞台缩放 -->
+
+        </div>
         <canvas id="canvas" width="750" height="1334">
         </canvas>
       </div>
-      <!-- 不随舞台缩放 dom -->
       <div id="gameDom">
+        <!-- 不随舞台缩放 dom -->
+        
       </div>
-
       <!-- 关闭按钮 -->
       <a href="#" class="iconfont icon-cancel-square" id="closeGame"
-        style="font-size: 50px;position: absolute;right: 2px;top: 2px;"></a>
+        style="color: #e5e5e5;font-size: 50px;position: absolute;right: 0px;top: 0px;"></a>
     </div>
   </div>
 </body>

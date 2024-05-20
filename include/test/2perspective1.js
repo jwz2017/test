@@ -5,15 +5,16 @@ import { keys, stage } from "../../classes/gframe.js";
 var ball, xpos, ypos, zpos, vpX, vpY,
     fl = 250;
 export class Perspective1 extends Game {
+    static codes = {
+            87: "up",
+            83: "down",
+        };
     constructor() {
         super("透视1");
-        this.instructionText="w,s放大缩小";
-    }
-    waitComplete() {
         xpos = ypos = zpos = 0;
         vpX = stage.width / 2;
         vpY = stage.height / 2;
-
+    
         ball = new CirActor(0,0,25);
         stage.addChild(ball);
     }

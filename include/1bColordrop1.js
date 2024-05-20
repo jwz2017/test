@@ -3,9 +3,8 @@ import { stage, gframe, queue } from "../classes/gframe.js";
 import { getFXBitmap } from "../classes/other.js";
 window.onload = function () {
     /*************游戏入口*****/
-    //gframe.loaderBar=null;
     gframe.buildStage('canvas',false);
-    gframe.preload(ColorDrop,true);
+    gframe.preload(ColorDrop);
 };
 //游戏变量;
 var space = 7;
@@ -20,8 +19,7 @@ class ColorDrop extends Game {
     static SCORE_BOARD_THRESHOLD = "threshold";
     static SCORE_BOARD_LEVEL_SCORE = "levelScore";
     constructor() {
-        // stage.canvas.style.background = "#000";
-        super("魔法方块", step * numcols + (numcols + 1) * space, step * numrows + (numrows + 1) * space, step, step);
+        super("魔法方块",true, step * numcols + (numcols + 1) * space, step * numrows + (numrows + 1) * space, step, step);
         this.instructionText= "10步内超过500分过关";
         this.maxLevel = 10;
         this.x = stage.width - this.width >> 1;
@@ -30,7 +28,8 @@ class ColorDrop extends Game {
         this.createGrid(numrows,numcols);
     }
     createScoreBoard() {
-        this.scoreboard = new ScoreBoard(60,0,false,{justifyContent:"space-between"});
+        this.scoreboard = new ScoreBoard(stage.width,"space-between");
+        this.scoreboard.x=50;
         this.scoreboard.createTextElement(ColorDrop.SCORE,"0");
         this.scoreboard.createTextElement(ColorDrop.LEVEL);
         this.scoreboard.createTextElement(ColorDrop.SCORE_BOARD_PLAYS);
