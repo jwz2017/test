@@ -16,7 +16,6 @@ export class WanderTest extends Game {
     runGame() {
         moveManage.wander(vehicle);
         vehicle.act();
-        this.checkBounds(vehicle);
     }
 
 }

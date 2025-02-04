@@ -51,9 +51,10 @@ class Tanke extends Game {
         this.x = stage.width - this.width >> 1;
         this.y = stage.height - this.height >> 1;
         this.instructionText = "方向w,a,s,d小键盘4开火攻击";
-        this.playerChars = {
-            "1": Player,
-        };
+        // this.playerChars = {
+        //     "1": Player,
+        // };
+        this.playerChars["1"]=Player;
         this.propChars = {
             "23": Live,
             "20": Bullet,

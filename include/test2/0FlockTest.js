@@ -23,7 +23,7 @@ export class FlockTest extends Game{
         for (let i = 0; i < numVehicles; i++) {
             moveManage.flock(vehicles[i],vehicles);
             vehicles[i].act();
-            this.checkBounds(vehicles[i]);
+            // this.checkBounds(vehicles[i]);
         }
     }
 

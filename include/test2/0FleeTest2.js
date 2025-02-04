@@ -31,7 +31,6 @@ export class FleeTest2 extends Game {
         moveManage.seek(vehicleC,vehicleA);
         moveManage.flee(vehicleC,vehicleB);
         vehicleC.act();
-        this.checkBounds(stage);
     }
 
 }

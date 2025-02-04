@@ -93,10 +93,12 @@ window.onload = function () {
 };
 //关闭按钮点击
 closeGame.onclick = function (e) {
-    e.target.parentNode.style.display = "none";
-    //应许滚动
-    document.getElementsByTagName('body')[0].setAttribute('style', 'position:relative;');
-    gframe.reset();
+    if(queue.loaded){
+        e.target.parentNode.style.display = "none";
+        //应许滚动
+        document.getElementsByTagName('body')[0].setAttribute('style', 'position:relative;');
+        gframe.reset();
+    }
 }
 //收缩，展开
 var genduo1 = document.getElementById("genduo1"),
@@ -108,7 +110,10 @@ genduo1.onclick = function (e) {
 };
 genduo2.onclick = function (e) {
     genduo(e, pro_con2);
-}
+};
+genduo3.onclick = function (e) {
+    genduo(e, pro_con3);
+};
 
 function genduo(e, pro_con1) {
     if (pro_con1.style.display === "none") {

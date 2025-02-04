@@ -82,13 +82,12 @@ class Bounce extends Game {
                 let fieldType = new Brick(node.x * stepWidth, node.y * stepHeight, ch);
                 node.brick = fieldType;
                 bricks.push(fieldType);
-                this.addToEnemy(fieldType)
+                this.container.addChild(fieldType)
             }
         });
 
     }
     runGame() {
-        this.moveActors(this.enemyLayer);
         this.moveActors(this.playerLayer);
     }
 }

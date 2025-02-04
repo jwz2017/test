@@ -117,8 +117,8 @@ class SpaceShip extends Game {
                 bullet.act();
             }
         }
-        this.checkBounds(this.playerLayer);
-        this.checkBounds(this.enemyLayer);
+        // this.checkBounds(this.playerLayer);
+        // this.checkBounds(this.enemyLayer);
     }
 }
 

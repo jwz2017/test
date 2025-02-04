@@ -26,7 +26,7 @@ import { stage } from "./gframe.js";
       this.addChild(this.fade, this.spin1);
     }
     clearBg() {
-      this.c = 0;
+      this.c = -1;
       this.count = 0;
       this.spin1.rotation = 0;
       this.spin2.rotation = 0;

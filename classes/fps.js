@@ -4,7 +4,7 @@ fps.style.color = "#ff0";
 fps.style.font = "20px Arial";
 fps.style.position = "absolute";
 fps.style.top = "8px";
-fps.style.left=0
+fps.style.left="10px";
 export var Fps = {
     start: function () {
         containerDiv.appendChild(fps);

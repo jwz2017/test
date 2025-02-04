@@ -362,8 +362,19 @@ class Actor extends createjs.Container {
     this.speed.truncate(this.maxSpeed);
     this.speed.mul(this.friction);
     this.plus(this.speed.x, this.speed.y);
-    if(this.edgeBehavior)game._checkBounds(this);
+    if(this.edgeBehavior)this.checkBounds();
   }
+  checkBounds() {
+    if (this.edgeBehavior == Actor.WRAP) {
+        game.placeInBounds(this);
+    } else if (this.edgeBehavior == Actor.BOUNCE) {
+        game.rebounds(this);
+    } else if (this.edgeBehavior == Actor.RECYCLE) {
+        if (game.outOfBounds(this)) {
+            this.recycle();
+        }
+    }
+}
 }
 
 class CirActor extends Actor {

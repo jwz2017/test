@@ -6,10 +6,9 @@ var clipTypeList, clipTypeNames, typeOfClip;
 var clipText, aryIndex = 0;
 var drawColor;
 var intersection;
-var buffer;
 export class ClipperDemo extends Game {
     static codes={
-        32:"down"//空格键换类型
+        32:"space"//空格键换类型
     }
     constructor() {
         super("ClipperDemo");
@@ -43,13 +42,10 @@ export class ClipperDemo extends Game {
 
         this.clipper = new Clipper();
         drawColor=new b2Color(1,0,0);
-        // buffer=Box2D._malloc();
-        // this.buffer=Box2D._malloc();
         stage.addChild(clipText);
     }
     runGame() {
         intersection=this.clipper.getIntersectionShape(subjectBody.GetFixtureList(), clipBody.GetFixtureList(), typeOfClip);
-        // if(this.clipper.paths.length>0)Clipper.arrayToBox2D(this.clipper.paths[0],buffer);
     }
     onRunGameKeydown(){
         if(++aryIndex>=clipTypeList.length) aryIndex=0;
@@ -59,15 +55,14 @@ export class ClipperDemo extends Game {
     containerDebugDraw() {
         super.containerDebugDraw()
         if (intersection.length > 0) {
-            intersection.forEach(verties => {
+            intersection.forEach((verties,i) => {
                 let v=Clipper.pathToVec(verties);
-                // Clipper.arrayToBox2D(verties,game.clipper._buffer);
                 if (typeOfClip == 3) {
                     drawPolygon1(v,true)
-                    // debugDraw.DrawSolidPolygon(game.clipper._buffer,verties.length,drawColor.a)
+                    // debugDraw.DrawSolidPolygon(game.clipper._arrayToMalloc(i),verties.length,drawColor.a)
                 } else {
                     drawPolygon1(v,false)
-                    // debugDraw.DrawPolygon(game.clipper._buffer,verties.length,drawColor.a)
+                    // debugDraw.DrawPolygon(game.clipper._arrayToMalloc(i),verties.length,drawColor.a)
                 }
             });
         }

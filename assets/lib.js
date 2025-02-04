@@ -216,19 +216,11 @@ if (reversed == null) { reversed = false; }
 	this.shape_9.graphics.f("#FFFFFF").s().p("AkEDGQCQgnAAhlIAAg3IicAAIAAg1ICcAAIAAiVIh3AAIAAg2IHXAAIAAA2IhyAAIAACVICXAAIAAA1IiXAAIAADxIg4AAIAAjxIh+AAIAAA3QAACOivA2gAg8gyIB+AAIAAiVIh+AAg");
 	this.shape_9.setTransform(292.55,484.3);
 
-	this.shape_10 = new cjs.Shape();
-	this.shape_10.graphics.f().s("#FFFFFF").ss(1,1,1).p("Egi1AVVIgKAAMAAAgqpMBF/AAAIAAAK");
-	this.shape_10.setTransform(223.025,135.525);
-
-	this.shape_11 = new cjs.Shape();
-	this.shape_11.graphics.f("#666666").s().p("Eg8iBoOMAAAil7MAAAgqgMBF1AAAMAzQAAAMAAADQbg");
-	this.shape_11.setTransform(387.5,667);
-
-	this.timeline.addTween(cjs.Tween.get({}).to({state:[{t:this.shape_11},{t:this.shape_10},{t:this.shape_9},{t:this.shape_8},{t:this.shape_7},{t:this.shape_6},{t:this.btn1},{t:this.btn2},{t:this.shape_5},{t:this.shape_4},{t:this.shape_3},{t:this.shape_2},{t:this.shape_1},{t:this.shape}]}).wait(1));
+	this.timeline.addTween(cjs.Tween.get({}).to({state:[{t:this.shape_9},{t:this.shape_8},{t:this.shape_7},{t:this.shape_6},{t:this.btn1},{t:this.btn2},{t:this.shape_5},{t:this.shape_4},{t:this.shape_3},{t:this.shape_2},{t:this.shape_1},{t:this.shape}]}).wait(1));
 
 	this._renderFirstFrame();
 
-}).prototype = getMCSymbolPrototype(lib.Title, new cjs.Rectangle(-1.9,-1.9,776.9,1335.9), null);
+}).prototype = getMCSymbolPrototype(lib.Title, new cjs.Rectangle(251.5,414.8,287,452.09999999999997), null);
 
 
 (lib.popwin = function(mode,startPosition,loop,reversed) {
@@ -350,11 +342,11 @@ lib.properties = {
 	width: 750,
 	height: 1334,
 	fps: 60,
-	color: "#FFFFFF",
+	color: "#666666",
 	opacity: 1.00,
 	manifest: [
-		{src:"images/Bitmap4.png?1716215339192", id:"Bitmap4"},
-		{src:"images/Button.png?1716215339192", id:"Button"}
+		{src:"images/Bitmap4.png?1716378826985", id:"Bitmap4"},
+		{src:"images/Button.png?1716378826985", id:"Button"}
 	],
 	preloads: []
 };

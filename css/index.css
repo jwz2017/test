@@ -189,7 +189,7 @@ nav ul li a p {
 }
 .probox .procontant {
   width: 100%;
-  max-height: 300px;
+  max-height: 320px;
   overflow: auto;
 }
 .sk_product {
@@ -228,12 +228,4 @@ nav ul li a p {
 .sk_product li .pro_name {
   color: #666;
   padding-top: 0;
-}
-@font-face {
-  font-family: "regul";
-  src: url("../assets/fonts/regul-book.woff") format('woff');
-}
-@font-face {
-  font-family: "pfrondaseven";
-  src: url("../assets/fonts/pf_ronda_seven.ttf") format('woff');
 }

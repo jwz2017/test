@@ -21,7 +21,6 @@ export class PursueEvade extends Game {
         moveManage.evade(evader,pursuer);
         pursuer.act();
         evader.act();
-        this.checkBounds(stage);
         
     }
 }

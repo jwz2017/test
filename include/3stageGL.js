@@ -9,7 +9,7 @@ window.onload = function () {
         using(Box2D, 'b2.+');
     })
     /*************游戏入口*****/
-    gframe.buildStage('canvas');
+    gframe.buildStage('canvas',false,false);
     gframe.preload(StageGL);
 };
 //游戏变量;
@@ -19,7 +19,6 @@ export class StageGL extends Game {
         super("anmate界面制作");
         gframe.buildWorld(true, 0);
         this.instructionText="1:wewdsdf<br>2:ewddieiei"
-        // StageGL.style.backgroundColor="#fff"
         this.player = new BoxActor(250, 200, 100, 100);
         this.addToPlayer(this.player);
         this.player1 = new BoxActor(350, 200, 100, 100);

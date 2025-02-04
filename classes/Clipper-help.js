@@ -26,11 +26,11 @@ class Clipper {
         this._middlePoint.Set(distance.x, distance.y);
         return this._middlePoint;
     }
-    _arrayToMalloc() {
+    _arrayToMalloc(j=0) {
         var offset = 0;
-        for (var i = 0; i < this._paths[0].length; i++) {
-            Box2D.HEAPF32[this._buffer + offset >> 2] = this._paths[0][i].X;
-            Box2D.HEAPF32[this._buffer + (offset + 4) >> 2] = this._paths[0][i].Y;
+        for (var i = 0; i < this._paths[j].length; i++) {
+            Box2D.HEAPF32[this._buffer + offset >> 2] = this._paths[j][i].X;
+            Box2D.HEAPF32[this._buffer + (offset + 4) >> 2] = this._paths[j][i].Y;
             offset += 8;
         }
         return this._buffer;

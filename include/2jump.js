@@ -9,7 +9,6 @@ class LoaderBar1 extends LoaderBar {
     }
     createTitle(titleText,width) {
         this.title = this.createText(titleText);
-        LoaderBar.setFont(this.title,{fontWeight:"bold"})
         this.title.x = width - this.title.getBounds().width >> 1;
         let t=this.title;
         this.title = new createjs.Sprite(queue.getResult("loaderbar"), "title");

@@ -3,12 +3,11 @@ import { Node } from "./Node.js";
 import { PushButton, ScrollContainer, mc } from "./mc.js";
 import { ShapeBackground } from "./other.js";
 import { checkPixelCollision } from "./hitTest.js";
-import { Actor } from "./actor.js";
 /**********************************事件************************************** */
 class Okbutton extends createjs.Event {
-    static ADD_INSTRUCTION="addinstruction";
+    static ADD_INSTRUCTION = "addinstruction";
     constructor(nextState) {
-        super("okbutton",true);
+        super("okbutton", true);
         // console.log(this.bubbles);
         this.nextState = nextState;
     }
@@ -18,18 +17,14 @@ class Okbutton extends createjs.Event {
 class BasicScreen extends createjs.Container {
     //style
     static style = {
-        fontFamily: "regul,Arial,宋体",
-        fontSize:40,
-        color: "#fff",
-        titleFontSize:60,
-        scoreFontSize:30,
+        textFont:"40px regul,Arial,宋体",
+        titleFont:"bold 60px regul,Arial,宋体",
+        scoreFont:"30px regul,Arial,宋体",
+        color:"#fff",
     };
-    static setFont(obj,{ fontSize = BasicScreen.style.fontSize, color = BasicScreen.style.color,fontFamily=BasicScreen.style.fontFamily,fontWeight}={}) {
+    static setFont(obj,font=BasicScreen.style.textFont) {
         let ele = obj.htmlElement;
-        ele.style.fontSize = fontSize+"px";
-        ele.style.fontFamily=fontFamily;
-        if(color)ele.style.color = color;
-        if(fontWeight)ele.style.fontWeight=fontWeight;
+        ele.style.font=font;
         obj.setBounds(0, 0, ele.clientWidth, ele.clientHeight);
     }
     constructor() {
@@ -38,7 +33,7 @@ class BasicScreen extends createjs.Container {
         this.on("added", this.onAdded);
         this.on("removed", this.onRemove);
     }
-    createDom(element,domParent=gameScaleDom) {
+    createDom(element, domParent = gameScaleDom) {
         let e = document.createElement(element);
         e.style.visibility = "hidden";
         domParent.appendChild(e);
@@ -51,7 +46,6 @@ class BasicScreen extends createjs.Container {
         this.children.forEach(element => {
             if (element.htmlElement) {
                 element.visible = true;
-                element.htmlElement.style.visibility = "visible";
             }
         });
         if (this.backSound) this.backSound.play();
@@ -59,19 +53,18 @@ class BasicScreen extends createjs.Container {
     onRemove() {
         this.children.forEach(element => {
             if (element.htmlElement) {
-                element._oldStage = null;
                 element.visible = false;
-                element.htmlElement.style.visibility = "hidden";
             }
         });
         if (this.backSound) this.backSound.stop();
     }
-    createText(text) {
+    createText(text,font,color) {
         let txt = this.createDom("span");
         let ele = txt.htmlElement;
-        if(text!=null)ele.innerHTML = text;
+        if (text != null) ele.innerHTML = text;
         ele.style.userSelect = "none";
-        BasicScreen.setFont(txt);
+        ele.style.color = color||BasicScreen.style.color;
+        BasicScreen.setFont(txt,font);
         return txt;
     }
     createBar(width, height) {
@@ -119,7 +112,7 @@ class BasicScreen extends createjs.Container {
         modal.htmlElement.appendChild(body);
         modal.htmlElement.appendChild(buffer);
         modal.htmlElement.appendChild(footer);
-        BasicScreen.setFont(modal,{fontSize:BasicScreen.style.fontSize,fontFamily:BasicScreen.style.fontFamily,color:null});
+        BasicScreen.setFont(modal);
         return modal;
     }
     /**
@@ -140,6 +133,30 @@ class BasicScreen extends createjs.Container {
         return button;
     }
 }
+class TitleScreen extends BasicScreen {
+    constructor(titleText) {
+        super()
+        if (titleText instanceof createjs.DisplayObject) {
+            this.title = titleText;
+            this.addChild(this.title);
+        } else if (titleText) {
+            this.title = this.createText(titleText,BasicScreen.style.titleFont);
+        }
+        this.title.x = canvas.width - this.title.getBounds().width >> 1;
+        this.title.y = canvas.height / 3 + 20;
+    }
+    createButton(text, onclick = () => {
+        this.dispatchEvent(new Okbutton());
+    }) {
+        let btn;
+        if (!stage.isWebGL) {
+            btn = new PushButton(this, text, onclick, 0, 0, 250, 60, new mc.RoundRect(30));
+        } else {
+            btn = this.createDOMbutton(text, onclick);
+        }
+        return btn;
+    }
+}
 class ScoreBoard extends BasicScreen {
     constructor(width = stage.width, justifyContent = "space-around") {//space-around
         super();
@@ -153,7 +170,7 @@ class ScoreBoard extends BasicScreen {
         div.width = width + "px";
         this._textElements = new Map();
     }
-    createTextElement(key, val, xpos = null, ypos = null, { titleImg, borderFont, valueType = "span", width = 150, height = 50, max = 5 } = {}) {
+    createTextElement(key, val, xpos = null, ypos = null, { titleImg,font=BasicScreen.style.scoreFont,color=BasicScreen.style.color, borderFont, valueType = "span", width = 150, height = 50, max = 5 } = {}) {
         let c = document.createElement('div');
         if (xpos != null && ypos != null) {
             c.style.position = "absolute";
@@ -166,9 +183,8 @@ class ScoreBoard extends BasicScreen {
             c.style.margin = "0 10px";
         }
         if (borderFont) c.style.border = borderFont;
-        c.style.fontSize = BasicScreen.style.scoreFontSize+"px";
-        c.style.fontFamily = BasicScreen.style.fontFamily;
-        c.style.color = BasicScreen.style.color;
+        c.style.font=font;
+        c.style.color = color;
         c.style.display = "flex";
         c.style.alignItems = "center";
         let title;
@@ -192,8 +208,7 @@ class ScoreBoard extends BasicScreen {
         }
         this.back.htmlElement.appendChild(c);
         this._textElements.set(key, value);
-        // this.height = this.back.htmlElement.clientHeight;
-        this.back.setBounds(0,0,this.back.htmlElement.clientWidth,this.back.htmlElement.clientHeight);
+        this.back.setBounds(0, 0, this.back.htmlElement.clientWidth, this.back.htmlElement.clientHeight);
         return c;
     }
     update(label, val) {
@@ -201,42 +216,15 @@ class ScoreBoard extends BasicScreen {
         if (v.tagName == "METER") {
             v.value = val;
         }
-        else if(v)v.innerHTML = val;
-    }
-}
-class TitleScreen extends BasicScreen {
-    constructor(titleText) {
-        super()
-        if(titleText instanceof createjs.DisplayObject){
-            this.title=titleText;
-            this.addChild(this.title);
-        }else{
-            this.title = this.createText(titleText);
-            BasicScreen.setFont(this.title,{fontSize:BasicScreen.style.titleFontSize,fontWeight:"bold"});
-        }
-        this.title.x = canvas.width - this.title.getBounds().width >> 1;
-        this.title.y = canvas.height / 3+20;
-    }
-    createButton(text,onclick = () => {
-        this.dispatchEvent(new Okbutton());
-    }) {
-        let btn;
-        if (!stage.isWebGL) {
-            btn = new PushButton(this, text, onclick, 0, 0, 250, 60, new mc.RoundRect(30));
-        }else{
-            btn=this.createDOMbutton(text,onclick);
-        }
-        return btn;
+        else if (v) v.innerHTML = val;
     }
 }
 class LevelInScreen extends ScoreBoard {
     constructor() {
         super();
-        let div = this.createTextElement(Game.LEVEL, "0", 0, 0);
-        div.style.fontSize=BasicScreen.style.titleFontSize+"px";
-        div.style.fontWeight="bold";
+        let div = this.createTextElement(Game.LEVEL, "0", 0, 0, { font: BasicScreen.style.titleFont});
         div.style.left = (stage.width - div.clientWidth >> 1) + "px";
-        div.style.top = (stage.height - div.clientHeight >> 1 )+ "px";
+        div.style.top = (stage.height - div.clientHeight >> 1) + "px";
         if (!stage.isWebGL) {
             this.bg = new ShapeBackground(stage.width / 2, stage.height / 2);
             this.addChild(this.bg);
@@ -244,18 +232,23 @@ class LevelInScreen extends ScoreBoard {
     }
     onRemove() {
         super.onRemove();
-        if(!stage.isWebGL)this.bg.clearBg();
+        if (!stage.isWebGL) {
+            createjs.Ticker.off("tick", this.t)
+            this.bg.clearBg();
+        }
     }
-    update(label,val) {
-        if(label)super.update(label,val);
-        else if(!stage.isWebGL){
-            this.bg.updateWaitBg();
+    onAdded() {
+        super.onAdded();
+        if (!stage.isWebGL) {
+            this.t = createjs.Ticker.on("tick", (e) => {
+                this.bg.updateWaitBg()
+            })
         }
     }
 }
 //--------------------------------------------------进度条----------------------------------------------------------------------
 class LoaderBar extends BasicScreen {
-    constructor(titleText = "loading...",width = 500, height = 30) {
+    constructor(titleText = "loading...", width = 500, height = 30) {
         super();
         this.createTitle(titleText, width);
         this.bar = this.createBar(width, height);
@@ -263,14 +256,16 @@ class LoaderBar extends BasicScreen {
         this.createValue(width, height);
     }
     createTitle(titleText, width) {
-        this.title = this.createText(titleText);
-        BasicScreen.setFont(this.title,{fontWeight:"bold",fontSize:BasicScreen.style.titleFontSize})
+        this.title = this.createText(titleText,BasicScreen.style.titleFont);
         this.title.x = width - this.title.getBounds().width >> 1;
     }
     createValue(width, height) {
         this.value = this.createText("000%");
         this.value.x = width - this.value.getBounds().width >> 1;
         this.value.y = this.bar.y + height;
+    }
+    onRemove() {
+        super.onRemove();
     }
     startLoad(e) {
         this.bar.htmlElement.value = e.progress * 100;
@@ -287,7 +282,8 @@ class Game extends ScrollContainer {
     static loadFontItem = [{
         src: "fonts/regul-book.woff",
         type: "font",
-    }, {
+    },
+    {
         src: "fonts/pf_ronda_seven.ttf",
         type: "font"
     }, {
@@ -307,7 +303,7 @@ class Game extends ScrollContainer {
         STATE_WAIT: "statewait"
     };
     //键盘按键
-    static codes=null;
+    static codes = null;
     // static codes = {
     //     65: "left",
     //     87: "up",
@@ -321,7 +317,7 @@ class Game extends ScrollContainer {
     //     16: "shift",
     //     17: "ctrl"
     // };
-    
+
     static SCORE = "score";
     static LEVEL = "level";
     static LIVES = "lives";
@@ -349,9 +345,7 @@ class Game extends ScrollContainer {
         for (let i = l; i >= 0; i--) {
             const element = container.children[i];
             if (element.htmlElement) {
-                element._oldStage = null;
                 element.visible = false;
-                element.htmlElement.style.visibility = "hidden";
                 container.removeChild(element);
             } else if (element.active) {
                 element.recycle();
@@ -371,12 +365,12 @@ class Game extends ScrollContainer {
      * @param {0} stepWidth 
      * @param {0} stepHeight 
      */
-    constructor(titleText,enableMouseOver=false, width = stage.width, height = stage.height, stepWidth = 0, stepHeight = 0) {
+    constructor(titleText, enableMouseOver = false, width = stage.width, height = stage.height, stepWidth = 0, stepHeight = 0) {
         super(null, 0, 0, width, height, 0, 0, false, false);
         this.titleText = titleText;
         this.instructionText = "说明内容";
-        this.backgroundColor=null;
-        this._enableMouseOver=enableMouseOver;
+        this.backgroundColor = null;
+        this._enableMouseOver = enableMouseOver;
         this.mouseStart = new createjs.Point();
         this.mouseEnd = new createjs.Point();
         //游戏层
@@ -419,22 +413,22 @@ class Game extends ScrollContainer {
 
     /************************界面初始化*************************** */
     createTitleScreen() {
-        this.titleScreen=new TitleScreen(this.titleText);
-        let btn1=this.titleScreen.createButton("start");
-        btn1.x=stage.width-btn1.getBounds().width>>1;
-        btn1.y=canvas.height*0.6;
+        this.titleScreen = new TitleScreen(this.titleText);
+        let btn1 = this.titleScreen.createButton("start");
+        btn1.x = stage.width - btn1.getBounds().width >> 1;
+        btn1.y = canvas.height * 0.6;
         let btn2;
-        if(!stage.isWebGL){
-            btn2=this.titleScreen.createButton("游戏介绍",()=>{
+        if (!stage.isWebGL) {
+            btn2 = this.titleScreen.createButton("游戏介绍", () => {
                 stage.addChild(this.instructionScreen)
             });
-        }else{
-            btn2=this.titleScreen.createDOMbutton("简介",()=>{
+        } else {
+            btn2 = this.titleScreen.createDOMbutton("简介", () => {
                 stage.addChild(this.instructionScreen)
             })
         }
-        btn2.x=stage.width-btn2.getBounds().width>>1;
-        btn2.y=btn1.y+btn1.getBounds().height+20;
+        btn2.x = stage.width - btn2.getBounds().width >> 1;
+        btn2.y = btn1.y + btn1.getBounds().height + 20;
     }
     createInstructionScreen() {
         this.instructionScreen = new BasicScreen();
@@ -455,15 +449,15 @@ class Game extends ScrollContainer {
     }
     createGameOverScreen() {
         this.gameOverScreen = new TitleScreen("game over");
-        let btn1=this.gameOverScreen.createButton("结束");
-        btn1.x=stage.width-btn1.getBounds().width>>1;
-        btn1.y=canvas.height*0.6;
+        let btn1 = this.gameOverScreen.createButton("结束");
+        btn1.x = stage.width - btn1.getBounds().width >> 1;
+        btn1.y = canvas.height * 0.6;
     }
     createLevelOutScreen() {
-        this.levelOutScreen=new TitleScreen("you win");
-        let btn1=this.levelOutScreen.createButton("再来一次");
-        btn1.x=stage.width-btn1.getBounds().width>>1;
-        btn1.y=canvas.height*0.6;
+        this.levelOutScreen = new TitleScreen("you win");
+        let btn1 = this.levelOutScreen.createButton("再来一次");
+        btn1.x = stage.width - btn1.getBounds().width >> 1;
+        btn1.y = canvas.height * 0.6;
     }
     createPauseScreen() {
         this.pauseScreen = new TitleScreen("pause");
@@ -479,19 +473,18 @@ class Game extends ScrollContainer {
     onRunGameKeydown() { }
     clear() { }
     //levelIn结束
-    _waitComplete(){
-        if(this.levelInScreen)stage.removeChild(this.levelInScreen);
+    _waitComplete() {
+        if (this.levelInScreen) stage.removeChild(this.levelInScreen);
         if (this.scoreboard) stage.addChild(this.scoreboard);
         stage.addChild(this);
         stage.children.forEach(element => {
-          if (element.htmlElement) {
-            element.visible = true;
-            element.htmlElement.style.visibility = "visible";
-          }
+            if (element.htmlElement) {
+                element.visible = true;
+            }
         });
         if (this.backSound) this.backSound.play();
-        if(!this._enableMouseOver)stage.enableMouseOver(0);
-        if(this.backgroundColor)containerDiv.style.backgroundColor = this.backgroundColor;
+        if (!this._enableMouseOver) stage.enableMouseOver(0);
+        if (this.backgroundColor) containerDiv.style.backgroundColor = this.backgroundColor;
         this.waitComplete();
     }
     //结束时立即清除
@@ -500,17 +493,17 @@ class Game extends ScrollContainer {
         this.removeAllEventListeners("mousedown");
         stage.removeAllEventListeners("stagemousedown");
         stage.removeAllEventListeners("stagemouseup");
+        stage.removeAllEventListeners("stagemousemove");
         this.clear();
     };
     _clearAfter() {
         stage.alpha = 1;
         createjs.Tween.removeAllTweens();
-        if(!this._enableMouseOver)stage.enableMouseOver();
+        if (!this._enableMouseOver) stage.enableMouseOver();
         //清除游戏内容元素
         Game.clearContainer(this.container);
         //清除舞台元素
         Game.clearContainer(stage);
-        // stage.removeChild(this);
         if (window.world) {
             var list = world.GetJointList();
             while (list.a) {
@@ -587,7 +580,9 @@ class Game extends ScrollContainer {
                         } else {
                             let r = rect1.intersection(node.actor.rect);
                             if (r) {
-                                this._transformRect(r);
+                                let p = this.container.localToGlobal(r.x, r.y);
+                                r.x = p.x;
+                                r.y = p.y;
                                 if (checkPixelCollision(image, node.actor.image, r, alphaThreshold)) {
                                     if (node.type == Node.PROP) {
                                         if (hitPropNode) hitPropNode(node);
@@ -601,11 +596,6 @@ class Game extends ScrollContainer {
                 }
             }
         }
-    }
-    _transformRect(r) {
-        let p = this.container.localToGlobal(r.x, r.y);
-        r.x = p.x;
-        r.y = p.y;
     }
     updateScore(key, val) {
         this.scoreboard.update(key, val);
@@ -676,31 +666,6 @@ class Game extends ScrollContainer {
         } else if (rect.y > s.height) {
             rect.y = -rect.height;
             actor.y = -rect.height / 2;
-        }
-    }
-    /**
-     * 检测边界碰撞
-     * @param {*} layer actor对象或层
-     */
-    checkBounds(layer) {
-        if (layer.edgeBehavior) this._checkBounds(layer);
-        else if (layer instanceof createjs.Container) {
-            let l = layer.numChildren - 1
-            for (let i = l; i >= 0; i--) {
-                const element = layer.getChildAt(i);
-                this._checkBounds(element);
-            }
-        }
-    }
-    _checkBounds(element) {
-        if (element.edgeBehavior == Actor.WRAP) {
-            this.placeInBounds(element);
-        } else if (element.edgeBehavior == Actor.BOUNCE) {
-            this.rebounds(element);
-        } else if (element.edgeBehavior == Actor.RECYCLE) {
-            if (this.outOfBounds(element)) {
-                element.recycle();
-            }
         }
     }
     /***************************网格相关************************ */
@@ -891,14 +856,12 @@ class Game extends ScrollContainer {
                         mouseMove = stage.on("stagemousemove", (e) => {
                             p = this.container.globalToLocal(e.stageX, e.stageY)
                             EasyWorld.drawBodyTo(drawbody, p.x, p.y, maxForce, isStrictDrag);
-                            // this.dragFun(this.dragBody);
                         })
                     }
                 } else {
                     mouseMove = stage.on("stagemousemove", (e) => {
                         p = this.container.globalToLocal(e.stageX, e.stageY);
                         EasyWorld.drawBodyTo(drawbody, p.x, p.y, maxForce, isStrictDrag);
-                        // this.dragFun(this.dragBody)
                     })
                 }
             }
@@ -913,8 +876,6 @@ class Game extends ScrollContainer {
     }
     drawMouseMove(onMouseUp) {
         let mouseMove;
-        this.mouseStart = new b2Vec2();
-        this.mouseEnd = new b2Vec2();
         stage.on("stagemousedown", (e) => {
             let p = this.container.globalToLocal(e.stageX, e.stageY)
             this.isDrawing = true;
@@ -940,8 +901,8 @@ class Game extends ScrollContainer {
  * **************************滚动游戏类 **************************************************
  */
 class ScrollMapGame extends Game {
-    constructor(titleText,enableMouseOver, width, height, stepWidth, stepHeight) {
-        super(titleText,enableMouseOver, width, height, stepWidth, stepHeight);
+    constructor(titleText, enableMouseOver, width, height, stepWidth, stepHeight) {
+        super(titleText, enableMouseOver, width, height, stepWidth, stepHeight);
         //滚动
         this.mapleft = 0;
         this.maptop = 0;
@@ -950,7 +911,6 @@ class ScrollMapGame extends Game {
         this._scrollActor = this.player;
         this._marginw = this.width / 2;
         this._marginh = this.height / 2;
-
     }
     //屏幕滚动默认焦点游戏玩家
     scrollView() {
@@ -997,4 +957,4 @@ class ScrollMapGame extends Game {
         return rect.x + rect.width < this.mapleft || rect.x > this.mapright || rect.y + rect.height < this.maptop || rect.y > this.mapbottom;
     }
 }
-export { BasicScreen,TitleScreen,Okbutton, ScoreBoard, LoaderBar, Game, ScrollMapGame };
+export { BasicScreen, TitleScreen, Okbutton, ScoreBoard, LoaderBar, Game, ScrollMapGame };

@@ -143,9 +143,6 @@ function _systemWaitForClose() {
         game.titleScreen.y -= 1;
       }
       break;
-    case Game.state.STATE_LEVEL_IN:
-      game.levelInScreen.update();
-      break;
     case Game.state.STATE_LEVEL_OUT:
       if (game.levelOutScreen.y > screenPosY) {
         game.levelOutScreen.y -= 1;
@@ -229,7 +226,7 @@ function _initGame(GClass, isDamo) {
     game.createLevelInScreen();
     game.createGameOverScreen();
     game.createLevelOutScreen();
-    stage.on("okbutton",_okButton);
+    stage.on("okbutton", _okButton);
   } else {
     game._waitComplete();
   }
@@ -278,14 +275,14 @@ function _preloadGame(GClass, isDamo) {
         }
       });
       lib = comp.getLibrary();
-      let manifest = JSON.parse(JSON.stringify(lib.properties.manifest));
-      queue.loadManifest(manifest);
-      // queue.loadManifest(lib.properties.manifest);
+      // let manifest = JSON.parse(JSON.stringify(lib.properties.manifest));
+      // queue.loadManifest(manifest);
+      queue.loadManifest(lib.properties.manifest);
     }
     if (GClass.loadItem) {
-      let manifest = JSON.parse(JSON.stringify(GClass.loadItem));
-      queue.loadManifest(manifest);
-      // queue.loadManifest(GClass.loadItem);
+      // let manifest = JSON.parse(JSON.stringify(GClass.loadItem));
+      // queue.loadManifest(manifest);
+      queue.loadManifest(GClass.loadItem);
     }
     queue.on('progress', (e) => {
       loaderBar.startLoad(e);
@@ -383,7 +380,7 @@ var gframe = {
    * @param {false} isGL 是否为webgl模式
    * @param {false} isH 是否为高度自适应
    */
-  buildStage(canvasId, isGL = false, isH = false) {
+  buildStage(canvasId, isGL = false, isH = false,basePath="./assets/") {
     _systemFunction = _systemWaitForClose;
     //建立舞台
     if (!isGL) stage = new createjs.Stage(canvasId);
@@ -421,7 +418,7 @@ var gframe = {
     //自适应
     _adapt(isH);
 
-    queue = new createjs.LoadQueue(true, "./assets/");
+    queue = new createjs.LoadQueue(true, basePath);
     queue.installPlugin(createjs.Sound); //注册声音插件
   },
   /*********************预加载****************************
@@ -433,8 +430,8 @@ var gframe = {
     containerDiv.style.backgroundColor = GClass.backgroundColor;
     if (GClass.loadFontItem) queue.loadManifest(GClass.loadFontItem)
     if (GClass.loadBarItem) {
-      GClass.loadFontItem = JSON.parse(JSON.stringify(GClass.loadBarItem));
-      queue.loadManifest(GClass.loadFontItem);
+      // GClass.loadBarItem = JSON.parse(JSON.stringify(GClass.loadBarItem));
+      queue.loadManifest(GClass.loadBarItem);
     }
     if (GClass.loadFontItem || GClass.loadBarItem) {
       GClass.loadFontItem = null;
@@ -509,14 +506,9 @@ var gframe = {
   },
   reset() {
     _switchSystemState(Game.state.STATE_WAIT_FOR_CLOSE);
-    if (game) {
-      game._clearBefore();
-      game._clearAfter();
-      game = null;
-    } else {
-      stage.removeAllEventListeners();
-      stage.removeAllChildren();
-    }
+    game._clearBefore();
+    game._clearAfter();
+    game = null;
     this.noKeydown();
     stage.removeAllEventListeners("okbutton")
     createjs.Ticker.paused = false;
@@ -524,7 +516,9 @@ var gframe = {
       world = null;
       debugDraw = null;
     }
-    if (queue != null) queue.close();
+    if (queue != null) {
+      queue.close();
+    }
   }
 };
 export { stage, game, queue, lib, keys, pressed, gframe };

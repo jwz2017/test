@@ -16,7 +16,6 @@ export class VehiclFlee extends Game{
     runGame() {
         moveManage.flee(vehicle,new Vector(stage.mouseX, stage.mouseY),2);
         vehicle.act()
-        this.checkBounds(vehicle);
     }
 
 }
