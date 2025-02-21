@@ -45,7 +45,7 @@ class Tanke extends Game {
         32:"pause"
     }
     constructor() {
-        super("坦克大战1", plans[0][0].length * step, plans[0].length * step, step, step);
+        super("坦克大战", plans[0][0].length * step, plans[0].length * step, step, step);
         this.enemyBulletLayer=gframe.createrContainer(this.container);
         this.playerBulletLayer=gframe.createrContainer(this.container);
         this.x = stage.width - this.width >> 1;
