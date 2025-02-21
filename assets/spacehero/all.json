@@ -1,6 +1,6 @@
 {
 "framerate":24,
-"images":["./assets/spacehero/all.png"],
+"images":["../assets/spacehero/all.png"],
 "frames":[
     [482, 401, 71, 51, 0, 0, 0],
     [71, 401, 71, 51, 0, 0, 0],

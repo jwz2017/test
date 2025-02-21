@@ -99,7 +99,7 @@ if (reversed == null) { reversed = false; }
 	// 图层 1
 	this.shape = new cjs.Shape();
 	this.shape.graphics.f("rgba(37,180,218,0.008)").s().p("AtRCWIAAkrIajAAIAAErg");
-	this.shape.setTransform(85,15);
+	this.shape.setTransform(85.0013,15);
 
 	this.timeline.addTween(cjs.Tween.get(this.shape).wait(1));
 
@@ -150,15 +150,12 @@ if (reversed == null) { reversed = false; }
 			this.isSingleFrame = true;
 		}
 		//this.stop()
-		
+		this.btn2.id="stateinstruction";
 		this.btn1.addEventListener("click", ()=> {
 			this.dispatchEvent("okbutton",true);
 		});
 		this.btn2.addEventListener("click", ()=> {
-			let e=new createjs.Event("okbutton",true);
-			e.nextState="stateinstruction";
-			//e.nextState="addinstruction";
-			this.dispatchEvent(e);
+			this.btn2.dispatchEvent("okbutton",true);
 		});
 	}
 
@@ -345,8 +342,8 @@ lib.properties = {
 	color: "#666666",
 	opacity: 1.00,
 	manifest: [
-		{src:"images/Bitmap4.png?1716378826985", id:"Bitmap4"},
-		{src:"images/Button.png?1716378826985", id:"Button"}
+		{src:"images/Bitmap4.png", id:"Bitmap4"},
+		{src:"images/Button.png", id:"Button"}
 	],
 	preloads: []
 };

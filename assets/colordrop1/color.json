@@ -1,5 +1,5 @@
 {
-"images": ["./assets/colordrop1/color.png"],
+"images": ["../assets/colordrop1/color.png"],
 "frames": [
 
     [192, 0, 32, 32], 

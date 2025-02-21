@@ -1,4 +1,5 @@
-import { Node } from "./Node.js";
+import { Node } from "./Game.js";
+
 /**
  * astar寻路
  */

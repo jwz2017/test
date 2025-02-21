@@ -278,7 +278,6 @@ var EasyBody = {
         this.bodyDef.linearDamping = 0;
         this.bodyDef.linearVelocity.Set(0, 0);
         this.bodyDef.angularVelocity = 0;
-
         return world.CreateBody(this.bodyDef);
     },
     /**

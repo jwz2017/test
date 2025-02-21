@@ -915,10 +915,6 @@ class ScrollContainer extends createjs.Container {
     if (isbar) {
       this.addChild(this.scrollBarH, this.scrollBarV);
     }
-    // this.superAddChild = this.addChild;
-    // this.addChild = child => {
-    //   this.container.addChild(child)
-    // }
     this.setSize(width, height);
   }
 

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <!-- 标题 ------------------------------------------------------------>
+    <h1 align="center">一级标签</h1>
+
+    <!-- 段落 换行-------------------------------------------------------->
+    <p>楼上的肥哦为荣<br>欸温热侮辱零零</p>
+
+    <!-- 水平线  默认居中----------------------------------------------- -->
+    <hr color="red" width="300px" size="20px" align="left">
+
+    <!-- 图片 alt:代替图片 title:鼠标提示文字 ./:同级关系（可以省略） ../:父级关系-->
+    <img src="../assets/main/qq1.png" alt="图标" width="40px" height="" title="图片">
+
+    <!-- 超链接 ------------------------------------------------------------>
+    <a href="index.html">你好</a>
+
+    <!-- 文本 em b i strong del span
+    em:定义着重文字
+    b: 定义粗体文字
+    i: 定义斜体文字
+    strong: 定义加重语气
+    del: 定义删除字
+    span: 元素没有特点的含义------------------------------------------------- -->
+    <em>em白菜</em><b>b白菜</b><i>i白菜</i><strong>strong白菜</strong><del>del白菜</del><span>span白菜</span>
+    <!-- 文本属性 -----------------------------------------------------------------
+    text-align: left,right,center
+    text-decoration: underline,overline,line-through
+    text-transform: captialize(定义每个单词开头大写)，uppercase(定义全部大写字母)，lowercase(定义全部小写字母)
+    text-indent: 30px,50px（首行文本缩进）----------------------------------------->
+    
+    <!-- 有序列表 type:1 a A i I----------------------------------------------->
+    <ol type="I">
+        <li>苹果</li>
+        <ol>
+            <li>红苹果</li>
+            <li>白苹果</li>
+        </ol>
+        <li>橘子
+        </li>
+    </ol>
+
+    <!-- 无序列表 type:disc circle square none  快捷键:ul>li*2------------------ -->
+    <ul type="circle">
+        <li>苹果</li>
+        <li>橘子</li>
+    </ul>
+
+    <!-- 表格  快捷键: table>tr*2>td{单元格}
+    rowspan:垂直合并
+    colspan:水平合并----------------------------------------------------------->
+    <table border="1" width="400px" height="100px">
+        <tr>
+            <td>单元格</td>
+            <td>单元格</td>
+            <td>单元格</td>
+        </tr>
+        <tr>
+            <td colspan="2">单元格</td>
+            <!-- <td>单元格</td> -->
+            <td rowspan="2">单元格</td>
+        </tr>
+        <tr>
+            <td>单元格</td>
+            <td>单元格</td>
+            <!-- <td>单元格</td> -->
+        </tr>
+    </table>
+    <!-- 表格属性-------------------------------------------------------------------
+    border: 1px solid red（表格边框） 
+    border-collapse: collapse(折叠边框)
+    width:宽度
+    height:高度-
+    text-align:left ,center,right
+    vertical-align:top,center,buttom
+    padding:20px(内边距，给td加)-------------------------------------------------->
+
+    <!-- form表单----------------------------------------------------------------
+    actor:服务器地址
+    name: 表单名称
+    method中Get和Post的区别
+    1：数据提交方式，get把提交的数据url可以看到，post看不到
+    2：get一般用于提交少量数据，post用来提交大量数据----------------------------------->
+    <form action="" method="" name="myform">
+        first name: <input type="text" name="fst">
+        <br>
+        password: <input type="password">
+        <input type="submit" value="登入">
+    </form>
+
+    <!-- 块元素和行内元素--------------------------------------------------------- -
+            块级元素                                 内联元素
+    独占一行                                不占一行，只占自身的大小
+    可以设置width,height                    width，height属性无效
+    可以包含行内元素和其它块级元素            包含内联元素，不包含块级元素
+    常见块级元素：div,form,h1-h6,hr,p,table,ul等
+    常见内联元素：a,b,em,i,span,strong等
+    行内块级元素（特点：不换行，能够识别宽高：button,img,input等----------------------->
+
+    <!-- html5新增标签-------------------------------------------------------- 
+    header 头部
+    nav    导航
+    section  定义文档中的节，比如章节，页眉，页脚
+    aside  侧边栏
+    footer  脚部
+    article 代表一个独立的，完整的相关内容块，例如一篇完整的论坛帖子，一篇文章---------->
+
+    <!-- 字体属性------------------------------------------------------------ 
+    颜色
+    div{color:red;}                  
+    div{color:#ff0000}
+    div{color:rgb(255,0,0)}
+    div{color:rgba(255,0,0,.5)}
+    大小
+    font-size:
+    粗细
+    font-weight:bold,bolder,lighter,100-900(400默认，700等于bold)
+    字体样式
+    font-style:normal,italic(斜体)
+    font-family:指定字体 如“Microsoft YaHei”,"simsun","simhei"--------------------->
+
+    <!-- 背景属性 ——————————————————————————————-----------------------------------
+    background-color:
+    background-image:    url("1.png")
+    background-position: left top,left center,left buttom,right top,right center,right buttom
+    background-repeat:   repeat-x,repeat-y,no-repeat
+    background-size:     cover（图片比例不变，图片有裁剪，充满整个容器） contain（图片比例不变，图片没裁剪） length(宽高) percentage（百分比）---------------------------------------------------------------->
+    
+    
+    
+    
+</body>
+
+</html>

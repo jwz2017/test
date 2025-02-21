@@ -1,5 +1,5 @@
 {
-    "images": ["./assets/jump/woody_0.png","./assets/jump/woody_1.png","./assets/jump/woody_2.png"],
+    "images": ["../assets/jump/woody_0.png","../assets/jump/woody_1.png","../assets/jump/woody_2.png"],
     "frames": {
         "width": 80,
         "height": 80,

@@ -1,6 +1,6 @@
 {
     "images": [
-        "./assets/effect/spritesheet_sparkle.png"
+        "../assets/effect/spritesheet_sparkle.png"
     ],
     "frames": {
         "width": 21,

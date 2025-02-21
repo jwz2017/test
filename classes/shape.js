@@ -174,11 +174,12 @@ class BarGraph extends createjs.Container {
 }
 //关节
 class Segment extends Actor {
-    constructor(xpos, ypos,width,height,IsShape) {
-        super(xpos, ypos,width,height,IsShape);
-        this.color = "#ffffff";
+    constructor(xpos, ypos,width,height) {
+        super(xpos, ypos,width,height);
+        this._color = "#ffffff";
+        this.drawSpriteData(width,height);
     }
-    drawShape(width, height) {console.log(this.color);
+    drawShape(width, height) {
         this.image.graphics.clear().beginStroke("#000").beginFill(this.color).drawRoundRect(-height / 2, -height / 2, width, height, height / 2).endFill();
         this.image.setBounds(-height / 2, -height / 2, width, height);
         //绘制轴

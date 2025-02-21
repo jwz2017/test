@@ -1,5 +1,5 @@
 {
-"images": ["./assets/drivecar/drivercar.png"],
+"images": ["../assets/drivecar/drivercar.png"],
 "frames": [
 
     [32, 128, 32, 32], 

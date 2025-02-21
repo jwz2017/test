@@ -1,5 +1,5 @@
 {
-"images": ["assets/shoot/shoot.png"],
+"images": ["../assets/shoot/shoot.png"],
 "frames": [
 
     [233, 208, 21, 22], 

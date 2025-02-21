@@ -1,6 +1,4 @@
-import { Game } from "./Game.js";
 import { game } from "./gframe.js";
-import { checkPixelCollision } from "./hitTest.js";
 //向量角色类**************************************************************************
 class Vector {
   //计算两个向量角度
@@ -12,11 +10,11 @@ class Vector {
   //计算两条线段的焦点  null为不相交
   static getCrossPoint(a1, a2, b1, b2) {
     let va = new Vector(a2.x - a1.x, a2.y - a1.y);
-    
+
     let a1b1 = new Vector(b1.x - a1.x, b1.y - a1.y);
     let a1b2 = new Vector(b2.x - a1.x, b2.y - a1.y);
     if (va.crossProd(a1b1) * va.crossProd(a1b2) > 0) return null;
-    
+
     let vb = new Vector(b2.x - b1.x, b2.y - b1.y);
     let b1a1 = new Vector(a1.x - b1.x, a1.y - b1.y);
     let b1a2 = new Vector(a2.x - b1.x, a2.y - b1.y);
@@ -25,18 +23,18 @@ class Vector {
     let lenA = b1a1.crossProd(va);
     let lenB = vb.crossProd(va);
     let ratio = lenA / lenB;
-    va.setValues(b1.x,b1.y)
+    va.setValues(b1.x, b1.y)
     va.add(vb.mul(ratio));
     return va;
   }
-  static add(v1,v2){
-    return new Vector(v1.x+v2.x,v1.y+v2.y);
+  static add(v1, v2) {
+    return new Vector(v1.x + v2.x, v1.y + v2.y);
   }
-  static sub(v1,v2){
-    return new Vector(v1.x-v2.x,v1.y-v2.y);
+  static sub(v1, v2) {
+    return new Vector(v1.x - v2.x, v1.y - v2.y);
   }
-  static mul(v,val){
-    return new Vector(v.x*val,v.y*val);
+  static mul(v, val) {
+    return new Vector(v.x * val, v.y * val);
   }
   constructor(x = 0, y = 0) {
     this.x = x;
@@ -57,13 +55,13 @@ class Vector {
     return this
   }
   sub(v) {
-    this.x-=v.x;
-    this.y-=v.y;
+    this.x -= v.x;
+    this.y -= v.y;
     return this;
   }
-  mul(val){
-    this.x*=val;
-    this.y*=val;
+  mul(val) {
+    this.x *= val;
+    this.y *= val;
     return this
   }
   equals(v2) {
@@ -152,11 +150,32 @@ class Actor extends createjs.Container {
   static WRAP = "wrap";
   static BOUNCE = "bounce";
   static RECYCLE = "recycle";
-  constructor(xpos = 0, ypos = 0, width = 0, height = 0, IsShape = true) {
+  //创建元素
+  static getActor(parent,A) {
+    let a=A||this;
+    a.array = a.array || [];
+    let len = a.array.length, i = 0;
+    while (i <= len) {
+      if (!a.array[i]) {
+        a.array[i] = new a();
+        a.array[i].active = true;
+        break;
+      } else if (!a.array[i].active) {
+        a.array[i].active = true;
+        break;
+      } else {
+        i++;
+      }
+    }
+    if (parent) parent.addChild(a.array[i])
+    return a.array[i];
+  };
+  constructor(xpos = 0, ypos = 0, width = 0, height = 0) {
     super();
     this.mouseChildren = false;
+    if (width) this.setBounds(-width / 2, -height / 2, width, height);
     this._rect = new createjs.Rectangle(xpos, ypos, width, height);
-    this.edgeBehavior =null;
+    this.edgeBehavior = null;
     this.status = null;
     this.speed = new Vector(0, 0);
     this._active = true;
@@ -166,69 +185,60 @@ class Actor extends createjs.Container {
     this.mass = 1;
     //进入视野距离
     this.inSightDist = 200;
-
     this.velocity = 1;
     this.bounce = -1;
     this.maxSpeed = 5;
     this._color = "rgb(64,64,64)";
     this.type = "actor";
-    if (IsShape) {
-      this.image = new createjs.Shape();
-      this.drawShape(width, height);
-      let b = this.image.getBounds();
-      this.addChild(this.image);
-      this.setBounds(b.x, b.y, b.width, b.height);
-      this.x = xpos - b.x;
-      this.y = ypos - b.y;
-    } else if (width && height) {
-      this.setBounds(-width / 2, -height / 2, width, height);
-      this.x = xpos + width / 2;
-      this.y = ypos + height / 2;
-    }
-  }
-  init(width, height) {
-    if (this.image instanceof createjs.Shape) {
-      this.drawShape(width, height);
-      let b = this.image.getBounds();
-      this.setBounds(b.x, b.y, b.width, b.height);
-    } else if (!this.image) {
-      this.image = new createjs.Shape();
-      this.addChild(this.image);
-      this.drawShape(width, height);
-      let b = this.image.getBounds();
-      this.setBounds(b.x, b.y, b.width, b.height);
-    }
-    this.updateRect();
-  }
-  setSpriteData(spriteSheet, animation, scale = 1, rotation = 0, offsetX = 0, offsetY = 0) {
-    //显示辅助矩形
-    if (this.image) this.removeChild(this.image);
-    this.image = new createjs.Sprite(spriteSheet, animation);
-    let b = this.image.getBounds();
-    if (b.x == 0) {
-      this.image.regX = b.width / 2;
-      this.image.regY = b.height / 2;
-    }
-    this.image.scale = scale;
-    this.image.rotation = rotation;
-    this.image.x += offsetX;
-    this.image.y += offsetY;
-    if (this._rect.width == 0) {
-      this.addChild(this.image);
-      b = this.getBounds();
-      this._rect.width = b.width;
-      this._rect.height = b.height;
-      this.x = this._rect.x - b.x;
-      this.y = this._rect.y - b.y;
-    } else {
-      this.addChild(this.image);
-    }
   }
 
+  init() {
+
+  }
+  setSpriteData(spriteSheet, animation, { imageScale = 1, rotation = 0, offsetX = 0, offsetY = 0 } = {}) {
+    //显示辅助矩形
+    if (!(this.image instanceof createjs.Shape)) this.removeChild(this.image);
+    if (spriteSheet instanceof createjs.SpriteSheet) {
+      this.image = new createjs.Sprite(spriteSheet, animation);
+    } else {
+      this.image = new createjs.Bitmap();
+    }
+    this.image.scale = imageScale;
+    this.image.rotation = rotation;
+    let b = this.image.getTransformedBounds();
+    this.image.x = -b.x - b.width / 2;
+    this.image.y = -b.y - b.height / 2;
+    this.addChild(this.image);
+    this.image.x += offsetX;
+    this.image.y += offsetY;
+    this._setRect();
+  }
+  drawSpriteData(width, height, color) {
+    this._color = color || this._color;
+    if (!(this.image instanceof createjs.Shape)) {
+      this.image = new createjs.Shape();
+      this.addChild(this.image);
+    }
+    this.drawShape(width, height);
+
+    this._setRect();
+  }
+  _setRect() {
+    let bounds = this.getBounds();
+    this._rect.width = bounds.width;
+    this._rect.height = bounds.height;
+    this.x = this._rect.x + bounds.width / 2;
+    this.y = this._rect.y + bounds.height / 2;
+    this._setHit();
+  }
+  _setHit() {
+    this._hit = Math.sqrt(this._rect.width * this._rect.width + this._rect.height * this._rect.height) / 2;
+  }
   drawShape(width, height) {
     this.image.graphics.clear().beginFill(this._color).drawRect(-width / 2, -height / 2, width, height);
     this.image.setBounds(-width / 2, -height / 2, width, height);
   }
+
 
   get rect() {
     return this._rect;
@@ -244,17 +254,21 @@ class Actor extends createjs.Container {
   }
   set color(val) {
     this._color = val;
-    this.drawShape(this.rect.width, this.rect.height);
+    let b = this.image.getBounds();
+    this.drawShape(b.width, b.height);
   }
   get hit() {
-    if(!this._hit){
-      this._hit = Math.sqrt(this._rect.width * this._rect.width + this._rect.height * this._rect.height) / 2;
-      this._hit /= this.scale;
-    }
-    return this._hit*this.scale;
+    return this._hit * this.scale;
   }
-  set hit(val){
-    this._hit=val;
+  set hit(val) {
+    this._hit = val;
+  }
+  get scale() {
+    return super.scale;
+  }
+  set scale(val) {
+    super.scale = val;
+    this.updateRect();
   }
   updateRect() {
     this._rect.copy(this.getTransformedBounds());
@@ -271,10 +285,6 @@ class Actor extends createjs.Container {
     this.x = this._rect.x + this.rect.width / 2;
     this.y = this._rect.y + this.rect.height / 2;
   }
-  setScale(scale) {
-    this.scale = scale;
-    this.updateRect();
-  }
   setRotation(ang) {
     this.rotation = ang;
     this.updateRect();
@@ -282,39 +292,6 @@ class Actor extends createjs.Container {
   recycle() {
     this.active = false;
     if (this.parent) this.parent.removeChild(this);
-  }
-  /**
-   * 与其它元素碰撞
-   * @param {*} actors 
-   * @param {rectangle} rect=this.rect
-   * @param {boolean} pixl=false
-   * @param {0} alphaThreshold 象素透明度
-   * @returns 
-   */
-  hitActors(actors, rect = this.rect, pixl = false, alphaThreshold = 0) {
-    for (var i = 0; i < actors.length; i++) {
-      var other = actors[i];
-      if (other == this || !other.active) {
-        continue;
-      }
-      let hit = this.hitActor(other, rect, pixl, alphaThreshold);
-      if (hit) return hit;
-    }
-  }
-  hitActor(other, rect = this.rect, pixl = false, alphaThreshold = 0) {
-    if (!pixl || !(other.image instanceof createjs.Sprite)) {
-      if (rect.intersects(other.rect)) return other;
-    } else {
-      let r = rect.intersection(other.rect);
-      if (r) {
-        let p = game.container.localToGlobal(r.x, r.y);
-        r.x = p.x;
-        r.y = p.y;
-        if (checkPixelCollision(this.image, other.image, r, alphaThreshold)) {
-          return other
-        }
-      }
-    }
   }
   /**
    * 是否进入视野
@@ -331,50 +308,13 @@ class Actor extends createjs.Container {
     if (dotProd < 0) return false;
     return true
   }
-  /**两个球体碰撞或球与点的碰撞
-   * 
-   * @param {*} other 设置null为与点的碰撞
-   * @param {*} x this.x
-   * @param {*} y this.y
-   * @returns 
-   */
-  hitRadius(other, otherX = other.x, otherY = other.y, x = this.x, y = this.y) {
-    let otherHit = other ? other.hit : 0;
-    if (x - this.hit > otherX + otherHit) {
-      return;
-    }
-    if (x + this.hit < otherX - otherHit) {
-      return;
-    }
-    if (y - this.hit > otherY + otherHit) {
-      return;
-    }
-    if (y + this.hit < otherY - otherHit) {
-      return
-    }
-    return this.hitWRadius(otherHit, otherX, otherY, x, y);
-  }
-  hitWRadius(otherHit, otherX, otherY, x = this.x, y = this.y) {
-    return this.hit + otherHit > Math.sqrt(Math.pow(Math.abs(x - otherX), 2) + Math.pow(Math.abs(y - otherY), 2));
-  }
 
   act() {
     this.speed.truncate(this.maxSpeed);
     this.speed.mul(this.friction);
     this.plus(this.speed.x, this.speed.y);
-    if(this.edgeBehavior)this.checkBounds();
+    if (this.edgeBehavior) game.checkBounds(this);
   }
-  checkBounds() {
-    if (this.edgeBehavior == Actor.WRAP) {
-        game.placeInBounds(this);
-    } else if (this.edgeBehavior == Actor.BOUNCE) {
-        game.rebounds(this);
-    } else if (this.edgeBehavior == Actor.RECYCLE) {
-        if (game.outOfBounds(this)) {
-            this.recycle();
-        }
-    }
-}
 }
 
 class CirActor extends Actor {
@@ -424,56 +364,21 @@ class CirActor extends Actor {
    * @param {*} xpos 
    * @param {*} ypos 
    */
-  constructor(xpos, ypos, radius = 20, IsShape) {
-    super(xpos, ypos, radius * 2, radius * 2, IsShape);
-    this._hit=radius;
+  constructor(xpos, ypos, radius) {
+    super(xpos, ypos, radius * 2, radius * 2);
   }
   drawShape(width) {
-    let radius = width / 2;
+    let radius = width / 2
     this.image.graphics.clear().beginRadialGradientFill(["#c9c9c9", this._color], [0, 1], radius / 3, -radius / 3, 0, radius / 6, -radius / 6, radius).drawCircle(0, 0, radius);
     this.image.setBounds(-radius, -radius, width, width);
   }
-}
-
-//斜面反弹类
-class BounceActor extends Actor {
-  constructor(xpos, ypos, width, height, IsShape) {
-    super(xpos, ypos, width, height, IsShape);
-    this.type = "angleBounce";
-    this.cos = 1;
-    this.sin = 0;
+  drawSpriteData(width, color) {
+    super.drawSpriteData(width, null, color)
   }
-  setRotation(val) {
-    super.setRotation(val);
-    let angle = this.rotation * Math.PI / 180;
-    this.cos = Math.cos(angle);
-    this.sin = Math.sin(angle);
-  }
-  act(){}
-  //斜面反弹
-  hitAngleBounce(actor) {
-    let x1 = actor.x - this.x,
-      y1 = actor.y - this.y,
-      //反向旋转y,vy
-      y2 = this.cos * y1 - this.sin * x1,
-      vy2 = this.cos * actor.speed.y - this.sin * actor.speed.x;
-    if (y2 > -actor.hit && y2 < vy2) {
-      y2 = -actor.hit;
-      vy2 *= -1;
-      //反向旋转x,vx
-      let x2 = this.cos * x1 + this.sin * y1,
-        vx2 = this.cos * actor.speed.x + this.sin * actor.speed.y;
-      //将一切旋转回去
-      actor.x = this.x + this.cos * x2 - this.sin * y2;
-      actor.y = this.y + this.cos * y2 + this.sin * x2;
-      actor.updateRect();
-
-      actor.speed.x = this.cos * vx2 - this.sin * vy2;
-      actor.speed.y = this.cos * vy2 + this.sin * vx2;
-    }
+  _setHit() {
+    this._hit = this.rect.width / 2;
   }
 }
-
 class SteeredActor extends Actor {
   /**
    * 转向机车类
@@ -482,10 +387,10 @@ class SteeredActor extends Actor {
    * @param {15} size 
    * @param {true} IsShape 
    */
-  constructor(xpos, ypos, width=15,height, IsShape) {
-    super(xpos, ypos, width, height, IsShape,);
-    this.edgeBehavior = Actor.WRAP;
+  constructor(xpos, ypos,width,height) {
+    super(xpos, ypos,width,height);
   }
+  
   drawShape(width) {
     this._color = "#ffffff";
     this.shipFlame = new createjs.Shape();
@@ -516,14 +421,53 @@ class SteeredActor extends Actor {
     this.image.setBounds(-width / 2, -width / 2, width, width);
   }
 }
+//斜面反弹类
+class BounceActor extends Actor {
+  constructor(xpos, ypos, width, height) {
+    super(xpos, ypos, width, height);
+    this.type = "angleBounce";
+    this.cos = 1;
+    this.sin = 0;
+  }
+  setRotation(val) {
+    super.setRotation(val);
+    let angle = this.rotation * Math.PI / 180;
+    this.cos = Math.cos(angle);
+    this.sin = Math.sin(angle);
+  }
+  act() { }
+  //斜面反弹
+  hitAngleBounce(actor) {
+    let x1 = actor.x - this.x,
+      y1 = actor.y - this.y,
+      //反向旋转y,vy
+      y2 = this.cos * y1 - this.sin * x1,
+      vy2 = this.cos * actor.speed.y - this.sin * actor.speed.x;
+    if (y2 > -actor.hit && y2 < vy2) {
+      y2 = -actor.hit;
+      vy2 *= -1;
+      //反向旋转x,vx
+      let x2 = this.cos * x1 + this.sin * y1,
+        vx2 = this.cos * actor.speed.x + this.sin * actor.speed.y;
+      //将一切旋转回去
+      actor.x = this.x + this.cos * x2 - this.sin * y2;
+      actor.y = this.y + this.cos * y2 + this.sin * x2;
+      actor.updateRect();
+
+      actor.speed.x = this.cos * vx2 - this.sin * vy2;
+      actor.speed.y = this.cos * vy2 + this.sin * vx2;
+    }
+  }
+}
+
 class JumpActor extends Actor {
   /**
    * 跳跃类角色
    * @param {*} xpos 
    * @param {*} ypos 
    */
-  constructor(xpos, ypos, width, height, IsShape) {
-    super(xpos, ypos, width, height, IsShape);
+  constructor(xpos, ypos, width, height) {
+    super(xpos, ypos, width, height);
     this.walkspeed = 1.2;
     this.jumpspeed = 6;
     this.gravity = 0.27;
@@ -702,7 +646,7 @@ class JumpActor extends Actor {
 
   fire(Bullet, parent) {//放子弹
     if (this.idle) {
-      let bullet = Game.getActor(Bullet,parent);
+      let bullet = Bullet.getActor(parent);
       this.status = "fire";
       this.image.on("animationend", this.stopAct, this, true);
       this.changeAct();
@@ -727,8 +671,15 @@ class JumpActor extends Actor {
 
 //box2d对象----------------方形
 class BoxActor extends Actor {
-  constructor(xpos, ypos, width, height, IsShape) {
-    super(xpos, ypos, width, height, IsShape);
+  constructor(xpos, ypos) {
+    super(xpos, ypos);
+  }
+  drawSpriteData(width, height) {
+    super.drawSpriteData(width, height);
+    this.createBody();
+  }
+  setSpriteData(spriteSheet, animation, obj = {}) {
+    super.setSpriteData(spriteSheet, animation, obj)
     this.createBody();
   }
   createBody() {
@@ -753,8 +704,8 @@ class BoxActor extends Actor {
 }
 //****************************球形 */
 class BoxBall extends BoxActor {
-  constructor(xpos, ypos, radius, IsShape) {
-    super(xpos, ypos, radius * 2, radius * 2, IsShape);
+  constructor(xpos, ypos) {
+    super(xpos, ypos);
     this.TROUR = 40;
     this.maxSpeed = 300 * Math.PI / 180;
   }
@@ -773,6 +724,9 @@ class BoxBall extends BoxActor {
     let radius = width / 2;
     this.image.graphics.clear().beginRadialGradientFill(["#c9c9c9", this._color], [0, 1], radius / 3, -radius / 3, 0, radius / 6, -radius / 6, radius).drawCircle(0, 0, radius);
     this.image.setBounds(-radius, -radius, width, width);
+  }
+  drawSpriteData(width) {
+    super.drawSpriteData(width);
   }
   act(keys) {
     this.playerTorque = 0;
@@ -811,14 +765,14 @@ class Weapon extends createjs.Container {
    * @param {40} fireStep 开火节奏
    * @param {1} fireType 开火方式，单发或散弹max=19
    */
-  constructor(parent,Bullet, fireStep = 40, fireType = 1) {
+  constructor(parent, Bullet, fireStep = 40, fireType = 1) {
     super();
     this._fireIndex = 0;
     this.fireStep = fireStep;
     this.fireType = fireType;
-    this.Bullet=Bullet;
+    this.Bullet = Bullet;
     parent.addChild(this);
-    this.x=parent.hit;
+    this.x = parent.hit;
     this._bulletOffAngle = 10 * Math.PI / 180;
   }
   /**
@@ -826,80 +780,33 @@ class Weapon extends createjs.Container {
    * @param {*} attackKey 
    * @param {null} parent null:=actor.parent
    */
-  fire(attackKey,parent) {
+  fire(attackKey, parent) {
     if (attackKey) {
       if (this._fireIndex-- < 0) {
         this._fireIndex = this.fireStep;
         for (let i = 0; i < this.fireType; i++) {
-          const bullet = Game.getActor(this.Bullet,parent||this.parent.parent);
+          const bullet = this.Bullet.getActor(parent || this.parent.parent);
           this._activateBullet(i, bullet);
           if (i > 0) {
-            let bullet1 = Game.getActor(this.Bullet,parent||this.parent.parent);
+            let bullet1 = this.Bullet.getActor(parent || this.parent.parent);
             this._activateBullet(-i, bullet1);
           }
         }
       }
-    } else if(this._fireIndex>=0){
+    } else if (this._fireIndex >= 0) {
       this._fireIndex--;
     }
   }
   _activateBullet(i, bullet) {
-    let p=this.parent.localToLocal(this.x,this.y,bullet.parent);
-    bullet.x=p.x;
-    bullet.y=p.y;
-    let angle=this.parent.rotation*Math.PI / 180;
+    let p = this.parent.localToLocal(this.x, this.y, bullet.parent);
+    bullet.x = p.x;
+    bullet.y = p.y;
+    let angle = this.parent.rotation * Math.PI / 180;
     bullet.speed.angle = i * this._bulletOffAngle + angle;
     bullet.rotation = bullet.speed.angle * 180 / Math.PI;
     bullet.updateRect();
   }
 }
-// class Weapon {
-//   /**
-//    * 武器
-//    * @param {*} actor 武器拥有者
-//    * @param {*} Bullet 子弹类型
-//    * @param {40} fireStep 开火节奏
-//    * @param {1} fireType 开火方式，单发或散弹max=19
-//    */
-//   constructor(actor,Bullet, fireStep = 40, fireType = 1) {
-//     this._fireIndex = 0;
-//     this.fireStep = fireStep;
-//     this.fireType = fireType;
-//     this.Bullet=Bullet;
-//     this.actor=actor;
-//     this._bulletOffAngle = 10 * Math.PI / 180;
-//   }
-//   /**
-//    * 开火
-//    * @param {*} attackKey 
-//    * @param {null} parent null:=actor.parent
-//    */
-//   fire(attackKey,parent) {
-//     if (attackKey) {
-//       if (this._fireIndex-- < 0) {
-//         this._fireIndex = this.fireStep;
-//         for (let i = 0; i < this.fireType; i++) {
-//           const bullet = Game.getActor(this.Bullet, parent||this.actor.parent);
-//           this._activateBullet(i, bullet);
-//           if (i > 0) {
-//             let bullet1 = Game.getActor(this.Bullet, parent||this.actor.parent);
-//             this._activateBullet(-i, bullet1);
-//           }
-//         }
-//       }
-//     } else if(this._fireIndex>=0){
-//       this._fireIndex--;
-//     }
-//   }
-//   _activateBullet(i, bullet) {
-//     let angle = this.actor.rotation * Math.PI / 180;
-//     bullet.speed.angle = i * this._bulletOffAngle + angle;
-//     bullet.x = this.actor.x + Math.cos(angle) * this.actor.hit;
-//     bullet.y = this.actor.y + Math.sin(angle) * this.actor.hit;
-//     bullet.rotation = bullet.speed.angle * 180 / Math.PI;
-//     bullet.updateRect();
-//   }
-// }
 
 class MoveManage {
   constructor() {
@@ -925,13 +832,13 @@ class MoveManage {
   /**
    * 四方向运动
    * @param {*} actor 
-   * @param {string} direction 方向
+   * @param {string} keys 方向
    */
-  tankMove(actor, direction) {
+  tankMove(actor, keys) {
     actor.speed.zero();
-    if (direction) actor.image.paused = false;
+    if (keys) actor.image.paused = false;
     else actor.image.paused = true;
-    switch (direction) {
+    switch (keys) {
       case "up":
         actor.speed.y = -actor.velocity;
         actor.rotation = -90;
@@ -1013,13 +920,13 @@ class MoveManage {
     this.steeringForce.mul(0.05);
 
     this.steeringForce.truncate(this.maxForce);
-    this.steeringForce.mul(1/actor.mass);
+    this.steeringForce.mul(1 / actor.mass);
     actor.speed.add(this.steeringForce);
     this.steeringForce.setValues(0, 0);
   }
   _act(actor) {
     this.steeringForce.truncate(this.maxForce);
-    this.steeringForce.mul(1/actor.mass);
+    this.steeringForce.mul(1 / actor.mass);
     actor.speed.add(this.steeringForce);
     this.steeringForce.setValues(0, 0);
     actor.rotation = actor.speed.angle * 180 / Math.PI;
@@ -1054,7 +961,7 @@ class MoveManage {
   //到达行为
   arrive(actor, targetPos) {
     let centerPos = new Vector(actor.x, actor.y);
-    let desiredVelocity = Vector.sub(targetPos,centerPos)
+    let desiredVelocity = Vector.sub(targetPos, centerPos)
     desiredVelocity.normalize();
     let dist = centerPos.dist(targetPos);
     if (dist > this.arrivalThreshold) {
@@ -1075,7 +982,7 @@ class MoveManage {
     let centerPos = new Vector(actor.x, actor.y);
     let targetcenterPos = new Vector(target.x, target.y);
     let lookAheadTime = centerPos.dist(targetcenterPos) / actor.maxSpeed;
-    let predictedTarget = targetcenterPos.add(Vector.mul(target.speed,lookAheadTime));
+    let predictedTarget = targetcenterPos.add(Vector.mul(target.speed, lookAheadTime));
     this.seek(actor, predictedTarget);
   }
   /**
@@ -1087,7 +994,7 @@ class MoveManage {
     let centerPos = new Vector(actor.x, actor.y);
     let targetcenterPos = new Vector(target.x, target.y);
     let lookAheadTime = centerPos.dist(targetcenterPos) / actor.maxSpeed;
-    let predictedTarget = targetcenterPos.add(Vector.mul(target.speed,lookAheadTime));
+    let predictedTarget = targetcenterPos.add(Vector.mul(target.speed, lookAheadTime));
     this.flee(actor, predictedTarget);
   }
   /**
@@ -1121,17 +1028,17 @@ class MoveManage {
       //如果障碍物在机车前方
       if (dotProd > 0) {
         //机车的“触角”
-        let feeler = Vector.mul(heading,this.avoidDistance);
+        let feeler = Vector.mul(heading, this.avoidDistance);
         //位移在触角上的映射
-        let projection = Vector.mul(heading,dotProd);
+        let projection = Vector.mul(heading, dotProd);
         //障碍物离触角的距离
-        let dist = Vector.sub(projection,difference).length;
+        let dist = Vector.sub(projection, difference).length;
         // 如果触角（在算上缓冲后）和障碍物相交 
         // 并且位移的映射的长度小于触角的长度 
         // 我们就说碰撞将要发生，需改变转向
         if (dist < circle.hit + this.avoidBuffer && projection.length < feeler.length) {
           //计算出一个转90度的力
-          let force = Vector.mul(heading,actor.maxSpeed);
+          let force = Vector.mul(heading, actor.maxSpeed);
           force.angle += difference.sign(actor.speed) * Math.PI / 2;
           // 通过离障碍物的距离，调整力度大小，使之足够小但又能避开 
           force.mul(1 - projection.length / feeler.length);
@@ -1151,7 +1058,7 @@ class MoveManage {
    * @param {Boolean} loop false
    */
   followPath(actor, path, loop = false) {
-    actor.pathIndex=actor.pathIndex||0;
+    actor.pathIndex = actor.pathIndex || 0;
     let wayPoint = path[actor.pathIndex];
     let centerPos = new Vector(actor.x, actor.y);
     if (!wayPoint) return;
@@ -1190,10 +1097,10 @@ class MoveManage {
       }
     }
     if (inSightCount > 0) {
-      averageVelocity.mul(1/inSightCount);
-      averagePosition.mul(1/inSightCount);
+      averageVelocity.mul(1 / inSightCount);
+      averagePosition.mul(1 / inSightCount);
       this.seek(actor, averagePosition);
-      this.steeringForce.add(averageVelocity.mul(1/inSightCount));
+      this.steeringForce.add(averageVelocity.mul(1 / inSightCount));
       this._act(actor);
     }
   }
