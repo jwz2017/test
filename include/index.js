@@ -89,7 +89,7 @@ window.onload = function () {
         using(Box2D, 'b2.+');
     })
     /*************游戏入口*****/
-    gframe.buildStage('canvas');
+    gframe.buildStage('canvas',false,false,"./assets/");
     gframe.pannel=new Pannel()
 };
 //关闭按钮点击
