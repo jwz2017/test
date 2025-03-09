@@ -1,69 +1,92 @@
-import { stage,gframe, queue } from "../../classes/gframe.js";
-import {LoaderBar,Game, ScoreBoard } from "../../classes/Game.js";
-window.onload = function () {
-    //  Box2D().then(function (r) {
-    //      Box2D = r;
-    //      using(Box2D, 'b2.+');
-    //  });
-    /*************游戏入口*****/
-     gframe.buildStage('canvas',false,false,"../assets/");
-     //stage.setClearColor(0x00000000);
-     gframe.preload(AlphaMaskFilter,true);
-};
-//class GameLoaderBar extends LoaderBar {
-    //constructor() {
-        //super();
-    //}
-//}
-var drawingCanvas,image,maskFilter;
-export class AlphaMaskFilter extends Game {
-    static backgroundColor="#555"
-    //static loadFontItem=null
-    //static LoaderBar=GameLoaderBar
-    //static loadBarItem=null
-    //static loadItem=null
-    //static loadId=null
-    static loadItem=[{
-        id:"flowers",
-        src:"../assets/easelJs/flowers.jpg"
-    }]
-    constructor() {
-        super("AlphaMaskFilter",true);
-        //gframe.createPannel();
-        //gframe.buildWorld(true);
-        image=new createjs.Bitmap(queue.getResult("flowers"));
-        image.scale=this.width/image.getBounds().width;
-        drawingCanvas=new createjs.Shape();
-        drawingCanvas.graphics.beginStroke("rgba(255,250,0,0.5)").beginFill("#000").moveTo(0,0).drawCircle(0,0,400)
-        drawingCanvas.cache(0,0,100,100)
-        // console.log(image.getBounds().height*image.scale-300);
-        maskFilter=new createjs.AlphaMaskFilter(drawingCanvas.cacheCanvas)
-        console.log(drawingCanvas.cacheCanvas);
-        image.filters=[maskFilter];
-        stage.addChild(image);
-        // image.cache(0,0,image.getBounds().width,image.getBounds().height)
-        image.cache(0,0,400,400)
-    }
-    createScoreBoard() {
-        //this.scoreboard = new ScoreBoard();
-        //this.scoreboard.createTextElement(AlphaMaskFilter.SCORE);
-        //this.scoreboard.createTextElement(AlphaMaskFilter.LEVEL);
-        //this.scoreboard.createTextElement(AlphaMaskFilter.LIVES);
-    }
-    //初始化游戏数据
-    newGame() {
+import { stage, gframe, queue } from "../../classes/gframe.js";
+import { Game } from "../../classes/Game.js";
+import { Slider as Cslider } from "../../classes/zujian/slider.js";
 
-    }
-    newLevel() {
-        //this.scoreboard.update(AlphaMaskFilter.SCORE,this.score);
-        //this.scoreboard.update(AlphaMaskFilter.LEVEL,this.level);
-        //this.scoreboard.update(AlphaMaskFilter.LIVES,this.lives);
+var bitmap, maskFilter, blur, cursor, drawingCanvas, oldPt, oldMidPt, isDrawing;
+export class AlphaMaskFilter extends Game {
+    static loadItem = [
+        {
+            id: "flowers",
+            src: "easelJs/flowers.jpg",
+        }
+    ];
+    constructor() {
+        super("AlphaMaskFilter");
+
     }
     waitComplete() {
-    
-    }
-    runGame() {
+        stage.enableMouseOver();
+        stage.addEventListener("mousedown", this.handleMouseDown);
+        stage.addEventListener("stagemouseup", this.handleMouseUp);
+        stage.addEventListener("stagemousemove", this.handleMouseMove);
+        let image = queue.getResult("flowers")
+        drawingCanvas = new createjs.Shape();
+        drawingCanvas.cache(0, 0, image.width, image.height);
 
+        bitmap = new createjs.Bitmap(image);
+        // bitmap.y = 100;
+        maskFilter = new createjs.AlphaMaskFilter(drawingCanvas.cacheCanvas);
+        bitmap.filters = [maskFilter];
+        bitmap.cache(0, 0, image.width, image.height);
+
+        blur = new createjs.Bitmap(image);
+        // blur.y = 100
+        blur.filters = [new createjs.BlurFilter(24, 24, 2), new createjs.ColorMatrixFilter(new createjs.ColorMatrix(60))];
+        blur.cache(0, 0, 960, 400);
+
+        stage.addChild(blur, bitmap);
+
+        cursor = new createjs.Shape(new createjs.Graphics().beginFill("#fff").drawCircle(0, 0, 25));
+        cursor.cursor = "pointer";
+        cursor.mouseEnabled=false;
+        stage.addChild(cursor);
+
+        let slider=new Cslider();
+        stage.addChild(slider);
+        slider.y=500;
+        slider.x=20;
+        slider.value=30;
+        // slider.draw(canvas.getContext('2d'))
+
+    }
+    handleMouseDown(e) {
+        // console.log(e.target.x,e.localY);
+        
+        oldPt = new createjs.Point(stage.mouseX, stage.mouseY);
+        oldMidPt = oldPt;
+        isDrawing = true;
+    }
+    handleMouseMove() {
+        cursor.x = stage.mouseX;
+        cursor.y = stage.mouseY;
+
+        if(!isDrawing) {
+            return;
+        }
+
+        var midPoint = new createjs.Point(oldPt.x + stage.mouseX >> 1, oldPt.y + stage.mouseY >> 1);
+
+
+        drawingCanvas.graphics.clear()
+				.setStrokeStyle(40, "round", "round")
+				.beginStroke("rgba(0,0,0,0.08)")
+				.moveTo(midPoint.x, midPoint.y)
+				.curveTo(oldPt.x, oldPt.y, oldMidPt.x, oldMidPt.y);
+
+        oldPt.x=stage.mouseX;
+        oldPt.y=stage.mouseY;
+
+        oldMidPt.x=midPoint.x;
+        oldMidPt.y=midPoint.y;
+
+        drawingCanvas.updateCache("source-over");
+        bitmap.updateCache();
+    }
+
+
+
+    handleMouseUp() {
+        isDrawing=false;
     }
 
 }

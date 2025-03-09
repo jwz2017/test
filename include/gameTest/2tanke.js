@@ -45,16 +45,15 @@ class Tanke extends Game {
         32:"pause"
     }
     constructor() {
-        super("坦克大战", plans[0][0].length * step, plans[0].length * step, step, step);
+        super("坦克大战", plans[0][0].length * step, plans[0].length * step);
         this.enemyBulletLayer=gframe.createrContainer(this.container);
         this.playerBulletLayer=gframe.createrContainer(this.container);
         this.x = stage.width - this.width >> 1;
         this.y = stage.height - this.height >> 1;
         this.instructionText = "方向w,a,s,d小键盘4开火攻击";
-        // this.playerChars = {
-        //     "1": Player,
-        // };
-        this.playerChars["1"]=Player;
+        this.playerChars = {
+            "1": Player,
+        };
         this.propChars = {
             "23": Live,
             "20": Bullet,
@@ -98,16 +97,16 @@ class Tanke extends Game {
         this.scoreboard.update("level", this.level);
         //创建网格
         let plan = plans[this.level - 1];
-        this.createGridMap(plan, (ch, node) => {
+        this.createGridMap(plan,step,step, (ch, x,y) => {
             var tile = new createjs.Sprite(spriteSheet).set({
-                x: node.x * step + step / 2,
-                y: node.y * step + step / 2
+                x: x * step + step / 2,
+                y: y * step + step / 2
             });
             if (this.playerChars[ch] || this.propChars[ch] || this.enemyChars[ch] || ch == 0) {
                 tile.gotoAndStop(0);
             } else {
+                this.createNode(x,y,Node.NOWALKABLE);
                 tile.gotoAndStop(ch);
-                node.type = Node.NOWALKABLE;
             }
             this.addToFloor(tile);
         });
@@ -176,6 +175,7 @@ class Player extends Actor {
         rect.x += this.speed.x;
         rect.y += this.speed.y;
         let node = game.hitMap(rect,null,0,(node)=>{
+            game.clearNode(node.x,node.y)
             switch (node.actor.type) {
                 case "live":
                     console.log("live");
@@ -189,7 +189,6 @@ class Player extends Actor {
                 default:
                     break;
             }
-            // node.type=null;
         });
         var actor = game.hitActors(this,game.enemyLayer.children, rect);
         if (!node && !actor) super.act();

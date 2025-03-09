@@ -31,13 +31,13 @@ export class SuperClick extends Game {
         this.fps=new Fps();
     }
     createScoreBoard() {
-        this.scoreboard = new ScoreBoard(stage.width - 50, "space-between");
-        this.scoreboard.x = 50;
+        this.scoreboard = new ScoreBoard({mode:ScoreBoard.VMODE,rowNum:2});
+        this.scoreboard.x = 80;
         this.scoreboard.createTextElement("score");
         this.scoreboard.createTextElement("level");
         this.scoreboard.createTextElement(CLICKS);
         this.scoreboard.createTextElement(NEEDED);
-        this.scoreboard.createTextElement(ACHIEVE);
+        this.scoreboard.createTextElement(ACHIEVE,0,0,0,{offX:50});
         let h = this.scoreboard.getBounds().height;
         this.setSize(stage.width, stage.height - h);
         this.y = h;

@@ -1,10 +1,16 @@
 import { Game } from "../../classes/Game.js";
 import { stage } from "../../classes/gframe.js";
 import { mc,PushButton,CheckBox,RadioButton,Slider,ScrollContainer } from "../../classes/mc.js";
+import { Slider as Cslider } from "../../classes/zujian/slider.js";
 export class Mctest extends Game {
     static backgroundColor="#fff"
     constructor() {
-        super("mc组件测试",true);
+        super("mc组件测试");
+        let s=new Cslider(0,100,100,20);
+        s.y=300;
+        s.value=30;
+        stage.addChild(s);
+
 
         mc.style.fontSize=16;
         /**
@@ -38,7 +44,7 @@ export class Mctest extends Game {
         // ----------------mc.style.darkStyle();//黑色主题------------------------
         this.scorecontainer = new ScrollContainer(stage, 0, 0, 600, 750, 800, 1400);
         //Rect RoundRect Circle Star Arrow
-        this.button = new PushButton(this.scorecontainer.container, "ok", null, 50, 50);
+        this.button = new PushButton(this.scorecontainer.container, "ok1", null, 50, 50);
         this.button1 = new PushButton(this.scorecontainer.container, "ok", null, 50, 100, 60, 20, new mc.RoundRect(25));
         this.button2 = new PushButton(this.scorecontainer.container, "ok", null, 50, 150, 60, 60, new mc.Circle());
         this.button3 = new PushButton(this.scorecontainer.container, "ok", null, 100, 200, 80, 80, new mc.Star(6, 2.5, 30));

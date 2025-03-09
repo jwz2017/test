@@ -43,6 +43,7 @@ class SpaceShip extends Game {
         this.addToPlayer(ship);
         ship.x = stage.width / 2;
         ship.y = stage.height / 2;
+        
         ship.updateRect();
     }
     runGame() {
@@ -137,8 +138,8 @@ class Ship extends SteeredActor {
         this.thrust = 0;
         this.timeout = 0;
         this.toggle = 60;
+        this.drawSpriteData(15)
         this.weapon = new Weapon(this,Bullet, 30);
-        
     }
     act() {
         moveManage.driveShip(this,keys);

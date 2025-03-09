@@ -68,7 +68,7 @@ function _systemInstruction() {
 //新游戏开始状态
 function _systemNewGame() {
   // gframe.clearContainer(stage);
-  if(stage.contains(game.instructionScreen)) stage.removeChild(game.instructionScreen);
+  if (stage.contains(game.instructionScreen)) stage.removeChild(game.instructionScreen);
   game.score = 0;
   game.level = 0;
   game.gameOver = false;
@@ -116,13 +116,8 @@ function _waitComplete() {
   if (game.levelInScreen) stage.removeChild(game.levelInScreen);
   if (game.scoreboard) stage.addChild(game.scoreboard);
   stage.addChild(game);
-  stage.children.forEach(element => {
-    if (element.htmlElement) {
-      element.visible = true;
-    }
-  });
   if (game.backSound) game.backSound.play();
-  if(gframe.pannel)gframe.pannel.game=game;
+  if (gframe.pannel) gframe.pannel.game = game;
   stage.addChild(gframe.pannel);
   game.waitComplete();
   _switchSystemState(STATE_GAME_PLAY);
@@ -265,13 +260,9 @@ function _preloadGame(GClass, isDamo) {
         }
       });
       lib = comp.getLibrary();
-      // let manifest = JSON.parse(JSON.stringify(lib.properties.manifest));
-      // queue.loadManifest(manifest);
       queue.loadManifest(lib.properties.manifest);
     }
     if (GClass.loadItem) {
-      // let manifest = JSON.parse(JSON.stringify(GClass.loadItem));
-      // queue.loadManifest(manifest);
       queue.loadManifest(GClass.loadItem);
     }
     queue.on('progress', (e) => {
@@ -291,10 +282,10 @@ function _preloadGame(GClass, isDamo) {
 
 //按钮点击事件
 function _okButton(e) {
-  if(e.target.id==STATE_INSTRUCTION){
-    _nextSystemState=STATE_INSTRUCTION;
+  if (e.target.id == STATE_INSTRUCTION) {
+    _nextSystemState = STATE_INSTRUCTION;
     stage.removeChild(game.titleScreen);
-  }else{
+  } else {
     e.target.parent.removeChild(e.target);
   }
   _switchSystemState(_nextSystemState);
@@ -303,11 +294,11 @@ function _okButton(e) {
 var gframe = {
   LevelInLevel: "关卡",//等级界面
   OKBUTTON: "okbutton",
-  pannel:null,
+  pannel: null,
   createrContainer(parent) {
     let c = new createjs.Container();
     c.name = "gameLayer";
-    parent.addChild(c);
+    if (parent) parent.addChild(c);
     return c;
   },
   clearContainer(container) {
@@ -318,7 +309,7 @@ var gframe = {
         // element.recycle();
         element.active = false;
         container.removeChild(element);
-      }else if (element.htmlElement) {
+      } else if (element.htmlElement) {
         element.visible = false;
         container.removeChild(element);
       } else if (element.name == "gameLayer") {
@@ -335,7 +326,7 @@ var gframe = {
    * @param {false} isGL 是否为webgl模式
    * @param {false} isH 是否为高度自适应
    */
-  buildStage(canvasId, isGL = false, isH = false, basePath = "../assets/") {
+  buildStage(canvasId, isGL = false, isH = false) {
     _systemFunction = _systemWaitForClose;
     //建立舞台
     if (!isGL) stage = new createjs.Stage(canvasId);
@@ -373,32 +364,30 @@ var gframe = {
     //自适应
     _adapt(isH);
 
-    queue = new createjs.LoadQueue(true, basePath);
-    queue.installPlugin(createjs.Sound); //注册声音插件
   },
   /*********************预加载****************************
-  * 
-  * @param {Class} GClass 
-  * @param {false} isDamo 跳过开始
+   * 
+   * @param {Class} GClass 
+   * @param {false} isDamo 跳过开始
   */
-  preload(GClass, isDamo) {
-    stage.canvas.style.background=GClass.backgroundColor
-    if (GClass.loadFontItem) queue.loadManifest(GClass.loadFontItem)
+  preload(GClass, isDamo, basePath = "../assets/") {
+    if (GClass.backgroundColor) stage.canvas.style.background = GClass.backgroundColor
+
+    if (queue != null) {
+      queue.close();
+    }
+    queue = new createjs.LoadQueue(true, basePath);
+    queue.installPlugin(createjs.Sound); //注册声音插件
+
     if (GClass.loadBarItem) {
       // GClass.loadBarItem = JSON.parse(JSON.stringify(GClass.loadBarItem));
       queue.loadManifest(GClass.loadBarItem);
-    }
-    if (GClass.loadFontItem || GClass.loadBarItem) {
-      GClass.loadFontItem = null;
-      GClass.loadBarItem=null;
       queue.on("complete", () => {
         _preloadGame(GClass, isDamo);
       }, null, true);
-    } else {
-      _preloadGame(GClass, isDamo);
-    }
+    } else _preloadGame(GClass, isDamo);
   },
-  
+
   //禁止键盘事件
   noKeydown() {
     document.onkeydown = null;
@@ -466,7 +455,7 @@ var gframe = {
     game._clearAfter();
     game = null;
     this.noKeydown();
-    stage.removeEventListener("okbutton",_okButton);
+    stage.removeEventListener("okbutton", _okButton);
     createjs.Ticker.paused = false;
     if (window.world) {
       world = null;

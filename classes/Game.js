@@ -1,25 +1,22 @@
 import { gframe, stage } from "./gframe.js";
 import { ScrollContainer } from "./mc.js";
 import { checkPixelCollision } from "./hitTest.js";
-import { BasicScreen, TitleScreen, LevelInScreen, LoaderBar } from "./screen.js";
+import { BasicScreen, TitleScreen, LevelInScreen, LoaderBar, InstructionScreen } from "./screen.js";
 
 /**
  * 网格节点
  */
 class Node {
+    static WALKABLE = "walkable";
     static NOWALKABLE = "nowalkable";
     static PROP = "prop";
     static DEATH = "death";
-    constructor(xpos, ypos) {
+    constructor(xpos, ypos, { type, actor, costMultiplier = 1 } = {}) {
         this.x = xpos;
         this.y = ypos;
-        this.type = null;
-        this.actor = null;
-        this.costMultiplier = 1;
-        this.f;
-        this.g;
-        this.h;
-        this.parent;
+        this.type = type;
+        this.actor = actor;
+        this.costMultiplier = costMultiplier;
     }
 }
 
@@ -27,10 +24,10 @@ class Node {
 class Game extends ScrollContainer {
     static backgroundColor = "#000";//游戏背景颜色
     static LoaderBar = LoaderBar;
-    static loadBarItem = null;
+    // static loadBarItem = null;
     static loadItem = null;
     static loadId = null;
-    static loadFontItem = [{
+    static loadBarItem = [{
         src: "fonts/regul-book.woff",
         type: "font",
     },
@@ -67,10 +64,8 @@ class Game extends ScrollContainer {
      * @param {string} titleText 
      * @param {stage.width} width 
      * @param {stage.height} height 
-     * @param {0} stepWidth 
-     * @param {0} stepHeight 
      */
-    constructor(titleText, width = stage.width, height = stage.height, stepWidth = 0, stepHeight = 0) {
+    constructor(titleText, width = stage.width, height = stage.height) {
         super(null, 0, 0, width, height, 0, 0, false, false);
         this.titleText = titleText;
         this.instructionText = "说明内容";
@@ -81,15 +76,10 @@ class Game extends ScrollContainer {
         this.propLayer = gframe.createrContainer(this.container);
         //网格
         this.nodes = [];
-        this.numCols = 0;
-        this.numRows = 0;
-        this.stepWidth = stepWidth;
-        this.stepHeight = stepHeight;
         this._tempNode = new Node(-1, -1);
-        //地图字符
-        this.playerChars = Object.create(null);
-        this.enemyChars = Object.create(null);
-        this.propChars = Object.create(null);
+        this.playerChars=Object.create(null);
+        this.propChars=Object.create(null);
+        this.enemyChars=Object.create(null);
         //游戏属性
         this.gameOver = false;
         this.levelUp = false;
@@ -97,12 +87,8 @@ class Game extends ScrollContainer {
         this.level = 0;
         this.score = 0;
         this.lives = 3;
-        //Astar智能寻路
-        this._startNode = null;
-        this._endNode = null;
         //背景音乐
         this.backSound = null;
-        // this.titleSound = null;
     }
     /************************界面初始化*************************** */
     createTitleScreen() {
@@ -117,15 +103,14 @@ class Game extends ScrollContainer {
         btn2.y = btn1.y + btn1.getBounds().height + 20;
     }
     createInstructionScreen() {
-        this.instructionScreen = new BasicScreen();
-        this.instructionScreen.createScreen("游戏介绍", this.instructionText, [
+        this.instructionScreen = new InstructionScreen("游戏介绍", this.instructionText, [
             {
                 text: "cancel",
                 onclick: () => {
                     stage.removeChild(this.instructionScreen);
                 }
             }
-        ], stage.width * .6)
+        ], stage.width * .8);
         let b = this.instructionScreen.getBounds();
         this.instructionScreen.x = stage.width - b.width >> 1;
         this.instructionScreen.y = stage.height - b.height >> 1;
@@ -172,7 +157,6 @@ class Game extends ScrollContainer {
     //过场过后清理
     _clearAfter() {
         stage.alpha = 1;
-        // stage.
         //清除游戏内容元素
         gframe.clearContainer(this.container);
         //清除舞台元素
@@ -192,69 +176,7 @@ class Game extends ScrollContainer {
             element.act();
         }
     }
-    /**
-     * 检测地图元素碰撞
-     * @param {*} rect1 
-     * @param {null} image 
-     * @param {0} alphaThreshold 
-     * @param {null} hitPropNode 
-     * @returns node
-     */
-    hitMap(rect1, image, alphaThreshold = 0, hitPropNode) {
-        let x1 = rect1.x / this.stepWidth,
-            y1 = rect1.y / this.stepHeight,
-            w1 = rect1.width / this.stepWidth,
-            h1 = rect1.height / this.stepHeight;
-        var xStart = Math.floor(x1);
-        var xEnd = Math.ceil(x1 + w1);
-        var yStart = Math.floor(y1);
-        var yEnd = Math.ceil(y1 + h1);
-        if (xStart < 0 || xEnd > this.nodes[0].length || yStart < 0) {
-            this._tempNode.type = Node.NOWALKABLE;
-            return this._tempNode;
-        } else if (yEnd > this.nodes.length) {
-            this._tempNode.type = Node.DEATH;
-            return this._tempNode;
-        }
-        for (var y = yStart; y < yEnd; y++) {
-            for (var x = xStart; x < xEnd; x++) {
-                let node = this.nodes[y][x];
-                if (node.type) {
-                    if (!node.actor) {
-                        if (node.type == Node.PROP) {
-                            if (hitPropNode) hitPropNode(node);
-                        } else {
-                            return node;
-                        }
-                    } else {
-                        if (!image || !(node.actor.image instanceof createjs.Sprite)) {
-                            if (rect1.intersects(node.actor.rect)) {
-                                if (node.type == Node.PROP) {
-                                    if (hitPropNode) hitPropNode(node);
-                                } else {
-                                    return node;
-                                }
-                            }
-                        } else {
-                            let r = rect1.intersection(node.actor.rect);
-                            if (r) {
-                                let p = this.container.localToGlobal(r.x, r.y);
-                                r.x = p.x;
-                                r.y = p.y;
-                                if (checkPixelCollision(image, node.actor.image, r, alphaThreshold)) {
-                                    if (node.type == Node.PROP) {
-                                        if (hitPropNode) hitPropNode(node);
-                                    } else {
-                                        return node;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+
 
     /**
    * 与其它元素碰撞
@@ -297,8 +219,8 @@ class Game extends ScrollContainer {
      * @param {*} obj2
      * @returns 
      */
-    hitRadius(obj1,obj2) {
-        let otherHit=obj2.hit||0;
+    hitRadius(obj1, obj2) {
+        let otherHit = obj2.hit || 0;
         if (obj1.x - obj1.hit > obj2.x + otherHit) {
             return;
         }
@@ -314,19 +236,19 @@ class Game extends ScrollContainer {
         return obj1.hit + otherHit > Math.sqrt(Math.pow(obj1.x - obj2.x, 2) + Math.pow(obj1.y - obj2.y, 2));
     }
 
-    checkBounds(actor,noBottom) {
+    checkBounds(actor, noBottom) {
         if (actor.edgeBehavior == "wrap") {
-          this.placeInBounds(actor);
+            this.placeInBounds(actor);
         } else if (actor.edgeBehavior == "bounce") {
-          this.rebounds(actor,noBottom);
-          
+            this.rebounds(actor, noBottom);
+
         } else if (actor.edgeBehavior == "recycle") {
-          if (this.outOfBounds(actor.rect)) {
-            actor.recycle();
-            
-          }
+            if (this.outOfBounds(actor.rect)) {
+                actor.recycle();
+
+            }
         }
-      }
+    }
     /**
      * 检测是否与边界碰撞
      * @param {*} rect 矩形形状
@@ -351,7 +273,7 @@ class Game extends ScrollContainer {
      * @param {*} actor 
      * @param {true} noBottom  是否底部反弹
      */
-    rebounds(actor, noBottom ) {
+    rebounds(actor, noBottom) {
         let rect = actor.rect,
             s = this.contentSize;
         if (rect.x < 0) {
@@ -396,16 +318,11 @@ class Game extends ScrollContainer {
         }
     }
     /***************************网格相关************************ */
-    //创建网格
-    createGrid(rows, cols) {
-        this.numCols = cols;
-        this.numRows = rows;
-        for (let i = 0; i < this.numCols; i++) {
-            this.nodes[i] = [];
-            for (let j = 0; j < this.numRows; j++) {
-                this.nodes[i][j] = new Node(i, j);
-            }
-        }
+    createNode(x, y, type) {
+        return this.nodes[x][y] = new Node(x, y, { type: type });
+    }
+    clearNode(x, y) {
+        this.nodes[x][y] = null;
     }
     /**
      * 创建网格地图
@@ -413,40 +330,45 @@ class Game extends ScrollContainer {
      * @param {*} drawGrid 背景地图函数
      * @param {false} isIso 是否为二等角地图
      */
-    createGridMap(plan, drawGrid, isIso = false) {
+    createGridMap(plan,stepWidth,stepHeight, drawGrid,isIso = false) {
         this.nodes = [];
-        this.numCols = plan[0].length;
-        this.numRows = plan.length;
-        for (let y = 0; y < this.numRows; y++) {
-            const line = plan[y];
-            this.nodes[y] = [];
-            for (let x = 0; x < this.numCols; x++) {
-                const ch = line[x],
+        this.stepWidth=stepWidth;
+        this.stepHeight=stepHeight;
+        let numCols=plan[0].length,
+        numRows=plan.length;
+        for (let x = 0; x < numCols; x++) {
+            this.nodes[x] = [];
+            for (let y = 0; y < numRows; y++) {
+                this.nodes[x].length++;
+                const ch = plan[y][x],
                     Act = this.playerChars[ch] || this.propChars[ch] || this.enemyChars[ch];
-                this.nodes[y][x] = new Node(x, y);
                 if (Act) {
                     let a = new Act(x * this.stepWidth, y * this.stepHeight, ch);
-                    if (Act == this.playerChars[ch]) {
-                        this.playerLayer.addChild(a);
-                        if (a.type === "player") {
-                            this.player = a;
-                        }
-                    } else if (Act == this.propChars[ch]) {
-                        this.propLayer.addChild(a);
-                        this.nodes[y][x].actor = a;
-                        this.nodes[y][x].type = Node.PROP;
-                    } else if (Act == this.enemyChars[ch]) {
-                        this.enemyLayer.addChild(a);
+                    switch (Act) {
+                        case this.playerChars[ch]:
+                            this.playerLayer.addChild(a);
+                            if (a.type === "player") {
+                                this.player = a;
+                            }
+                            break;
+                        case this.propChars[ch]:
+                            this.propLayer.addChild(a);
+                            let node = this.createNode(x, y, Node.PROP);
+                            node.actor = a;
+                            break;
+                        case this.enemyChars[ch]:
+                            this.enemyLayer.addChild(a);
+                            break;
                     }
                 }
-                drawGrid(ch, this.nodes[y][x]);
+                drawGrid(ch, x, y);
             }
         }
         if (isIso) {
             //等角地图深度排序
             this.sortDepth();
             //设置地图大小
-            let w1 = this.numCols * this.stepWidth + this.numRows * this.stepHeight;
+            let w1 = numCols * this.stepWidth + numRows * this.stepHeight;
             this.contentSize = {
                 width: w1,
                 height: w1 / 2
@@ -456,12 +378,73 @@ class Game extends ScrollContainer {
             this.floorLayer.cache(-this.contentSize.width / 2, -this.stepHeight / 2, this.contentSize.width, this.contentSize.height);
         } else {
             this.contentSize = {
-                width: this.numCols * this.stepWidth,
-                height: this.numRows * this.stepHeight
+                width: numCols * this.stepWidth,
+                height: numRows * this.stepHeight
             }
             this.floorLayer.cache(0, 0, this.contentSize.width, this.contentSize.height)
         }
     };
+
+    /**
+     * 检测地图元素碰撞
+     * @param {*} rect1 
+     * @param {null} image 
+     * @param {0} alphaThreshold 
+     * @param {null} hitPropNode 
+     * @returns node
+     */
+    hitMap(rect1, image, alphaThreshold = 0, hitPropNode) {
+        let x1 = rect1.x / this.stepWidth,
+            y1 = rect1.y / this.stepHeight,
+            w1 = rect1.width / this.stepWidth,
+            h1 = rect1.height / this.stepHeight;
+        var xStart = Math.floor(x1);
+        var xEnd = Math.ceil(x1 + w1);
+        var yStart = Math.floor(y1);
+        var yEnd = Math.ceil(y1 + h1);
+        if (xStart < 0 || xEnd > this.nodes.length || yStart < 0) {
+            this._tempNode.type = Node.NOWALKABLE;
+            return this._tempNode;
+        } else if (yEnd > this.nodes[0].length) {
+            this._tempNode.type = Node.DEATH;
+            return this._tempNode;
+        }
+        for (var y = yStart; y < yEnd; y++) {
+            for (var x = xStart; x < xEnd; x++) {
+                let node = this.nodes[x][y];
+                // if (node) {
+                if (node && node.type != Node.WALKABLE) {
+                    if (!node.actor) {
+                        return node
+                    } else {
+                        if (!image || (node.actor.image instanceof createjs.Shape)) {
+                            if (rect1.intersects(node.actor.rect)) {
+                                if (node.type == Node.PROP) {
+                                    if (hitPropNode) { hitPropNode(node); }
+                                } else {
+                                    return node;
+                                }
+                            }
+                        } else {
+                            let r = rect1.intersection(node.actor.rect);
+                            if (r) {
+                                let p = this.container.localToGlobal(r.x, r.y);
+                                r.x = p.x;
+                                r.y = p.y;
+                                if (checkPixelCollision(image, node.actor.image, r, alphaThreshold)) {
+                                    if (node.type == Node.PROP) {
+                                        if (hitPropNode) hitPropNode(node);
+                                    } else {
+                                        return node;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
     /**
     * 寻找周围相似节点
     * @param {*} node 
@@ -484,8 +467,9 @@ class Game extends ScrollContainer {
             }
             let tempNode2;
             for (let i = 0; i < colList.length; i++) {
-                if (tempNode.x + colList[i] >= 0 && (tempNode.x + colList[i]) < this.numCols
-                    && tempNode.y + rowList[i] >= 0 && (tempNode.y + rowList[i]) < this.numRows) {
+                if (tempNode.x + colList[i] >= 0 && (tempNode.x + colList[i]) < this.nodes.length
+                    && tempNode.y + rowList[i] >= 0 && (tempNode.y + rowList[i]) < this.nodes[0].length) {
+
                     tempNode2 = this.getNode(tempNode.x + colList[i], tempNode.y + rowList[i]);
                     if (tempNode2 && tempNode2.type == typeToMatch && nodesToCheck.indexOf(tempNode2) == -1
                         && nodesTested.indexOf(tempNode2) == -1) {
@@ -508,21 +492,11 @@ class Game extends ScrollContainer {
     getNode(x, y) {
         return this.nodes[x][y]
     }
-    setEndNode(x, y) {
-        this._endNode = this.nodes[x][y];
-    }
-    setStartNode(x, y) {
-        this._startNode = this.nodes[x][y];
-    }
+
     setNodeType(x, y, value) {
         this.nodes[x][y].type = value;
     }
-    get endNode() {
-        return this._endNode;
-    }
-    get startNode() {
-        return this._startNode;
-    }
+
     get playerChildren() {
         return this.playerLayer.children;
     }
@@ -544,7 +518,6 @@ class Game extends ScrollContainer {
     addToEnemy(child) {
         this.enemyLayer.addChild(child);
     }
-    /*********************************box2d*********************************** */
 
 };
 
@@ -552,8 +525,8 @@ class Game extends ScrollContainer {
  * **************************滚动游戏类 **************************************************
  */
 class ScrollMapGame extends Game {
-    constructor(titleText, width, height, stepWidth, stepHeight) {
-        super(titleText, width, height, stepWidth, stepHeight);
+    constructor(titleText, width, height) {
+        super(titleText, width, height);
         //滚动
         this.mapleft = 0;
         this.maptop = 0;
@@ -584,9 +557,7 @@ class ScrollMapGame extends Game {
     }
     //停止滚动
     stopScrollView() {
-        let p = new createjs.Point();
-        p.setValues(this._scrollActor.x, this._scrollActor.y);
-        this._scrollActor = p;
+        this._scrollActor = new createjs.Point(this._scrollActor.x, this._scrollActor.y);
     }
     /**
      * 设置焦点参数
@@ -603,11 +574,12 @@ class ScrollMapGame extends Game {
      * 检测是否出屏幕
      * @param {*} rect 
      * @returns boolean
-     */
+    */
     outOfBounds(rect) {
         return rect.x + rect.width < this.mapleft || rect.x > this.mapright || rect.y + rect.height < this.maptop || rect.y > this.mapbottom;
     }
 }
+/*********************************box2d*********************************** */
 
 var e_shapeBit = 0x0001, e_jointBit = 0x0002, e_aabbBit = 0x0004, e_pairBit = 0x0008, e_centerOfMassBit = 0x0010;
 class Box2dGame extends ScrollMapGame {
@@ -631,8 +603,8 @@ class Box2dGame extends ScrollMapGame {
             flags |= e_centerOfMassBit;
         if (window.debugDraw) debugDraw.SetFlags(flags);
     };
-    constructor(titleText, isDebug = true, gravity = 10, width, height, stepWidth, stepHeight) {
-        super(titleText, width, height, stepWidth, stepHeight);
+    constructor(titleText, isDebug = true, gravity = 10, width, height) {
+        super(titleText, width, height);
         this._buildWorld(isDebug, gravity);
         this.mouseStart = new b2Vec2();
         this.mouseEnd = new b2Vec2();

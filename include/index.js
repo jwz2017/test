@@ -82,16 +82,24 @@ import { SoftBody2 } from "./box2dTest/7SoftBody2.js";
 import { ClipperDemo } from "./box2dTest/7Clipper.js";
 import { WaterDome } from "./box2dTest/7waterDome.js";
 import { IceBreaker } from "./box2dTest/7IceBreakerDemo.js";
+import { AlphaMaskFilter } from "./easelJsTest/AlphaMaskFilter.js";
 import { Pannel } from "../classes/dat.gui-pannel.js";
-window.onload = function () {
+import { ButtonHelp } from "./easelJsTest/ButtonHelp.js";
+import { FilterAnimated } from "./easelJsTest/FilterAnimated.js";
+import { FiltersInput } from "./easelJsTest/FiltersInput.js";
+import { SpritesheetBuilder } from "./easelJsTest/SpritesheetBuilder.js";
+import { SpriteSheetMovie } from "./easelJsTest/SpriteSheetMovie.js";
+import { TextLinkTest } from "./easelJsTest/TextLink.js";
+import { ScaleBitmapTest } from "./easelJsTest/ScaleBitmapTest.js";
+// window.onload = function () {
     Box2D().then(function (r) {
         Box2D = r;
         using(Box2D, 'b2.+');
     })
     /*************游戏入口*****/
-    gframe.buildStage('canvas',false,false,"./assets/");
+    gframe.buildStage('canvas');
     gframe.pannel=new Pannel()
-};
+// };
 //关闭按钮点击
 closeGame.onclick = function (e) {
     if(queue.loaded){
@@ -138,5 +146,5 @@ window.productClick = function (a) {
     containerDiv.style.display = "block";
     //禁止滚动
     document.getElementsByTagName('body')[0].setAttribute('style', 'position:fixed; width:100%;');
-    gframe.preload(eval(a.title),true);
+    gframe.preload(eval(a.title),true,"./assets/");
 }

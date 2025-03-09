@@ -5,7 +5,7 @@ import { BackgroundV } from "../../classes/other.js";
 import { ScoreBoard } from "../../classes/screen.js";
 
 window.onload = function () {
-    gframe.buildStage('canvas', false);
+    gframe.buildStage('canvas', true);
     gframe.preload(SpaceHero);
 };
 var spriteSheet;

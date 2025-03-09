@@ -23,7 +23,7 @@ export class Tetris extends Game {
     }
     static LINES="lines";
     constructor() {
-        super("俄罗斯方块", 300, 600, step, step);
+        super("俄罗斯方块", 300, 600);
         this.fps=new Fps
         this.lines=0;
         this.instructionText="w:旋转<br>asd:方向";
@@ -33,7 +33,8 @@ export class Tetris extends Game {
         let shape = new createjs.Shape();
         let color="#555";
         let builder = new createjs.SpriteSheetBuilder();
-        shape.bounds = new createjs.Rectangle(-step/2, -step/2, step, step);
+        // shape.bounds = new createjs.Rectangle(-step/2, -step/2, step, step);
+        shape.setBounds(-step/2, -step/2, step, step);
         for (let i = 0; i < 4; i++) {
             builder.addFrame(shape, null, 1, function (target, data) {
                 switch (data) {
@@ -81,10 +82,12 @@ export class Tetris extends Game {
             map.push(element);
         }
         speedIndex = 0;
-        this.createGridMap(map,(ch, node) => {
+        this.createGridMap(map,step,step,(ch, x,y) => {
+            let node;
             switch (ch) {
                 case 0:
-                    node.actor = new Actor(node.x * step, node.y * step,0,0,false);
+                    node=this.createNode(x,y);
+                    node.actor = new Actor(x * step, y * step);
                     node.actor.setSpriteData(sheet);
                     this.addToPlayer(node.actor);
                     break;
@@ -177,7 +180,7 @@ export class Tetris extends Game {
                     continue;
                 }
                 map[i + pointBox.y][j + pointBox.x] += nowBox[i][j];
-                this.nodes[i + pointBox.y][j + pointBox.x].actor.image.gotoAndStop(map[i + pointBox.y][j + pointBox.x]);
+                this.nodes[j + pointBox.x][i + pointBox.y].actor.image.gotoAndStop(map[i + pointBox.y][j + pointBox.x]);
             }
 
         }
@@ -190,7 +193,7 @@ export class Tetris extends Game {
                     continue;
                 }
                 map[i + pointBox.y][j + pointBox.x] -= nowBox[i][j];
-                this.nodes[i + pointBox.y][j + pointBox.x].actor.image.gotoAndStop(map[i + pointBox.y][j + pointBox.x]);
+                this.nodes[j + pointBox.x][i + pointBox.y].actor.image.gotoAndStop(map[i + pointBox.y][j + pointBox.x]);
             }
 
         }
@@ -239,12 +242,12 @@ export class Tetris extends Game {
         for (let i = line; i > 1; i--) {
             for (let j = 0; j < map[0].length; j++) {
                 map[i][j] = map[i - 1][j];
-                this.nodes[i][j].actor.image.gotoAndStop(this.nodes[i - 1][j].actor.image.currentFrame)
+                this.nodes[j][i].actor.image.gotoAndStop(this.nodes[j][i - 1].actor.image.currentFrame)
             }
         }
         for (let j = 0; j < map[0].length; j++) {
             map[0][j] = 0;
-            this.nodes[0][j].actor.image.gotoAndStop(0);
+            this.nodes[j][0].actor.image.gotoAndStop(0);
 
         }
     }

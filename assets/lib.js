@@ -70,14 +70,18 @@ if (reversed == null) { reversed = false; }
 	this.shape.setTransform(70.5,17.5);
 
 	this.shape_1 = new cjs.Shape();
-	this.shape_1.graphics.f("#000033").s().p("ArACvIAAldIWBAAIAAFdg");
+	this.shape_1.graphics.f("#990033").s().p("ArACvIAAldIWBAAIAAFdg");
 	this.shape_1.setTransform(70.5,17.5);
 
 	this.shape_2 = new cjs.Shape();
-	this.shape_2.graphics.f("#000000").s().p("ArACvIAAldIWBAAIAAFdg");
+	this.shape_2.graphics.f("#000033").s().p("ArACvIAAldIWBAAIAAFdg");
 	this.shape_2.setTransform(70.5,17.5);
 
-	this.timeline.addTween(cjs.Tween.get({}).to({state:[{t:this.shape}]}).to({state:[{t:this.shape}]},1).to({state:[{t:this.shape_1}]},1).to({state:[{t:this.shape_2}]},1).wait(1));
+	this.shape_3 = new cjs.Shape();
+	this.shape_3.graphics.f("#000000").s().p("ArACvIAAldIWBAAIAAFdg");
+	this.shape_3.setTransform(70.5,17.5);
+
+	this.timeline.addTween(cjs.Tween.get({}).to({state:[{t:this.shape}]}).to({state:[{t:this.shape_1}]},1).to({state:[{t:this.shape_2}]},1).to({state:[{t:this.shape_3}]},1).wait(1));
 
 	this._renderFirstFrame();
 
@@ -127,6 +131,87 @@ if (reversed == null) { reversed = false; }
 	this._renderFirstFrame();
 
 }).prototype = getMCSymbolPrototype(lib.元件1, new cjs.Rectangle(0,0,166,56), null);
+
+
+(lib.元件3 = function(mode,startPosition,loop,reversed) {
+if (loop == null) { loop = true; }
+if (reversed == null) { reversed = false; }
+	var props = new Object();
+	props.mode = mode;
+	props.startPosition = startPosition;
+	props.labels = {};
+	props.loop = loop;
+	props.reversed = reversed;
+	cjs.MovieClip.apply(this,[props]);
+
+	// 图层_1
+	this.shape = new cjs.Shape();
+	this.shape.graphics.f().s("#000000").ss(1,1,1).p("AqbjoIU3AAIAAHRI03AAg");
+	this.shape.setTransform(66.825,23.275);
+
+	this.shape_1 = new cjs.Shape();
+	this.shape_1.graphics.f("#FF0099").s().p("AqbDpIAAnRIU3AAIAAHRg");
+	this.shape_1.setTransform(66.825,23.275);
+
+	this.timeline.addTween(cjs.Tween.get({}).to({state:[{t:this.shape_1},{t:this.shape}]}).wait(1));
+
+	this._renderFirstFrame();
+
+}).prototype = getMCSymbolPrototype(lib.元件3, new cjs.Rectangle(-1,-1,135.7,48.6), null);
+
+
+(lib.元件2 = function(mode,startPosition,loop,reversed) {
+if (loop == null) { loop = true; }
+if (reversed == null) { reversed = false; }
+	var props = new Object();
+	props.mode = mode;
+	props.startPosition = startPosition;
+	props.labels = {};
+	props.loop = loop;
+	props.reversed = reversed;
+	cjs.MovieClip.apply(this,[props]);
+
+	// 图层_1
+	this.shape = new cjs.Shape();
+	this.shape.graphics.f().s("#000000").ss(1,1,1).p("AqbjoIU3AAIAAHRI03AAg");
+	this.shape.setTransform(66.825,23.275);
+
+	this.shape_1 = new cjs.Shape();
+	this.shape_1.graphics.f("#990000").s().p("AqbDpIAAnRIU3AAIAAHRg");
+	this.shape_1.setTransform(66.825,23.275);
+
+	this.timeline.addTween(cjs.Tween.get({}).to({state:[{t:this.shape_1},{t:this.shape}]}).wait(1));
+
+	this._renderFirstFrame();
+
+}).prototype = getMCSymbolPrototype(lib.元件2, new cjs.Rectangle(-1,-1,135.7,48.6), null);
+
+
+(lib.元件1_1 = function(mode,startPosition,loop,reversed) {
+if (loop == null) { loop = true; }
+if (reversed == null) { reversed = false; }
+	var props = new Object();
+	props.mode = mode;
+	props.startPosition = startPosition;
+	props.labels = {};
+	props.loop = loop;
+	props.reversed = reversed;
+	cjs.MovieClip.apply(this,[props]);
+
+	// 图层_1
+	this.shape = new cjs.Shape();
+	this.shape.graphics.f().s("#000000").ss(1,1,1).p("AqbjoIU3AAIAAHRI03AAg");
+	this.shape.setTransform(66.825,23.275);
+
+	this.shape_1 = new cjs.Shape();
+	this.shape_1.graphics.f("#33FF99").s().p("AqbDpIAAnRIU3AAIAAHRg");
+	this.shape_1.setTransform(66.825,23.275);
+
+	this.timeline.addTween(cjs.Tween.get({}).to({state:[{t:this.shape_1},{t:this.shape}]}).wait(1));
+
+	this._renderFirstFrame();
+
+}).prototype = getMCSymbolPrototype(lib.元件1_1, new cjs.Rectangle(-1,-1,135.7,48.6), null);
 
 
 (lib.Title = function(mode,startPosition,loop,reversed) {
@@ -315,6 +400,38 @@ if (reversed == null) { reversed = false; }
 
 }).prototype = p = new cjs.MovieClip();
 p.nominalBounds = new cjs.Rectangle(-30,-77.6,651.9,606.1);
+
+
+(lib.VectorButton = function(mode,startPosition,loop,reversed) {
+if (loop == null) { loop = true; }
+if (reversed == null) { reversed = false; }
+	var props = new Object();
+	props.mode = mode;
+	props.startPosition = startPosition;
+	props.labels = {out:0,over:1,down:2};
+	props.loop = loop;
+	props.reversed = reversed;
+	cjs.MovieClip.apply(this,[props]);
+
+	// 图层_1
+	this.out = new lib.元件1_1();
+	this.out.name = "out";
+	this.out.setTransform(66.8,23.2,1,1,0,0,0,66.8,23.2);
+
+	this.over = new lib.元件2();
+	this.over.name = "over";
+	this.over.setTransform(66.8,23.2,1,1,0,0,0,66.8,23.2);
+
+	this.down = new lib.元件3();
+	this.down.name = "down";
+	this.down.setTransform(66.8,23.2,1,1,0,0,0,66.8,23.2);
+
+	this.timeline.addTween(cjs.Tween.get({}).to({state:[{t:this.out}]}).to({state:[{t:this.over}]},1).to({state:[{t:this.down}]},1).wait(1));
+
+	this._renderFirstFrame();
+
+}).prototype = p = new cjs.MovieClip();
+p.nominalBounds = new cjs.Rectangle(-0.5,-0.5,134.7,47.6);
 
 
 // stage content:

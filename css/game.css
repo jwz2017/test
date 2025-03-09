@@ -32,7 +32,7 @@ ol {
 #containerDiv {
   height: 100vh;
   position: relative;
-  overflow: hidden;
+  /* overflow: hidden; */
   margin: 0 auto;
   background-color: #333;
 }

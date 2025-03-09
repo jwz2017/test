@@ -7,8 +7,7 @@ window.onload = function () {
     gframe.buildStage('canvas');
     gframe.preload(Bounce);
 };
-var bricks,
-    stepWidth = 44,
+var stepWidth = 44,
     stepHeight = 30,
     colorOffse = Math.random() * 360,
     count = 0,
@@ -49,7 +48,7 @@ class Bounce extends Game {
     }
     static backgroundColor="#555"
     constructor() {
-        super("弹球06", plans[0][0].length * stepWidth, plans[0].length * stepHeight, stepWidth, stepHeight);
+        super("弹球06", plans[0][0].length * stepWidth, plans[0].length * stepHeight);
         this.fps=new Fps();
         this.x = stage.width - this.width >> 1;
         this.maxLevel = plans.length;
@@ -71,26 +70,25 @@ class Bounce extends Game {
     }
     newGame(){
         this.lives=3;
+    }
+    waitComplete(){
         stage.addChild(this.fps);
     }
     newLevel() {
         this.scoreboard.update("score", this.score);
         this.scoreboard.update("level", this.level);
         this.scoreboard.update("lives", this.lives);
-        bricks = [];
         let plan = plans[this.level - 1];
-        this.createGridMap(plan, (ch, node) => {
+        this.createGridMap(plan,stepWidth,stepHeight, (ch, x,y) => {
             if (ch == "w") {
-                node.type = Node.NOWALKABLE;
+                let node=this.createNode(x,y,Node.NOWALKABLE)
                 let bg = new Actor(node.x * stepWidth, node.y * stepHeight);
                 bg.drawSpriteData(stepWidth,stepHeight)
                 this.addToFloor(bg)
             } else if (ch == "x" || ch == "l") {
-                node.type = Node.NOWALKABLE;
-                let fieldType = new Brick(node.x * stepWidth, node.y * stepHeight, ch);
-                node.brick = fieldType;
-                bricks.push(fieldType);
-                this.container.addChild(fieldType)
+                let node=this.createNode(x,y,Node.NOWALKABLE)
+                node.actor = new Brick(node.x * stepWidth, node.y * stepHeight, ch);
+                this.addToEnemy(node.actor)
             }
         });
 
@@ -146,12 +144,12 @@ class Puck extends CirActor {
     moveX() {
         let rect = this.rect.clone();
         rect.x += this.speed.x;
-        var fieldType = game.hitMap(rect);
-        if (!fieldType) {
+        var node = game.hitMap(rect);
+        if (!node) {
             this.plus(this.speed.x, 0);
-        } else if (fieldType.brick) {
+        } else if (node.actor) {
             this.speed.x *= -1;
-            this.hitBrickResult(fieldType);
+            this.hitBrickResult(node);
         } else {
             this.combo = 0;
             this.speed.x *= -1;
@@ -160,10 +158,10 @@ class Puck extends CirActor {
     moveY() {
         let rect = this.rect.clone();
         rect.y += this.speed.y;
-        var fieldType = game.hitMap(rect);
-        if (!fieldType) {
+        var node = game.hitMap(rect);
+        if (!node) {
             this.plus(0, this.speed.y);
-        } else if (fieldType.type == Node.DEATH) {
+        } else if (node.type == Node.DEATH) {
             game.lives--;
             if (game.lives > 0) {
                 this.setPos(this.homePos.x, this.homePos.y);
@@ -173,46 +171,44 @@ class Puck extends CirActor {
             } else {
                 game.gameOver = true;
             }
-        } else if (fieldType.brick) {
+        } else if (node.actor) {
             this.speed.y *= -1;
-            this.hitBrickResult(fieldType);
+            this.hitBrickResult(node);
         } else {
             this.combo = 0;
             this.speed.y *= -1;
         }
     }
-    hitBrickResult(fieldType1) {
-        let fieldType = fieldType1.brick;
+    hitBrickResult(node) {
+        let actor = node.actor;
         this.combo++;
         game.score++;
-        let rect = fieldType.rect;
         if (this.combo > 4) {
             game.score += (this.combo * 10);
             let combotex = new createjs.Text('combo x' + (this.combo * 10), '14px Times', '#ff0000');
             combotex.regX = combotex.getBounds().width / 2;
             combotex.regY = combotex.getBounds().height / 2;
-            combotex.x = fieldType.x + rect.width / 2;
-            combotex.y = fieldType.y + rect.height / 2;
+            combotex.x = actor.x;
+            combotex.y = actor.y;
             combotex.alpha = 0;
-            game.addToProp(combotex);
+            game.container.addChild(combotex);
             createjs.Tween.get(combotex).to({
                 alpha: 1,
                 scaleY: 2,
                 scaleX: 2,
                 y: combotex.y - 60
             }, 1000).call(() => {
-                game.propLayer.removeChild(combotex);
+                game.container.removeChild(combotex);
             });
         }
         game.scoreboard.update("score", game.score)
-        if (fieldType.type == "live") {
+        if (actor.type == "live") {
             game.lives++;
             game.scoreboard.update("lives", game.lives);
         }
-        bricks.splice(bricks.indexOf(fieldType), 1);
-        fieldType1.type =null;
-        fieldType.parent.removeChild(fieldType);
-        if (bricks.length == 0) {
+        game.clearNode(node.x,node.y)
+        actor.parent.removeChild(actor);
+        if (game.enemyLayer.numChildren== 0) {
             game.levelUp = true;
         }
     }

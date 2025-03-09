@@ -151,8 +151,8 @@ class Actor extends createjs.Container {
   static BOUNCE = "bounce";
   static RECYCLE = "recycle";
   //创建元素
-  static getActor(parent,A) {
-    let a=A||this;
+  static getActor(parent, A) {
+    let a = A || this;
     a.array = a.array || [];
     let len = a.array.length, i = 0;
     while (i <= len) {
@@ -195,13 +195,13 @@ class Actor extends createjs.Container {
   init() {
 
   }
-  setSpriteData(spriteSheet, animation, { imageScale = 1, rotation = 0, offsetX = 0, offsetY = 0 } = {}) {
+  setSpriteData(spriteSheet, animation, { imageScale = 1, rotation = 0, offsetX = 0, offsetY = 0,isinit=true } = {}) {
     //显示辅助矩形
-    if (!(this.image instanceof createjs.Shape)) this.removeChild(this.image);
+    if (this.image&&isinit) this.removeChild(this.image);
     if (spriteSheet instanceof createjs.SpriteSheet) {
       this.image = new createjs.Sprite(spriteSheet, animation);
     } else {
-      this.image = new createjs.Bitmap();
+      this.image = new createjs.Bitmap(spriteSheet);
     }
     this.image.scale = imageScale;
     this.image.rotation = rotation;
@@ -387,10 +387,10 @@ class SteeredActor extends Actor {
    * @param {15} size 
    * @param {true} IsShape 
    */
-  constructor(xpos, ypos,width,height) {
-    super(xpos, ypos,width,height);
+  constructor(xpos, ypos, width, height) {
+    super(xpos, ypos, width, height);
   }
-  
+
   drawShape(width) {
     this._color = "#ffffff";
     this.shipFlame = new createjs.Shape();
@@ -476,6 +476,7 @@ class JumpActor extends Actor {
     this.actStep = 30;
     this._oldPos = new createjs.Point();
   }
+
   //开始地面动作
   startFloorAct() {
 
@@ -503,70 +504,71 @@ class JumpActor extends Actor {
    * @param {*} runkeys 跑动参数keys
    */
   walk(direction, runkeys = {}) {//移动
-    if (this.status != "roll" && this.status != "jumpAttack") {
-      switch (direction) {
-        case "left":
-          if (!this.status) {
-            if (runkeys.leftRun) {
-              this.speed.x = -this.runspeed;
-              this.status = "run";
-              this.changeAct();
-              runkeys.leftRun = false;
-            } else {
-              this.speed.x = -this.walkspeed;
-              this.status = "walk";
-              this.changeAct();
-            }
-          } else if (this.status == "run") {
-            if (this.scaleX > 0) {
-              this.status = "walk";
-              this.speed.x = -this.walkspeed;
-              this.changeAct();
-            }
-          } else if (this.status == "walk") {
+    if (this.status == "roll" || this.status == "jumpAttack") {
+      return;
+    }
+    switch (direction) {
+      case "left":
+        if (!this.status) {
+          if (runkeys.leftRun) {
+            this.speed.x = -this.runspeed;
+            this.status = "run";
+            this.changeAct();
+            runkeys.leftRun = false;
+          } else {
             this.speed.x = -this.walkspeed;
-          } else if (this.status == "jump") {
-            this.speed.x = -Math.abs(this.speed.x) || -this.walkspeed;
-          } else {
-            this.speed.x = 0;
-          }
-          this.scaleX = -Math.abs(this.scaleX);
-          break;
-        case "right":
-          if (!this.status) {
-            if (runkeys.rightRun) {
-              this.speed.x = this.runspeed;
-              this.status = "run";
-              this.changeAct();
-              runkeys.rightRun = false;
-            } else {
-              this.speed.x = this.walkspeed;
-              this.status = "walk";
-              this.changeAct();
-            }
-          } else if (this.status == "run") {
-            if (this.scaleX < 0) {
-              this.status = "walk";
-              this.speed.x = this.walkspeed;
-              this.changeAct();
-            }
-          } else if (this.status == "walk") {
-            this.speed.x = this.walkspeed;
-          } else if (this.status == "jump") {
-            this.speed.x = Math.abs(this.speed.x) || this.walkspeed
-          } else {
-            this.speed.x = 0;
-          }
-          this.scaleX = Math.abs(this.scaleX);
-          break;
-        default:
-          this.speed.x = 0;
-          if (this.status == "walk" || this.status == "run") {
-            this.status = null;
+            this.status = "walk";
             this.changeAct();
           }
-          break;
-      }
+        } else if (this.status == "run") {
+          if (this.scaleX > 0) {
+            this.status = "walk";
+            this.speed.x = -this.walkspeed;
+            this.changeAct();
+          }
+        } else if (this.status == "walk") {
+          this.speed.x = -this.walkspeed;
+        } else if (this.status == "jump") {
+          this.speed.x = -Math.abs(this.speed.x) || -this.walkspeed;
+        } else {
+          this.speed.x = 0;
+        }
+        this.scaleX = -Math.abs(this.scaleX);
+        break;
+      case "right":
+        if (!this.status) {
+          if (runkeys.rightRun) {
+            this.speed.x = this.runspeed;
+            this.status = "run";
+            this.changeAct();
+            runkeys.rightRun = false;
+          } else {
+            this.speed.x = this.walkspeed;
+            this.status = "walk";
+            this.changeAct();
+          }
+        } else if (this.status == "run") {
+          if (this.scaleX < 0) {
+            this.status = "walk";
+            this.speed.x = this.walkspeed;
+            this.changeAct();
+          }
+        } else if (this.status == "walk") {
+          this.speed.x = this.walkspeed;
+        } else if (this.status == "jump") {
+          this.speed.x = Math.abs(this.speed.x) || this.walkspeed
+        } else {
+          this.speed.x = 0;
+        }
+        this.scaleX = Math.abs(this.scaleX);
+        break;
+      default:
+        this.speed.x = 0;
+        if (this.status == "walk" || this.status == "run") {
+          this.status = null;
+          this.changeAct();
+        }
+        break;
     }
   }
   /**
@@ -585,10 +587,11 @@ class JumpActor extends Actor {
     } else this.speed.y = 0;
   }
   overhead() {
-    if (!this.status || this.status == "walk" || this.status == "run") {
+    if (this.idle) {
       this.status = "jump";
       this.changeAct();
     }
+    this.startJumpAct();
     this.plus(0, this.speed.y);
   }
   //动作完毕事件函数
@@ -621,6 +624,7 @@ class JumpActor extends Actor {
       this.status == "jump";
       this.speed.y = -this.jumpspeed;
       this.changeAct();
+      // this.startJumpAct();
     }
   }
   attack() {//普通攻击

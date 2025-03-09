@@ -41,6 +41,7 @@ export class Tunnel extends Game {
         this.y = stage.height - this.height >> 1;
         //创建飞船
         player = new SteeredActor();
+        player.drawSpriteData(15)
         this.addChild(player)
         //背景框架
         this.background = new createjs.Shape();

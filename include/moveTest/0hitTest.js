@@ -4,10 +4,6 @@ import { Actor } from "../../classes/actor.js";
 import { Game } from "../../classes/Game.js";
 var rect1, rect2;
 export class hitTest extends Game {
-    static loadItem = [{
-        id: "spritesheet_button",
-        src: "images/spritesheet_button.png"
-    }];
     constructor() {
         super("hitTest");
         rect1 = new Actor(300, 400);

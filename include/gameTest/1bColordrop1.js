@@ -1,4 +1,4 @@
-import { Game } from "../../classes/Game.js";
+import { Game, Node } from "../../classes/Game.js";
 import { stage, gframe, queue } from "../../classes/gframe.js";
 import { getFXBitmap } from "../../classes/other.js";
 import { Fps, ScoreBoard } from "../../classes/screen.js";
@@ -20,14 +20,21 @@ class ColorDrop extends Game {
     static SCORE_BOARD_THRESHOLD = "threshold";
     static SCORE_BOARD_LEVEL_SCORE = "levelScore";
     constructor() {
-        super("魔法方块", step * numcols + (numcols + 1) * space, step * numrows + (numrows + 1) * space, step, step);
+        super("魔法方块", step * numcols + (numcols + 1) * space, step * numrows + (numrows + 1) * space);
         this.fps=new Fps();
         this.instructionText= "10步内超过500分过关";
         this.maxLevel = 10;
         this.x = stage.width - this.width >> 1;
         this.y = stage.height - this.height >> 1;
         this.difficultyLevel = 7;
-        this.createGrid(numrows,numcols);
+        // this.createGrid(numrows,numcols);
+        for (let i = 0; i < numcols; i++) {
+            this.nodes[i]=[]
+            for (let j = 0; j < numrows; j++) {
+                this.nodes[i][j]=new Node(i,j);
+            }
+            
+        }
     }
     createScoreBoard() {
         this.scoreboard = new ScoreBoard(stage.width,"space-between");
@@ -57,8 +64,8 @@ class ColorDrop extends Game {
         stage.addChild(this.fps);
         stage.enableMouseOver()
         //drawgrid
-        for (let i = 0; i < this.numCols; i++) {
-            for (let j = 0; j < this.numRows; j++) {
+        for (let i = 0; i < numcols; i++) {
+            for (let j = 0; j < numrows; j++) {
                 this.createTile(i, j);
             }
         }
@@ -107,7 +114,7 @@ class ColorDrop extends Game {
         let tile = new Block(queue.getResult("color"), j, i);
         tile.gotoAndStop(color);
         tile.x = step * i + space * (i + 1);
-        tile.y = -step*(this.numRows-j)-space*(this.numRows-j+1);
+        tile.y = -step*(numrows-j)-space*(numrows-j+1);
         let node = this.getNode(i, j);
         node.tile = tile;
         node.type = tile.currentFrame;
@@ -129,16 +136,16 @@ class ColorDrop extends Game {
      * 方块落下
      */
     moveTileDown() {
-        for (let i = this.numCols - 1; i >= 0; i--) {
+        for (let i = numcols - 1; i >= 0; i--) {
             let missing = 0;
             let nummiss = 0;//补位
-            for (let j = this.numRows - 1; j >= 0; j--) {
+            for (let j = numrows - 1; j >= 0; j--) {
                 let node = this.getNode(i, j);
                 if (node.type == null){
                     nummiss++;
                 }else if (node.type != null) {
                     missing = 0;
-                    for (let m = j + 1; m < this.numRows; m++) {
+                    for (let m = j + 1; m < numrows; m++) {
                         if (this.getNode(i, m).type == null) {
                             missing++;
                         }

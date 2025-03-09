@@ -6,9 +6,10 @@ export class LoadBitmap extends Game {
     static loadItem = [
         {
             id: "spritesheet_button",
-            src: "images/spritesheet_button.png",
+            src: "easelJs/spritesheet_button.png",
             type: "image"
-        }, {
+        }, 
+        {
             id: "loadspritedata",
             src: "fakezee/fakezee.json",
             type: "spritesheet"
@@ -34,13 +35,6 @@ export class LoadBitmap extends Game {
         this.button1.cache(0, 0, this.button1.image.width, this.button1.image.height)
         this.button1.scale = 1;
         this.button1.cursor = "pointer";
-        /***********************************************九宫格使用********************************************************
-         * 
-         */
-        this.button = new createjs.ScaleBitmap(queue.getResult('Button'), new createjs.Rectangle(80, 25, 6, 6));
-        this.button.setDrawSize(200, 56);
-        this.button.x = 140;
-        this.button.cursor = "pointer";
 
         /** ******************************************animate库加载 ***************************************************************
          * 
@@ -70,7 +64,6 @@ export class LoadBitmap extends Game {
         this.pop.children.push(input);
         input.htmlElement.placeholder="请输入姓名";
         input.htmlElement.type="text";
-
         this.pop.y = 150;
         this.pop.x = 53;
         pop.win.btn.cursor = "pointer";
@@ -78,6 +71,8 @@ export class LoadBitmap extends Game {
             pop.gotoAndStop(0);
             stage.removeChild(this.pop);
         })
+
+        
         var buttonss = new createjs.SpriteSheet({
             images: [queue.getResult("spritesheet_button")],
             frames: {
@@ -92,11 +87,17 @@ export class LoadBitmap extends Game {
         var button2Helper = new createjs.ButtonHelper(this.button2);
         this.button2.addEventListener('click', () => {
             button2Helper.enabled = !button2Helper.enabled;
-            stage.addChild(this.pop);
-            pop.gotoAndPlay(1);
             this.button2.alpha = 0.5 + button2Helper.enabled * 0.5;
+            if(button2Helper.enabled){
+                stage.addChild(this.pop);
+                pop.gotoAndPlay(1);
+            }
         })
         stage.addChild(this.button1, this.button01, this.button, this.button2, this.ma);
     }
+    waitComplete(){
+        stage.enableMouseOver()
+    }
 }
+
 
