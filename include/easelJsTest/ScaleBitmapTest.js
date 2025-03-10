@@ -5,7 +5,7 @@ import { ScaleBitmap } from "../../classes/zujian/ScaleBitmap.js";
 export class ScaleBitmapTest extends Game {
     static loadItem=[{
         id:"image",
-        src:"../../assets/easelJs/ScaleBitmapImage.png"
+        src:"easelJs/ScaleBitmapImage.png"
     }]
     constructor() {
         super("ScaleBitmapTest");

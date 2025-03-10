@@ -1,7 +1,7 @@
 import { Game } from "../../classes/Game.js";
 import { Actor, MoveManage, SteeredActor, Vector, Weapon } from "../../classes/actor.js";
 import { gframe, keys, stage } from "../../classes/gframe.js";
-import { ScoreBoard } from "../../classes/screen.js";
+import { Fps, ScoreBoard } from "../../classes/screen.js";
 
 window.onload = function () {
     gframe.buildStage('canvas',false,true);
@@ -26,9 +26,11 @@ class SpaceShip extends Game {
     constructor() {
         super("飞机游戏");
         ship = new Ship();
+        this.fps=new Fps();
     }
     createScoreBoard() {
         this.scoreboard = new ScoreBoard();
+        this.scoreboard.x=200;
         this.scoreboard.createTextElement("score");
         this.scoreboard.createTextElement("level");
     }
@@ -40,6 +42,7 @@ class SpaceShip extends Game {
         ship.speed = new Vector(0, 0);
     }
     waitComplete() {
+        stage.addChild(this.fps)
         this.addToPlayer(ship);
         ship.x = stage.width / 2;
         ship.y = stage.height / 2;
@@ -135,6 +138,7 @@ class Bullet extends Actor {
 class Ship extends SteeredActor {
     constructor(xpos, ypos) {
         super(xpos, ypos);
+        this.edgeBehavior=Ship.WRAP;
         this.thrust = 0;
         this.timeout = 0;
         this.toggle = 60;
