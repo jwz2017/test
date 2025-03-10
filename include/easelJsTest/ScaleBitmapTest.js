@@ -1,6 +1,6 @@
 import { stage,gframe, queue } from "../../classes/gframe.js";
 import {Game } from "../../classes/Game.js";
-import { ScaleBitmap } from "../../classes/zujian/ScaleBitmap.js";
+import { ScaleBitmap } from "../../classes/zujian/scaleBitmap.js";
 
 export class ScaleBitmapTest extends Game {
     static loadItem=[{
