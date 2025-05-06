@@ -1,6 +1,6 @@
 import { stage } from "../../classes/gframe.js";
 import { Box2dGame } from "../../classes/Game.js";
-import { Clipper } from "../../classes/Clipper-help.js";
+import { Clipper } from "../../classes/box2d/Clipper-help.js";
 var subjectBody, clipBody;
 var clipTypeList, clipTypeNames, typeOfClip;
 var clipText, aryIndex = 0;

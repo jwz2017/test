@@ -1,10 +1,11 @@
 import { Actor } from "../../classes/actor.js";
 import { Game } from "../../classes/Game.js";
 import { gframe, stage } from "../../classes/gframe.js";
-import { Fps,ScoreBoard } from "../../classes/screen.js";
+import { Fps, ScoreBoard } from "../../classes/screen.js";
 window.onload = function () {
     gframe.buildStage('canvas');
     gframe.preload(SuperClick);
+    gframe.fps=new Fps();
 };
 const CLICKS = "clicks",
     NEEDED = "needed",
@@ -22,22 +23,18 @@ var radius = 8,
     achieve = 0;
 export class SuperClick extends Game {
     static backgroundColor = "#555";
-    static codes = {
-        32: "pause"
-    }
     constructor() {
         super("super click");
         this.maxLevel = 10;
-        this.fps=new Fps();
     }
     createScoreBoard() {
-        this.scoreboard = new ScoreBoard({mode:ScoreBoard.VMODE,rowNum:2});
+        this.scoreboard = new ScoreBoard({ mode: ScoreBoard.VMODE, rowNum: 2 });
         this.scoreboard.x = 80;
         this.scoreboard.createTextElement("score");
         this.scoreboard.createTextElement("level");
         this.scoreboard.createTextElement(CLICKS);
         this.scoreboard.createTextElement(NEEDED);
-        this.scoreboard.createTextElement(ACHIEVE,0,0,0,{offX:50});
+        this.scoreboard.createTextElement(ACHIEVE, 0, 0, 0, { offX: 50 });
         let h = this.scoreboard.getBounds().height;
         this.setSize(stage.width, stage.height - h);
         this.y = h;
@@ -63,15 +60,12 @@ export class SuperClick extends Game {
     }
     waitComplete() {
         stage.enableMouseOver();
-        stage.addChild(this.fps);
         this.on('mousedown', (e) => {
-            if (createjs.Ticker.paused) {
-                return;
-            } else if (e.target.type === Ball.BAD) {
+            if (e.target.type === Ball.BAD) {
                 this.gameOver = true;
-            } else if (e.target.type === Ball.GOOD && e.target.clicked === false) {
+            } else if (e.target.type === Ball.GOOD) {
                 let ball = e.target;
-                ball.clicked = true;
+                ball.mouseEnabled=false;
                 let addScore = Math.round(maxScore / ball.scale);
                 clicks++;
                 this.score += addScore;
@@ -81,12 +75,12 @@ export class SuperClick extends Game {
                 this.scoreboard.update(ACHIEVE, achieve);
                 //加入分数文本
                 // let txt = new createjs.Text(addScore, "bold 12px,arial", "#ff0000");
-                let txt=Actor.getActor(this.propLayer,createjs.Text);
-                txt.text=addScore;
-                txt.scale=1;
-                txt.font="bold 12px,arial";
-                txt.color="#f00";
-                txt.active=true;
+                let txt = Actor.getActor(this.propLayer, createjs.Text);
+                txt.text = addScore;
+                txt.scale = 1;
+                txt.font = "bold 12px,arial";
+                txt.color = "#f00";
+                txt.active = true;
                 txt.textAlign = "center";
                 txt.textBaseline = "middle";
                 txt.x = ball.x;
@@ -96,7 +90,7 @@ export class SuperClick extends Game {
                     scale: 3
                 }, 500).call(() => {
                     this.propLayer.removeChild(txt)
-                    txt.active=false;
+                    txt.active = false;
                 });
             }
         })
@@ -110,22 +104,22 @@ export class SuperClick extends Game {
         if (this.playerChildren.length < maxOnScreen && numCreated < numCircles) {
             var circle;
             if (Math.random() * 100 < percentBadCircle) {
-                circle = Actor.getActor(this.playerLayer,Ball);
-                circle.init(Ball.BAD,10,growSpeed,maxscale)
+                circle = Actor.getActor(this.playerLayer, Ball);
+                circle.init(Ball.BAD, 10, growSpeed, maxscale)
             } else {
-                circle = Actor.getActor(this.playerLayer,Ball);
-                circle.init(Ball.GOOD,15,growSpeed,maxscale);
+                circle = Actor.getActor(this.playerLayer, Ball);
+                circle.init(Ball.GOOD, 15, growSpeed, maxscale);
                 numCreated++;
             }
             circle.x = Math.random() * (this.width - radius * 2 + radius);
             circle.y = Math.random() * (this.height - radius * 2 + radius);
-            circle.scale= 0.5;
+            circle.scale = 0.5;
         }
     }
     checkGame() {
         if (achieve >= needed) {
             this.levelUp = true;
-        } else if (numCreated == numCircles && !this.hasTypeOnContainer(Ball.GOOD,this.playerLayer)) {
+        } else if (numCreated == numCircles && !this.hasTypeOnContainer(Ball.GOOD, this.playerLayer)) {
             this.gameOver = true;
         }
     }
@@ -141,29 +135,29 @@ class Ball extends createjs.Shape {
         super();
         this.cursor = "pointer";
     }
-    init(type,radius=15,growSpeed,maxScale) {
-        this.clicked = false;
+    init(type, radius = 15, growSpeed, maxScale) {
+        this.mouseEnabled = true;
         this.scale = 1;
         this.alpha = 1;
-        this.radius=radius;
+        this.radius = radius;
         this.type = type;
-        this.growSpeed=growSpeed;
-        this.maxScale=maxScale;
+        this.growSpeed = growSpeed;
+        this.maxScale = maxScale;
         this._redraw();
     }
     act() {
-        if (this.clicked) this.alpha -= 0.01;
-        else if (this.scale< this.maxScale) {
+        if (!this.mouseEnabled) this.alpha -= 0.01;
+        else if (this.scale < this.maxScale) {
             this.scale += this.growSpeed;
-        } else {
-            this.alpha -= 0.01;
+        }else{
+            this.alpha-=0.01;
         }
         if (this.alpha < 0.1) {
             this.recycle();
         }
     }
     recycle() {
-        if (this.parent)this.parent.removeChild(this);
+        this.parent.removeChild(this);
         this.active = false;
     }
     _redraw() {

@@ -13,14 +13,11 @@ export class DestroyFixture extends Box2dGame {
         this.addFixture();
 
         stage.on("stagemousedown", () => {
-            var a=3;
-            if (this.body.GetFixtureList()) {
-                // this.body.DestroyFixture(this.body.GetFixtureList());
-                EasyBody.splitsBody(this.body,()=>{
-                    a--;
-                    return a==2;
-                })
-            }
+            var a = 3;
+            EasyBody.splitsBody(this.body, () => {
+                a--;
+                return a == 2;
+            })
         })
 
     }
@@ -30,6 +27,7 @@ export class DestroyFixture extends Box2dGame {
         for (var i = 0; i < 8; i++) {
             const circle = EasyShape.createCircle(30, Math.cos(angle * i) * radius, Math.sin(angle * i) * radius);
             this.body.CreateFixture(circle, 1);
+
         }
     }
 

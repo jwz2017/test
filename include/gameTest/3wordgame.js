@@ -1,5 +1,5 @@
 import { Game } from "../../classes/Game.js";
-import {gframe } from "../../classes/gframe.js";
+import {gframe, stage } from "../../classes/gframe.js";
 import { ScoreBoard } from "../../classes/screen.js";
 window.onload = function () {
     /*************游戏入口*****/
@@ -32,9 +32,15 @@ export class WordGame extends Game{
         this.drawBoard();
         this.drawLetters();
         this.drawMessage();
+        this.mouseEnabled=false;
+        
+    }
+    waitComplete(){
+        this.mouseEnabled=true;
+        stage.enableMouseOver();
     }
     drawBoard(){
-        var i,char,box;
+        var char,box;
         var xPos=20;
         var yPos=90;
         for (let i = 0; i < answer.length; i++) {
@@ -78,6 +84,7 @@ export class WordGame extends Game{
             btn.regY=12;
             btn.x=xPos;
             btn.y=yPos;
+            btn.cursor="pointer"
             this.container.addChild(btn);
             //create text
             txt=new createjs.Text(char);

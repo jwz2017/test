@@ -1,35 +1,26 @@
 var _systemFunction, _lastSystemState, _nextSystemState, _currentSystemState;
-var stage, game, queue, lib, keys = Object.create(null), pressed = [];
+var stage, game, queue, lib, keys = Object.create(null), pressed = [], pressedOther = [];
 var screenPosY = 0;
 
 //游戏状态
 const STATE_WAIT_FOR_CLOSE = "statewaitforclose",
   STATE_TITLE = "statetitle",
-  STATE_INSTRUCTION = "stateinstruction",
   STATE_NEW_GAME = "statenewgame",
   STATE_GAME_OVER = "stategameover",
   STATE_NEW_LEVEL = "statenewlevel",
   STATE_LEVEL_IN = "statelevelin",
   STATE_GAME_PLAY = "stategameplay",
-  STATE_LEVEL_OUT = "statelevelout",
-  STATE_WAIT = "statewait";
-
+  STATE_LEVEL_OUT = "statelevelout";
 //选择游戏状态
 function _switchSystemState(stateval) {
   _lastSystemState = _currentSystemState;
   _currentSystemState = stateval;
   switch (stateval) {
-    case STATE_WAIT:
-      _systemFunction = _systemWait;
-      break;
     case STATE_WAIT_FOR_CLOSE:
       _systemFunction = _systemWaitForClose;
       break;
     case STATE_TITLE:
       _systemFunction = _systemTitle;
-      break;
-    case STATE_INSTRUCTION:
-      _systemFunction = _systemInstruction;
       break;
     case STATE_NEW_GAME:
       _systemFunction = _systemNewGame;
@@ -43,11 +34,11 @@ function _switchSystemState(stateval) {
     case STATE_GAME_PLAY:
       _systemFunction = _systemGamePlay;
       break;
-    case STATE_GAME_OVER:
-      _systemFunction = _systemGameOver;
-      break;
     case STATE_LEVEL_OUT:
       _systemFunction = _systemLevelOut;
+      break;
+    case STATE_GAME_OVER:
+      _systemFunction = _systemGameOver;
       break;
     default:
   }
@@ -59,16 +50,9 @@ function _systemTitle() {
   _switchSystemState(STATE_WAIT_FOR_CLOSE);
   _nextSystemState = STATE_NEW_GAME;
 };
-//介绍界面状态
-function _systemInstruction() {
-  stage.addChild(game.instructionScreen);
-  _switchSystemState(STATE_WAIT_FOR_CLOSE);
-  _nextSystemState = STATE_TITLE;
-};
 //新游戏开始状态
 function _systemNewGame() {
-  // gframe.clearContainer(stage);
-  if (stage.contains(game.instructionScreen)) stage.removeChild(game.instructionScreen);
+  if (game.instructionScreen.parent) stage.removeChild(game.instructionScreen);
   game.score = 0;
   game.level = 0;
   game.gameOver = false;
@@ -79,46 +63,33 @@ function _systemNewGame() {
 function _systemNewLevel() {
   game.level++;
   game.levelUp = false;
-  game.levelInScreen.update(gframe.LevelInLevel, game.level);
   game.newLevel();
   _switchSystemState(STATE_LEVEL_IN);
 };
 //新等级界面状态
 function _systemLevelIn() {
+  stage.addChild(game)
+  game.levelInScreen.update(gframe.LevelInLevel, game.level);
   stage.addChild(game.levelInScreen);
-  _switchSystemState(STATE_WAIT);
+  createjs.Tween.get(game.levelInScreen)
+  .to({alpha:0},500).to({alpha:1},500).to({alpha:0},500)
+  .to({alpha:1},500).call(() => {
+    _waitComplete();
+  });
+  _switchSystemState(STATE_WAIT_FOR_CLOSE);
 };
-//过场特效
-function _systemWait() {
-  switch (_lastSystemState) {
-    //新等级过渡动画
-    case STATE_LEVEL_IN:
-      createjs.Tween.get(stage).wait(1000).call(() => {
-        _waitComplete();
-      });
-      break;
-    //游戏结束或升级或通关
-    case STATE_GAME_PLAY:
-      game._clearBefore();
-      createjs.Tween.get(stage).to({
-        alpha: 0.2
-      }, 2000, createjs.Ease.quadOut).call(() => {
-        game._clearAfter();
-        _switchSystemState(_nextSystemState);
-      });
-      break;
-  }
-  _systemFunction = _systemWaitForClose;
-};
+
 //levelIn结束
 function _waitComplete() {
+  if (game.scoreboard) stage.addChild(game.scoreboard);
   stage.enableMouseOver(0);
   if (game.levelInScreen) stage.removeChild(game.levelInScreen);
-  if (game.scoreboard) stage.addChild(game.scoreboard);
-  stage.addChild(game);
   if (game.backSound) game.backSound.play();
-  if (gframe.pannel) gframe.pannel.game = game;
-  stage.addChild(gframe.pannel);
+  if (gframe.pannel) {
+    gframe.pannel.game = game;
+    stage.addChild(gframe.pannel);
+  }
+  if (gframe.fps) stage.addChild(gframe.fps);
   game.waitComplete();
   _switchSystemState(STATE_GAME_PLAY);
 };
@@ -127,19 +98,24 @@ function _waitComplete() {
 function _systemGamePlay(e) {
   game.runGame(e);
   if (game.levelUp) {
+    game.clearBefore();
+    game.levelUp = false;
     if (game.level >= game.maxLevel) {
-      _nextSystemState = STATE_LEVEL_OUT;
       stage.enableMouseOver();
+      _nextSystemState = STATE_LEVEL_OUT;
     } else {
       _nextSystemState = STATE_NEW_LEVEL;
     }
-    _switchSystemState(STATE_WAIT);
+    _switchSystemState(STATE_WAIT_FOR_CLOSE);
   } else if (game.gameOver) {
+    game.clearBefore();
+    game.gameOver = false;
     _nextSystemState = STATE_GAME_OVER;
     stage.enableMouseOver();
-    _switchSystemState(STATE_WAIT);
+    _switchSystemState(STATE_WAIT_FOR_CLOSE);
   }
 };
+
 //通关
 function _systemLevelOut() {
   game.levelOutScreen.y = 0;
@@ -147,6 +123,7 @@ function _systemLevelOut() {
   _nextSystemState = STATE_TITLE;
   _switchSystemState(STATE_WAIT_FOR_CLOSE);
 };
+
 //结束界面状态
 function _systemGameOver() {
   game.gameOverScreen.y = 0;
@@ -157,12 +134,17 @@ function _systemGameOver() {
 
 //暂停界面状态
 function _systemPause() {
+  if(_currentSystemState!=STATE_GAME_PLAY) return;
   createjs.Ticker.paused = !createjs.Ticker.paused;
   if (createjs.Ticker.paused) {
-    stage.addChild(game.pauseScreen);
+    game.addChild(game.pauseScreen);
+    createjs.Tween.get(game.pauseScreen,{ignoreGlobalPause:true,loop:true})
+    .to({alpha:0},600).to({alpha:1},600);
     _systemFunction = _systemWaitForClose;
   } else {
-    stage.removeChild(game.pauseScreen);
+    game.pauseScreen.alpha=1;
+    game.removeChild(game.pauseScreen);
+    createjs.Tween.removeTweens(game.pauseScreen);
     _systemFunction = _systemGamePlay;
   }
   if (game.backSound) game.backSound.paused = !game.backSound.paused;
@@ -185,8 +167,22 @@ function _systemWaitForClose() {
         game.gameOverScreen.y -= 1;
       }
       break;
-
-    default:
+    case STATE_GAME_PLAY:
+      switch (_nextSystemState) {
+        case STATE_NEW_LEVEL:
+          game.runLevelUp();
+          break;
+        case STATE_LEVEL_OUT:
+          game.runLevelOut();
+          break;
+        case STATE_GAME_OVER:
+          game.runGameOver();
+          break;
+      }
+      if (game.levelUp || game.gameOver) {
+        game.clearAfter();
+        _switchSystemState(_nextSystemState);
+      }
       break;
   }
 };
@@ -195,13 +191,13 @@ function _systemWaitForClose() {
  * **************自适应**********************************
  */
 var stageScale = 1;
-function _adapt(isH = false) {
+function _adapt(isV = false) {
   stage.width = stage.canvas.width;
   stage.height = stage.canvas.height;
   gameDiv.style.width = stage.width + "px";
   let stageWidth = document.documentElement.clientWidth,
     stageHeight = document.documentElement.clientHeight;
-  if (isH) {
+  if (isV) {
     //高度自适应
     stageScale = stageHeight / stage.height;
   } else {
@@ -227,8 +223,8 @@ function _adapt(isH = false) {
 function buildGame(GClass, isDamo) {
   if (GClass.codes) gframe.onkeydown(GClass);
   game = new GClass();
-  game.createPauseScreen();
   game.createScoreBoard();
+  game.createPauseScreen();
   if (!isDamo) {
     game.createTitleScreen();
     game.createInstructionScreen();
@@ -239,6 +235,7 @@ function buildGame(GClass, isDamo) {
     _switchSystemState(STATE_TITLE);
   } else {
     _waitComplete();
+    stage.addChild(game);
   }
 };
 
@@ -282,19 +279,22 @@ function _preloadGame(GClass, isDamo) {
 
 //按钮点击事件
 function _okButton(e) {
-  if (e.target.id == STATE_INSTRUCTION) {
-    _nextSystemState = STATE_INSTRUCTION;
-    stage.removeChild(game.titleScreen);
-  } else {
-    e.target.parent.removeChild(e.target);
-  }
+  e.target.parent.removeChild(e.target);
   _switchSystemState(_nextSystemState);
 };
 /***********************************gframe*************************************** */
 var gframe = {
+  style: {
+    textFont: "40px regul,Arial,Microsoft Yahei",
+    titleFont: "bold 60px regul,Arial,Microsoft Yahei",
+    scoreFont: "30px regul,Arial,Microsoft Yahei",
+    levelInFont: "bold 40px Microsoft Yahei",
+    color: "#fff",
+  },
   LevelInLevel: "关卡",//等级界面
   OKBUTTON: "okbutton",
   pannel: null,
+  fps: null,
   createrContainer(parent) {
     let c = new createjs.Container();
     c.name = "gameLayer";
@@ -306,7 +306,6 @@ var gframe = {
     for (let i = l; i >= 0; i--) {
       const element = container.children[i];
       if (element.active) {
-        // element.recycle();
         element.active = false;
         container.removeChild(element);
       } else if (element.htmlElement) {
@@ -324,16 +323,15 @@ var gframe = {
    * 建立舞台
    * @param {string} canvasId 
    * @param {false} isGL 是否为webgl模式
-   * @param {false} isH 是否为高度自适应
+   * @param {false} isV 是否为高度自适应
    */
-  buildStage(canvasId, isGL = false, isH = false) {
+  buildStage(canvasId, isGL = false, isV = false) {
     _systemFunction = _systemWaitForClose;
     //建立舞台
     if (!isGL) stage = new createjs.Stage(canvasId);
     else {
       stage = new createjs.StageGL(canvasId, { "antialias": true });
       stage.setClearColor(0x00000000);
-      // stage.setClearColor(0xA4AB61ff);
     }
     // createjs.DisplayObject._hitTestContext = stage.canvas.getContext("2d",{willReadFrequently: true});
     //开启鼠标经过事件
@@ -362,16 +360,17 @@ var gframe = {
       stage.update(e);
     });
     //自适应
-    _adapt(isH);
+    _adapt(isV);
 
   },
   /*********************预加载****************************
    * 
    * @param {Class} GClass 
    * @param {false} isDamo 跳过开始
+   * @param {string} basePath 
   */
   preload(GClass, isDamo, basePath = "../assets/") {
-    if (GClass.backgroundColor) stage.canvas.style.background = GClass.backgroundColor
+    if (GClass.backgroundColor) containerDiv.style.backgroundColor = GClass.backgroundColor
 
     if (queue != null) {
       queue.close();
@@ -401,9 +400,9 @@ var gframe = {
     keys.stepindex = 0;
     document.onkeydown = (e) => {
       let c = GClass.codes[e.keyCode];
-      if (_currentSystemState == STATE_GAME_PLAY && GClass.codes.hasOwnProperty(e.keyCode) && !keys[c]) {
+      if (GClass.codes.hasOwnProperty(e.keyCode) && !keys[c]) {
         keys[c] = true;
-        game.onRunGameKeydown()
+        if(_currentSystemState == STATE_GAME_PLAY)game.onRunGameKeydown(c)
         if (c == "pause") {
           _systemPause();
         } else if (c == "left" || c == "right" || c == "up" || c == "down") {
@@ -423,11 +422,9 @@ var gframe = {
               keys["rightRun"] = false;
             }
           }
-
+        } else {
+          pressedOther.push(c);
         }
-      } else if (_lastSystemState == STATE_TITLE && GClass.codes.hasOwnProperty(e.keyCode) && !keys[c]) {
-        keys[c] = true;
-        game.onTitleKeydown()
       }
     }
     document.onkeyup = (e) => {
@@ -440,20 +437,18 @@ var gframe = {
           if (c == "left") {
             releaseAtime = Date.now();
             keys["leftRun"] = false;
-          }
-          else if (c == "right") {
+          } else if (c == "right") {
             releaseDtime = Date.now();
             keys["rightRun"] = false;
           }
-        }
+        } else if (c != "pause") pressedOther.splice(pressedOther.indexOf(c), 1)
       }
     }
   },
   reset() {
     _switchSystemState(STATE_WAIT_FOR_CLOSE);
-    game._clearBefore();
-    game._clearAfter();
-    game = null;
+    game.clearBefore();
+    game.clearAfter();
     this.noKeydown();
     stage.removeEventListener("okbutton", _okButton);
     createjs.Ticker.paused = false;
@@ -466,4 +461,4 @@ var gframe = {
     }
   }
 };
-export { stage, game, queue, lib, keys, pressed, gframe };
+export { stage, game, queue, lib, keys, pressed, pressedOther, gframe };

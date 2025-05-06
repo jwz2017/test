@@ -1,4 +1,3 @@
-import { stage } from "./gframe.js";
 //网格碰撞检测
 export class GridCollision {
   constructor(width, height, gridSize) {
@@ -9,9 +8,9 @@ export class GridCollision {
     this._numRows = Math.ceil(this._height / this._gridSize);
     this._numCells = this._numCols * this._numRows;
   }
-  drawGrid() {
+  drawGrid(parent) {
     let shape = new createjs.Shape();
-    stage.addChildAt(shape, 0);
+    parent.addChildAt(shape, 0);
     shape.graphics.beginStroke("#555");
     for (let i = 0; i <= this._width; i += this._gridSize) {
       shape.graphics.moveTo(i, 0);

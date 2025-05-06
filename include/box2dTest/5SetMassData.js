@@ -25,10 +25,10 @@ export class SetMassData extends Box2dGame {
         body.SetSleepingAllowed(false)
         var semiCircle=EasyShape.createSemiCicle(100,50);
         var vertices=[];
-        vertices.push(new b2Vec2(50/PTM,0));
-        vertices.push(new b2Vec2(-50/PTM,0));
-        vertices.push(new b2Vec2(0,-150/PTM));
-        var triangle=createPolygonShape(vertices);
+        vertices.push(new createjs.Point(50/PTM,0));
+        vertices.push(new createjs.Point(-50/PTM,0));
+        vertices.push(new createjs.Point(0,-150/PTM));
+        var triangle=EasyShape.createPolygonShape(vertices);
         body.CreateFixture(semiCircle,1);
         body.CreateFixture(triangle,1);
 

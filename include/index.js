@@ -53,22 +53,22 @@ import { AStarTest } from "./moveTest2/2aStar.js";
 import { AstarMove } from "./moveTest2/2astarMove.js";
 import { RandomDice } from "./moveTest/0randomDice.js";
 import { ScoreTest } from "./moveTest/0scoreTest.js";
-import { DestroyFixture } from "./box2dTest/4destroyFixture.js";
-import { ApplyForce } from "./box2dTest/4ApplyForce.js";
-import { ApplyImpulse } from "./box2dTest/4ApplyImpulse.js";
-import { ApplyTorque } from "./box2dTest/4ApplyTorque.js";
-import { GetMass } from "./box2dTest/4GetMass.js";
-import { SetMassData } from "./box2dTest/4SetMassData.js";
-import { QueryAABB } from "./box2dTest/4QueryAABB.js";
-import { RayCast } from "./box2dTest/4RayCast.js";
-import { Gravition } from "./box2dTest/4Gravition.js";
-import { NomalImpulse } from "./box2dTest/4NomalImpulse.js";
-import { OneWayWall } from "./box2dTest/4OneWaywall.js";
-import { AniGravityAttach } from "./box2dTest/4AntiGravityAttach.js";
+import { DestroyFixture } from "./box2dTest/5destroyFixture.js";
+import { ApplyForce } from "./box2dTest/5ApplyForce.js";
+import { ApplyImpulse } from "./box2dTest/5ApplyImpulse.js";
+import { ApplyTorque } from "./box2dTest/5ApplyTorque.js";
+import { GetMass } from "./box2dTest/5GetMass.js";
+import { SetMassData } from "./box2dTest/5SetMassData.js";
+import { QueryAABB } from "./box2dTest/5QueryAABB.js";
+import { RayCast } from "./box2dTest/5RayCast.js";
+import { Gravition } from "./box2dTest/5Gravition.js";
+import { NomalImpulse } from "./box2dTest/5NomalImpulse.js";
+import { OneWayWall } from "./box2dTest/5OneWaywall.js";
+import { AniGravityAttach } from "./box2dTest/5AntiGravityAttach.js";
 import { MouseJoint } from "./box2dTest/6MouseJoint.js";
-import { PrimaticJoint } from "./box2dTest/6PrimaticJoint.js";
+import { PrismaticJoint } from "./box2dTest/6PrismaticJoint.js";
 import { RevoluteJoint } from "./box2dTest/6RevoluteJoint.js";
-import { Filter } from "./box2dTest/4Filter.js";
+import { Filter } from "./box2dTest/5Filter.js";
 import { DistanceJoint } from "./box2dTest/6DistanceJoint.js";
 import { WeldJoint } from "./box2dTest/6WeldJoint.js";
 import { PulleyJoint } from "./box2dTest/6PulleyJoint.js";
@@ -91,18 +91,24 @@ import { SpritesheetBuilder } from "./easelJsTest/SpritesheetBuilder.js";
 import { SpriteSheetMovie } from "./easelJsTest/SpriteSheetMovie.js";
 import { TextLinkTest } from "./easelJsTest/TextLink.js";
 import { ScaleBitmapTest } from "./easelJsTest/ScaleBitmapTest.js";
+import { BodyDef } from "./box2dTest/3BodyDef.js";
+import { CircleShape } from "./box2dTest/3CircleShape.js";
+import { FixtureDef } from "./box2dTest/3FixtureDef.js";
+import { CreateFixture } from "./box2dTest/4CreateFixture.js";
+import { RayCastDef } from "./box2dTest/4RayCast.js";
+import { Swindler } from "./box2dTest/7swindler.js";
 // window.onload = function () {
-    Box2D().then(function (r) {
-        Box2D = r;
-        using(Box2D, 'b2.+');
-    })
-    /*************游戏入口*****/
-    gframe.buildStage('canvas');
-    gframe.pannel=new Pannel()
+Box2D().then(function (r) {
+    Box2D = r;
+    using(Box2D, 'b2.+');
+})
+/*************游戏入口*****/
+gframe.buildStage('canvas');
+gframe.pannel = new Pannel(500,15)
 // };
 //关闭按钮点击
 closeGame.onclick = function (e) {
-    if(queue.loaded){
+    if (queue.loaded) {
         e.target.parentNode.style.display = "none";
         //应许滚动
         document.getElementsByTagName('body')[0].setAttribute('style', 'position:relative;');
@@ -140,11 +146,25 @@ function genduo(e, pro_con1) {
         e.target.textContent = "更多>";
     }
 }
-
-//练习内容点击
-window.productClick = function (a) {
+function _hidBody() {
     containerDiv.style.display = "block";
     //禁止滚动
     document.getElementsByTagName('body')[0].setAttribute('style', 'position:fixed; width:100%;');
-    gframe.preload(eval(a.title),true,"./assets/");
+}
+//练习内容点击
+window.productClick = function (a) {
+    _hidBody();
+    gframe.preload(eval(a.title), true, "./assets/");
+}
+//select内容选择
+var selectList = document.getElementsByClassName("box2dSelect");
+for (const box2dSelect of selectList) {
+    box2dSelect.addEventListener("change", function () {
+        if(this.value=="reset") return;
+        
+        _hidBody();
+        let title = this.options[box2dSelect.selectedIndex].title;
+        gframe.preload(eval(title), true, "./assets/");
+        this.blur()
+    })
 }

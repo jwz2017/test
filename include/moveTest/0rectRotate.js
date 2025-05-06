@@ -13,6 +13,10 @@ export class RectRotate extends Game {
         rect1.drawSpriteData(200,50)
 
         stage.addChild(rect0, rect1);
+
+
+        
+        
     }
     runGame() {
         rect0.rotation += 1;

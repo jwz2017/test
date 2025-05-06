@@ -103,7 +103,7 @@ function getCanvasDebugDraw() {
 
     debugDraw.DrawCircle = function (center, radius, color) {
         setColorFromDebugDrawCallback(color);
-        var dummyAxis = Box2D.b2Vec2(0, 0);
+        var dummyAxis = new Box2D.b2Vec2(0, 0);
         drawCircle(center, radius, dummyAxis, false);
     };
 

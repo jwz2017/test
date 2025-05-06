@@ -1,15 +1,14 @@
 import { stage } from "../../classes/gframe.js";
 import { Box2dGame } from "../../classes/Game.js";
-import { BoxActor } from "../../classes/actor.js";
+import { Actor, Vector } from "../../classes/actor.js";
 import { ScoreBoard } from "../../classes/screen.js";
+import { ContactListener } from "../../classes/box2d/ContactListener.js";
+import { BirdThrower } from "../../classes/box2d/actor/BirdThrower.js";
 //游戏变量;
 var bird, stone;
-var birdManager, textTip, contactListener;
+var birdManager, contactListener;
 export class NomalImpulse extends Box2dGame {
     static STONE = 5;
-    static GROUND = 999;
-    static PLATE = 998;
-    static PLAYER = 997;
     static STONELIFE = "stonelife";
     constructor() {
         super("NomalImpulse");
@@ -25,46 +24,39 @@ export class NomalImpulse extends Box2dGame {
         stone.life = 13;
         stone.SetUserData(NomalImpulse.STONE)
 
-        bird = new BoxActor(0,0,20,20);
-        bird.drawSpriteData(20,20);
-        bird.color="#f00"
-        bird.body.SetUserData(NomalImpulse.PLAYER)
-        this.addToPlayer(bird);
+        bird = EasyBody.createBox(0, 0, 20, 20);
+        bird.SetUserData(USER_DATA_PLAYER);
+        let a = new Actor();
+        a.drawSpriteData(20, 20, "#f00");
+        this.addToPlayer(a);
+        bird.actor = a;
+
         birdManager = new BirdThrower(this, bird, 100, 600);
         birdManager.maxThrowImpulse = 7;
-        this.addChild(textTip);
 
         contactListener = new ImpulseListener();
-
-
     }
     createScoreBoard() {
         this.scoreboard = new ScoreBoard();
         this.scoreboard.createTextElement(NomalImpulse.STONELIFE, stone.life);
+        this.scoreboard.x = stage.width - this.scoreboard.getBounds().width >> 1;
+        this.scoreboard.y = 10;
     }
     runGame(e) {
         super.runGame(e)
-        // this.moveActors(this.playerLayer);
-        bird.update();
         birdManager.drawTrail();
-        if (!bird.body.IsAwake() && birdManager.isBirdMoveing) {
+        if (!bird.IsAwake() && birdManager.isBirdMoveing) {
             birdManager.reset();
         }
-        //检测bird是否碰撞
-        // let a = bird.body.GetContactList();
-        // while (a.a) {
-        //     if (a.contact.IsTouching()&&a.other.GetUserData()==5) {
-        //         // console.log("d");
-        //     }
-        //     a = a.next;
-        // }
 
         this.hitResult();
     }
     hitResult() {
-        if (contactListener.isContact) {
-            contactListener.isContact = false;
-            stone.life += contactListener.imp;
+        if (contactListener.imp) {
+
+            stone.life -= contactListener.imp;
+            contactListener.imp = 0;
+            // contactListener.vv.zero();
             this.scoreboard.update(NomalImpulse.STONELIFE, stone.life);
             if (stone.life <= 0) {
                 EasyBody.splitsBody(stone, function (f) {
@@ -79,23 +71,29 @@ class ImpulseListener extends ContactListener {
     constructor() {
         super();
         this.imp = 0;
+        this.vv = new Vector();
+    }
+    PreSolve(contact) {
+        var result = this.sortByTwoBody(contact, USER_DATA_PLAYER, NomalImpulse.STONE)
+        if (result) {
+
+        }
     }
     BeginContact(contact) {
-        var result = this.sortByTwoBody(contact, NomalImpulse.PLAYER, NomalImpulse.STONE)
+        var result = this.sortByTwoBody(contact, USER_DATA_PLAYER, NomalImpulse.STONE)
         if (result) {
-            this.isContact = true;
-            let v = result[0].GetLinearVelocity();
             let m = new b2WorldManifold()
             contact.GetWorldManifold(m);
             let v1 = m.get_normal();
-            // let ang=Vector.angleBetween(new Vector(v.x,v.y),new Vector(v1.x,v1.y))
-            let cos = (v.x * v1.x + v.y * v1.y) / v.Length() * v1.Length();
-            this.imp =Math.min(v.Length() * cos,this.imp) 
-            this.imp = Math.floor(this.imp);
+
+            let v = result[0].GetLinearVelocity();
+            this.vv.setValues(v.x, v.y);
+            
+            let d = this.vv.dot(v1);
+            let p = Vector.mul(v1, d);
+            this.imp = this.imp || Math.round(p.length);
+            console.log(this.imp);
+
         }
     }
-    // PostSolve(contact,implus){
-    //     var result = this.sortByTwoBody(contact, NomalImpulse.PLAYER, NomalImpulse.STONE)
-    //     if(result)console.log(implus,implus.get_count());
-    // }
 }

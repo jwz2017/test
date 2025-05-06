@@ -14,11 +14,10 @@
   <title>h5Test</title>
   <script src="classes/createjs.min.js"></script>
   <script src="classes/dat.gui.min.js"></script>
-  <script src="classes/Box2D_v2.3.1_min.js"></script>
-  <!-- <script src="classes/Box2D_v2.2.1_min.js"></script> -->
-  <script src="classes/embox2d-helpers.js"></script>
-  <script src="classes/embox2d-html5canvas-debugDraw.js"></script>
-  <script src="classes/clipper.js"></script>
+  <script src="classes/box2d/Box2D_v2.3.1_min.js"></script>
+  <script src="classes/box2d/embox2d-helpers.js"></script>
+  <script src="classes/box2d/embox2d-html5canvas-debugDraw.js"></script>
+  <script src="classes/box2d/clipper.js"></script>
 
   <script src="assets/lib.js"></script>
   <!--04-->
@@ -123,74 +122,64 @@
                 <a href="#" title="ScoreTest" onclick="productClick(this)">ScoreTest</a>
               </li>
               <li>
-                <h4>Box2d 碰撞</h4>
-                <p>删除fixture</p>
-                <a href="#" title="DestroyFixture" onclick="productClick(this)">DestroyFixture</a>
-                <p>作用力</p>
-                <a href="#" title="ApplyForce" onclick="productClick(this)">ApplyForce</a>
-                <p>冲量</p>
-                <a href="#" title="ApplyImpulse" onclick="productClick(this)">ApplyImpulse</a>
-                <p>旋转扭力</p>
-                <a href="#" title="ApplyTorque" onclick="productClick(this)">ApplyTorque</a>
-                <p>抵消重力</p>
-                <a href="#" title="GetMass" onclick="productClick(this)">GetMass</a>
-                <p>不倒翁</p>
-                <a href="#" title="SetMassData" onclick="productClick(this)">SetMassData</a>
-                <p>鼠标点击</p>
-                <a href="#" title="QueryAABB" onclick="productClick(this)">QueryAABB</a>
-                <p>射线检测</p>
-                <a href="#" title="RayCast" onclick="productClick(this)">RayCast</a>
+                <h4>box2d属性</h4>
+                <select class="box2dSelect">
+                  <!-- <option value="reset" disabled selected hidden>请选择。。。</option> -->
+                  <option value="reset"  selected >请选择。。。</option>
+                  <option title="BodyDef">bodyDef属性</option>
+                  <option title="FixtureDef">fixture属性</option>
+                  <option title="CircleShape">圆形属性</option>
+                </select>
+                <h4>刚体操作</h4>
+                <select class="box2dSelect">
+                  <option value="reset"  selected >请选择。。。</option>
+                  <option title="CreateFixture">fixture创建</option>
+                  <option title="RayCastDef">rayCast属性</option>
+                </select>
+                <h4>box2d碰撞</h4>
+                <select class="box2dSelect">
+                  <option value="reset" selected >请选择。。。</option>
+                  <option title="DestroyFixture">删除fixture</option>
+                  <option title="ApplyForce">作用力</option>
+                  <option title="ApplyImpulse">冲量</option>
+                  <option title="ApplyTorque">旋转扭力</option>
+                  <option title="GetMass">抵消重力</option>
+                  <option title="SetMassData">不倒翁</option>
+                  <option title="QueryAABB">鼠标点击</option>
+                  <option title="RayCast">射线检测</option>
+                  <option title="Filter">碰撞删选</option>
+                  <option title="Gravition">引力作用</option>
+                  <option title="NomalImpulse">法向冲量</option>
+                  <option title="OneWayWall">单边通过</option>
+                  <option title="AniGravityAttach">粘贴效果</option>
+                </select>
+                <h4>box2d关节</h4>
+                <select class="box2dSelect">
+                  <option value="reset" selected >请选择。。。</option>
+                  <option title="MouseJoint">鼠标关节</option>
+                  <option title="PrismaticJoint">位移关节</option>
+                  <option title="RevoluteJoint">旋转关节</option>
+                  <option title="DistanceJoint">距离关节</option>
+                  <option title="WeldJoint">粘贴关节</option>
+                  <option title="PulleyJoint">滑轮关节</option>
+                  <option title="FrictionJoint">摩擦关节</option>
+                  <option title="GearJoint">齿轮关节</option>
+                  <option title="WheelJoint">中轴关节</option>
+                  <option title="RopeJoint">绳索关节</option>
+                  <option title="MotorJoint">马达关节</option>
+                </select>
+                <h4>box2d应用</h4>
+                <select class="box2dSelect">
+                  <option value="reset" selected >请选择。。。</option>
+                  <option title="SoftBody1">柔体1</option>
+                  <option title="SoftBody2">柔体2</option>
+                  <option title="ClipperDemo">clipper使用</option>
+                  <option title="WaterDome">水中浮力</option>
+                  <option title="IceBreaker">刚体切割</option>
+                  <option title="Swindler">关节碰撞todo</option>
+                </select>
               </li>
               <li>
-                <p>碰撞删选</p>
-                <a href="#" title="Filter" onclick="productClick(this)">Filter</a>
-                <p>引力作用</p>
-                <a href="#" title="Gravition" onclick="productClick(this)">Gravition</a>
-                <p>法向冲量</p>
-                <a href="#" title="NomalImpulse" onclick="productClick(this)">NomalImpulse</a>
-                <p>单边通过</p>
-                <a href="#" title="OneWayWall" onclick="productClick(this)">OneWayWall</a>
-                <p>粘贴效果</p>
-                <a href="#" title="AniGravityAttach" onclick="productClick(this)">AniGravityAttach</a>
-                <hr>
-                <h4>关节</h4>
-                <p>鼠标关节</p>
-                <a href="#" title="MouseJoint" onclick="productClick(this)">MouseJoint</a>
-                <p>移动关节</p>
-                <a href="#" title="PrimaticJoint" onclick="productClick(this)">PrimaticJoint</a>
-                <p>旋转关节</p>
-                <a href="#" title="RevoluteJoint" onclick="productClick(this)">RevoluteJoint</a>
-              </li>
-              <li>
-                <p>距离关节</p>
-                <a href="#" title="DistanceJoint" onclick="productClick(this)">DistanceJoint</a>
-                <p>粘贴关节</p>
-                <a href="#" title="WeldJoint" onclick="productClick(this)">WeldJoint</a>
-                <p>滑轮关节</p>
-                <a href="#" title="PulleyJoint" onclick="productClick(this)">PulleyJoint</a>
-                <p>摩擦关节</p>
-                <a href="#" title="FrictionJoint" onclick="productClick(this)">FrictionJoint</a>
-                <p>齿轮关节</p>
-                <a href="#" title="GearJoint" onclick="productClick(this)">GearJoint</a>
-                <p>中轴关节</p>
-                <a href="#" title="WheelJoint" onclick="productClick(this)">WheelJoint</a>
-                <p>绳索关节</p>
-                <a href="#" title="RopeJoint" onclick="productClick(this)">RopeJoint</a>
-                <p>马达关节</p>
-                <a href="#" title="MotorJoint" onclick="productClick(this)">MotorJoint</a>
-              </li>
-              <li>
-                <h4>应用</h4>
-                <p>柔体1</p>
-                <a href="#" title="SoftBody1" onclick="productClick(this)">SoftBody1</a>
-                <p>柔体2</p>
-                <a href="#" title="SoftBody2" onclick="productClick(this)">SoftBody2</a>
-                <p>clipper使用</p>
-                <a href="#" title="ClipperDemo" onclick="productClick(this)">ClipperDemo</a>
-                <p>水中浮力</p>
-                <a href="#" title="WaterDome" onclick="productClick(this)">WaterDome</a>
-                <p>刚体切割</p>
-                <a href="#" title="IceBreaker" onclick="productClick(this)">IceBreaker</a>
               </li>
             </ul>
             <!-- 扩展 -->
@@ -476,7 +465,7 @@
         <!-- <input type="text" id="inputText" placeholder="请输入姓名" style="position: absolute;visibility: hidden;"> -->
         <div id="gameScaleDom">
           <!-- 随舞台缩放 -->
-
+          <!-- <div id="testbed-play" type="button">button</div> -->
         </div>
         <canvas id="canvas" width="750" height="1334">
         </canvas>

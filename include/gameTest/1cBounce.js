@@ -58,7 +58,7 @@ class Bounce extends Game {
             "@": Pandle
         }
         this.backshape = new createjs.Shape;
-        this.backshape.graphics.clear().beginFill("#fff").drawRect(0, 0, this.width, this.height);
+        this.backshape.graphics.clear().beginFill("#222").drawRect(0, 0, this.width, this.height);
         this.addChildAt(this.backshape, 0);
     }
     createScoreBoard() {
@@ -66,31 +66,31 @@ class Bounce extends Game {
         this.scoreboard.createTextElement("score");
         this.scoreboard.createTextElement("level");
         this.scoreboard.createTextElement("lives");
-        this.y = this.scoreboard.getBounds().height;
+        let b=this.scoreboard.getBounds();
+        this.scoreboard.x=stage.width-b.width>>1;
+        this.y = b.height;
     }
     newGame(){
         this.lives=3;
-    }
-    waitComplete(){
-        stage.addChild(this.fps);
     }
     newLevel() {
         this.scoreboard.update("score", this.score);
         this.scoreboard.update("level", this.level);
         this.scoreboard.update("lives", this.lives);
         let plan = plans[this.level - 1];
-        this.createGridMap(plan,stepWidth,stepHeight, (ch, x,y) => {
+        this.createGridMap(plan,stepWidth,stepHeight, (ch,node) => {
             if (ch == "w") {
-                let node=this.createNode(x,y,Node.NOWALKABLE)
+                node.type=Node.NOWALKABLE;
                 let bg = new Actor(node.x * stepWidth, node.y * stepHeight);
                 bg.drawSpriteData(stepWidth,stepHeight)
                 this.addToFloor(bg)
             } else if (ch == "x" || ch == "l") {
-                let node=this.createNode(x,y,Node.NOWALKABLE)
+                node.type=Node.NOWALKABLE;
                 node.actor = new Brick(node.x * stepWidth, node.y * stepHeight, ch);
                 this.addToEnemy(node.actor)
             }
         });
+        stage.addChild(this.fps);
 
     }
     runGame() {
@@ -206,7 +206,7 @@ class Puck extends CirActor {
             game.lives++;
             game.scoreboard.update("lives", game.lives);
         }
-        game.clearNode(node.x,node.y)
+        node.init();
         actor.parent.removeChild(actor);
         if (game.enemyLayer.numChildren== 0) {
             game.levelUp = true;

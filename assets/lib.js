@@ -239,9 +239,9 @@ if (reversed == null) { reversed = false; }
 		this.btn1.addEventListener("click", ()=> {
 			this.dispatchEvent("okbutton",true);
 		});
-		this.btn2.addEventListener("click", ()=> {
-			this.btn2.dispatchEvent("okbutton",true);
-		});
+		//this.btn2.addEventListener("click", ()=> {
+		//	this.btn2.dispatchEvent("okbutton",true);
+		//});
 	}
 
 	// actions tween:

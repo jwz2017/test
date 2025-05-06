@@ -2,11 +2,12 @@ import { Game } from "../../classes/Game.js";
 import { Actor, MoveManage, Weapon } from "../../classes/actor.js";
 import { game, gframe, keys, queue, stage } from "../../classes/gframe.js";
 import { BackgroundV } from "../../classes/other.js";
-import { ScoreBoard } from "../../classes/screen.js";
+import { Fps, ScoreBoard } from "../../classes/screen.js";
 
 window.onload = function () {
     gframe.buildStage('canvas', true);
     gframe.preload(SpaceHero);
+    gframe.fps=new Fps(0,30)
 };
 var spriteSheet;
 var timeToEnemy, enemyIdex;
@@ -66,12 +67,6 @@ class SpaceHero extends Game {
         this.player.init();
         this.addToPlayer(this.player);
     }
-    // waitComplete(){
-    //     let a=new Explode();
-    //     stage.addChild(a)
-    //     console.log(a.rect,a.x,a.getBounds());
-    //     console.log(a.image.getBounds())
-    // }
     //移动背景
     runGame() {
         this.background.update();

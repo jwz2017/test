@@ -1,4 +1,4 @@
-import { stage, keys, pressed, gframe, game, queue } from "../../classes/gframe.js";
+import { stage, keys, pressed, gframe, game, queue, pressedOther } from "../../classes/gframe.js";
 import { Vector, Actor, JumpActor } from "../../classes/actor.js";
 import { Sparkles } from "../../classes/effect.js";
 import { Node, ScrollMapGame } from "../../classes/Game.js";
@@ -32,6 +32,7 @@ class LoaderBar1 extends LoaderBar {
 window.onload = function () {
     /*************游戏入口*****/
     gframe.buildStage('canvas', false);
+    gframe.pannel = new Pannel(70, 120);
     gframe.preload(Jump);
 };
 
@@ -40,7 +41,7 @@ var spriteSheet, step = 30, plans;
 var stage1, g;
 export class Jump extends ScrollMapGame {
     static LoaderBar = LoaderBar1;
-    static backgroundColor = null;
+    static backgroundColor = "#333";
     static loadBarItem = [{
         id: "loaderbar",
         src: "loaderbar/loaderbar.json",
@@ -109,7 +110,6 @@ export class Jump extends ScrollMapGame {
         };
 
         this.sparkle = new Sparkles(queue.getResult("sparkle"), stage.width, this.y);
-        this.pannel = new Pannel(this, 70, this.y - 40);
 
         this.fader = new createjs.Shape();
         var gfx = this.fader.graphics;
@@ -125,6 +125,7 @@ export class Jump extends ScrollMapGame {
         g.x = this.x;
         g.y = this.y;
         stage1.addChild(g);
+        
     }
     createScoreBoard() {
         this.scoreboard = new ScoreBoard();
@@ -132,41 +133,39 @@ export class Jump extends ScrollMapGame {
         this.scoreboard.createTextElement(Jump.LEVEL);
         this.scoreboard.createTextElement(Jump.LIVES);
         this.scoreboard.x = 100
-
     }
     newLevel() {
         this.scoreboard.update(Jump.SCORE, this.score);
         this.scoreboard.update(Jump.LEVEL, this.level);
         this.scoreboard.update(Jump.LIVES, this.lives);
         let plan = plans[this.level - 1];
-        this.createGridMap(plan, step, step, (ch, x, y) => {
-            let node
+        this.createGridMap(plan, step, step, (ch,node) => {
             let color = "rgba(128,128,128, 0)";
             let shape = new createjs.Shape();
             this.addToFloor(shape);
             switch (ch) {
                 case "x":
-                    this.createNode(x, y, Node.NOWALKABLE)
+                    node.type=Node.NOWALKABLE;
                     color = "#fff";
                     break;
                 case "!":
-                    this.createNode(x, y, Node.DEATH);
+                    node.type=Node.DEATH;
                     color = "rgb(255,100,100)";
                     break;
                 case "y":
-                    node = this.createNode(x, y, Node.NOWALKABLE);
+                    node.type=Node.NOWALKABLE;
                     node.costMultiplier = 0.5;
                     color = "#666";
                     break;
                 case "k":
-                    node = this.createNode(x, y, Node.NOWALKABLE);
+                    node.type=Node.NOWALKABLE;
                     node.actor = new K(node.x * step, node.y * step);
                     this.addToFloor(node.actor);
                     break;
                 default:
                     break;
             }
-            shape.graphics.beginStroke(color).beginFill(color).drawRect(x * step, y * step, step, step);
+            shape.graphics.beginStroke(color).beginFill(color).drawRect(node.x * step, node.y * step, step, step);
         });
         this.setActorScroll(this.player, this.width / 3, this.height / 3);
         g.contentSize = {
@@ -174,16 +173,18 @@ export class Jump extends ScrollMapGame {
             height: this.contentSize.height
         }
         g.setActorScroll(this.player, this.width / 3, this.height / 3);
+        this.scrollView();
+        stage1.addChild(this.fader)
+        g.playerLayer.addChild(this.player)
     }
     waitComplete() {
-        stage.addChild(this.pannel)
         stage.addChild(this.fps)
         stage.addChild(this.sparkle);
         // stage.addChild(this.fader);
         stage1.autoClear = false;
-        stage1.addChild(this.fader)
-        g.playerLayer.addChild(this.player)
-
+        // stage1.addChild(this.fader)
+        // g.playerLayer.addChild(this.player)
+        
     }
 
     runGame() {
@@ -200,7 +201,8 @@ export class Jump extends ScrollMapGame {
         g.scrollX = this.scrollX;
         g.scrollY = this.scrollY;
     }
-    clear() {
+    clearBefore() {
+        super.clearBefore();
         this.player.recycle();
         stage1.removeChild(this.fader)
         stage1.autoClear = true;
@@ -245,13 +247,11 @@ class JumpPlayer extends JumpActor {
             game.score += 20;
             game.scoreboard.update("score", game.score);
             actor.parent.removeChild(actor);
-            node.actor = null;
             if (!game.hasTypeOnContainer("coin", game.propLayer)) {
                 game.levelUp = true;
             }
         } else if (actor.type == "big") {
             actor.parent.removeChild(actor);
-            node.actor = null;
             if (this.status == "roll") {
                 this.stopAct();
             }
@@ -266,12 +266,15 @@ class JumpPlayer extends JumpActor {
                 this.act = a;
             });
         }
-        game.clearNode(node.x, node.y)
+        node.init();
     }
     startFloorAct() {
         if (keys.jump) this.jump();
         else if (keys.attack) this.attack();
-        else if (keys.skill1) this.skill1();
+        else if(pressedOther[pressedOther.length-1]=="skill1"){
+            this.skill1();
+            pressedOther.splice(pressedOther.indexOf("skill1"),1);
+        }
         else if (pressed[pressed.length - 1] == "down") {
             this.roll();
             pressed.splice(pressed.indexOf("down"), 1)
@@ -297,7 +300,7 @@ class JumpPlayer extends JumpActor {
         this.speed.y += this.gravity + this.offSpeedY;
         let rect = this.rect.clone();
         rect.y += this.speed.y;
-        let node = game.hitMap(rect, null, 0, (node) => {
+        let node = game.hitMap(rect,(node) => {
             this.chectHitProp(node);
         });
         if (node) {
@@ -309,9 +312,8 @@ class JumpPlayer extends JumpActor {
             }
         }
         else if (this._hitMove) {
-            this.hitFloor();
-            // this.plus(0, this.speed.y);
             this._hitMove = false;
+            this.hitFloor();
         } else {
             this.overhead();
         }
@@ -320,7 +322,7 @@ class JumpPlayer extends JumpActor {
         this.walk(pressed[pressed.length - 1], keys);
         let rect = this.rect.clone();
         rect.x += this.speed.x + this.offSpeedX;
-        let node = game.hitMap(rect, null, 0, (node) => {
+        let node = game.hitMap(rect,(node) => {
             this.chectHitProp(node);
         });
         if (node) {
@@ -372,8 +374,7 @@ class Lava extends Actor {
         super(xpos, ypos, step, step);
         this.speed.length = 1.6;
         this.type = "lava";
-        this._color = "rgb(255,100,100)";
-        this.drawSpriteData(step, step);
+        this.drawSpriteData(step, step,"rgb(255,100,100)");
         if (ch == "=") {
         } else if (ch == "|") {
             this.speed.angle = Math.PI / 2;
@@ -402,8 +403,7 @@ class MoveBrick extends Actor {
         super(xpos, ypos, 90, 15);
         this.speed.length = 1.5;
         this.type = "move";
-        this._color = "#0f0";
-        this.drawSpriteData(90, 15);
+        this.drawSpriteData(90, 15,"#0f0");
     }
     act() {
         var newrect = this.rect.clone();
@@ -420,8 +420,7 @@ class MoveBrick extends Actor {
 class Coin extends Actor {
     constructor(xpos, ypos) {
         super(xpos, ypos, 0.6 * step, 0.6 * step);
-        this._color = "rgb(241,229,89)";
-        this.drawSpriteData(0.6 * step, 0.6 * step);
+        this.drawSpriteData(0.6 * step, 0.6 * step,"rgb(241,229,89)");
         this.angleSpeed = 0.08;
         this.wobbleDist = 2.1;
         this.angle = Math.random() * Math.PI * 2;
@@ -441,7 +440,6 @@ class Big extends Coin {
     constructor(xpos, ypos) {
         super(xpos, ypos);
         this.type = "big";
-        // this.scaleX = this.scaleY = 0.6;
         this.scale = 0.6;
     }
 
@@ -451,8 +449,7 @@ class Big extends Coin {
 class K extends Actor {
     constructor(xpos, ypos) {
         super(xpos, ypos);
-        this._color = "#fff";
-        this.drawSpriteData(step, 0.5 * step);
+        this.drawSpriteData(step, 0.5 * step,"#fff");
         this.plus(0, 0.5 * step);
     }
 }

@@ -9,13 +9,7 @@ export class AStarTest extends Game {
         super("AStarTest", numCols * step, numRows * step);
         this.x = stage.width - this.width >> 1;
         this.y = stage.height - this.height >> 1;
-        for (let i = 0; i < numCols; i++) {
-            this.nodes[i] = [];
-            for (let j = 0; j < numRows; j++) {
-                let n = this.nodes[i][j] = new Node(i, j);
-                n.type = Node.WALKABLE;
-            }
-        }
+        this.createGrid(step);
         astar = new AStar(this, this.nodes, step)
         astar.setStartNode(0, 2);
         astar.setEndNode(26, 28);
@@ -23,7 +17,7 @@ export class AStarTest extends Game {
         this.addEventListener("click", (e) => {
             let xpos = Math.floor(e.localX / step);
             let ypos = Math.floor(e.localY / step);
-            let t = this.getNode(xpos, ypos).type == Node.WALKABLE ? Node.NOWALKABLE : Node.WALKABLE;
+            let t = this.getNode(xpos, ypos).type == 0? Node.NOWALKABLE : 0;
             this.setNodeType(xpos, ypos, t);
             astar.drawGrid();
             this.findPath();

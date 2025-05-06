@@ -1,24 +1,18 @@
 import { game } from "./gframe.js";
 //向量角色类**************************************************************************
 class Vector {
-  //计算两个向量角度
-  static angleBetween = function (v1, v2) {
-    if (!v1.isNormalized()) v1 = v1.clone().normalize();
-    if (!v2.isNormalized()) v2 = v2.clone().normalize();
-    return Math.acos(v1.dot(v2));
-  }
   //计算两条线段的焦点  null为不相交
   static getCrossPoint(a1, a2, b1, b2) {
     let va = new Vector(a2.x - a1.x, a2.y - a1.y);
 
     let a1b1 = new Vector(b1.x - a1.x, b1.y - a1.y);
     let a1b2 = new Vector(b2.x - a1.x, b2.y - a1.y);
-    if (va.crossProd(a1b1) * va.crossProd(a1b2) > 0) return null;
+    if (va.crossProd(a1b1) * va.crossProd(a1b2) > 0) return;
 
     let vb = new Vector(b2.x - b1.x, b2.y - b1.y);
     let b1a1 = new Vector(a1.x - b1.x, a1.y - b1.y);
     let b1a2 = new Vector(a2.x - b1.x, a2.y - b1.y);
-    if (vb.crossProd(b1a1) * vb.crossProd(b1a2) > 0) return null;
+    if (vb.crossProd(b1a1) * vb.crossProd(b1a2) > 0) return;
 
     let lenA = b1a1.crossProd(va);
     let lenB = vb.crossProd(va);
@@ -72,7 +66,7 @@ class Vector {
   dot(v) {
     return this.x * v.x + this.y * v.y;
   }
-  //外积 >0:v2与v1夹角0——180，v2在右侧
+  //外积 >0:v2与v1夹角0——180，v2在左侧
   crossProd(v2) {
     return this.x * v2.y - this.y * v2.x;
   }
@@ -195,9 +189,9 @@ class Actor extends createjs.Container {
   init() {
 
   }
-  setSpriteData(spriteSheet, animation, { imageScale = 1, rotation = 0, offsetX = 0, offsetY = 0,isinit=true } = {}) {
+  setSpriteData(spriteSheet, animation, { imageScale = 1, rotation = 0, offsetX = 0, offsetY = 0, isinit = true } = {}) {
     //显示辅助矩形
-    if (this.image&&isinit) this.removeChild(this.image);
+    if (this.image && isinit) this.removeChild(this.image);
     if (spriteSheet instanceof createjs.SpriteSheet) {
       this.image = new createjs.Sprite(spriteSheet, animation);
     } else {
@@ -214,12 +208,14 @@ class Actor extends createjs.Container {
     this._setRect();
   }
   drawSpriteData(width, height, color) {
+    this._hit=null;
     this._color = color || this._color;
     if (!(this.image instanceof createjs.Shape)) {
       this.image = new createjs.Shape();
       this.addChild(this.image);
     }
     this.drawShape(width, height);
+    this.image.setBounds(-width / 2, -height / 2, width, height);
 
     this._setRect();
   }
@@ -232,11 +228,10 @@ class Actor extends createjs.Container {
     this._setHit();
   }
   _setHit() {
-    this._hit = Math.sqrt(this._rect.width * this._rect.width + this._rect.height * this._rect.height) / 2;
+    this._hit =this._hit|| Math.sqrt(this._rect.width * this._rect.width + this._rect.height * this._rect.height) / 2;
   }
   drawShape(width, height) {
     this.image.graphics.clear().beginFill(this._color).drawRect(-width / 2, -height / 2, width, height);
-    this.image.setBounds(-width / 2, -height / 2, width, height);
   }
 
 
@@ -254,8 +249,10 @@ class Actor extends createjs.Container {
   }
   set color(val) {
     this._color = val;
-    let b = this.image.getBounds();
-    this.drawShape(b.width, b.height);
+    if (this.image instanceof createjs.Shape) {
+      let b = this.image.getBounds();
+      this.drawShape(b.width, b.height);
+    }
   }
   get hit() {
     return this._hit * this.scale;
@@ -370,13 +367,12 @@ class CirActor extends Actor {
   drawShape(width) {
     let radius = width / 2
     this.image.graphics.clear().beginRadialGradientFill(["#c9c9c9", this._color], [0, 1], radius / 3, -radius / 3, 0, radius / 6, -radius / 6, radius).drawCircle(0, 0, radius);
-    this.image.setBounds(-radius, -radius, width, width);
   }
   drawSpriteData(width, color) {
-    super.drawSpriteData(width, null, color)
+    super.drawSpriteData(width, width, color)
   }
   _setHit() {
-    this._hit = this.rect.width / 2;
+    this._hit=this._hit||this.rect.width / 2;
   }
 }
 class SteeredActor extends Actor {
@@ -387,10 +383,12 @@ class SteeredActor extends Actor {
    * @param {15} size 
    * @param {true} IsShape 
    */
-  constructor(xpos, ypos, width, height) {
-    super(xpos, ypos, width, height);
+  constructor(xpos, ypos, width) {
+    super(xpos, ypos, width, width);
   }
-
+  drawSpriteData(width,color){
+    super.drawSpriteData(width,width,color);
+  }
   drawShape(width) {
     this._color = "#ffffff";
     this.shipFlame = new createjs.Shape();
@@ -418,7 +416,6 @@ class SteeredActor extends Actor {
     g.lineTo(-width / 5, -width / 5); //lnotch
     g.lineTo(-width / 2.5, -width / 3.3); //lpoint
     g.lineTo(-width / 5, -0); //ship
-    this.image.setBounds(-width / 2, -width / 2, width, width);
   }
 }
 //斜面反弹类
@@ -670,96 +667,8 @@ class JumpActor extends Actor {
   get idle() {
     return this.status == "walk" || this.status == null || this.status == "run"
   }
-
 }
 
-//box2d对象----------------方形
-class BoxActor extends Actor {
-  constructor(xpos, ypos) {
-    super(xpos, ypos);
-  }
-  drawSpriteData(width, height) {
-    super.drawSpriteData(width, height);
-    this.createBody();
-  }
-  setSpriteData(spriteSheet, animation, obj = {}) {
-    super.setSpriteData(spriteSheet, animation, obj)
-    this.createBody();
-  }
-  createBody() {
-    this.body = EasyBody.createBox(this.x, this.y, this.rect.width, this.rect.height);
-  }
-  act() {
-    this.update();
-  }
-  update() {
-    this.rotation = this.body.GetAngle() * (180 / Math.PI);
-    let p = this.body.GetPosition();
-    this.x = p.x * PTM;
-    this.y = p.y * PTM;
-  }
-  get active() {
-    return this._active;
-  }
-  set active(val) {
-    super.active = val;
-    this.body.SetActive(val);
-  }
-}
-//****************************球形 */
-class BoxBall extends BoxActor {
-  constructor(xpos, ypos) {
-    super(xpos, ypos);
-    this.TROUR = 40;
-    this.maxSpeed = 300 * Math.PI / 180;
-  }
-  createBody() {
-    this.body = EasyBody.createCircle(this.x, this.y, this.rect.width / 2);
-    this.body.SetSleepingAllowed(false);
-    this.body.SetAngularDamping(1);
-    this.impulse = new b2Vec2(0, 0);
-    this.playerTorque = 0;
-    this.body.isReadyToJump = false;
-    this.body.SetUserData(USER_DATA_BALL);
-    // this.body.GetFixtureList().SetDensity(10);
-    // this.body.ResetMassData();
-  }
-  drawShape(width) {
-    let radius = width / 2;
-    this.image.graphics.clear().beginRadialGradientFill(["#c9c9c9", this._color], [0, 1], radius / 3, -radius / 3, 0, radius / 6, -radius / 6, radius).drawCircle(0, 0, radius);
-    this.image.setBounds(-radius, -radius, width, width);
-  }
-  drawSpriteData(width) {
-    super.drawSpriteData(width);
-  }
-  act(keys) {
-    this.playerTorque = 0;
-    if (keys.left) this.playerTorque = -this.TROUR;
-    if (keys.right) this.playerTorque = this.TROUR;
-    if (keys.up) {
-      if (this.body.isReadyToJump) {
-        this.impulse.y = -this.body.GetMass() * 8;
-        this.body.ApplyLinearImpulse(this.impulse, this.body.GetPosition());
-        this.body.isReadyToJump = false;
-      }
-    }
-    this.body.ApplyTorque(this.playerTorque);
-    this._limitAngleVelocity(this.body, this.maxSpeed)
-    if (keys.left || keys.right) {
-      let v = this.body.GetLinearVelocity();
-      v.x = this.body.GetAngularVelocity() * 20 / PTM;
-      this.body.SetLinearVelocity(v);
-    }
-    this.update();
-  }
-  _limitAngleVelocity(body, speedMax) {
-    var av = body.GetAngularVelocity();
-    if (Math.abs(av) > speedMax) {
-      av = Math.abs(av) / av * speedMax;
-      body.SetAngularVelocity(av);
-    }
-  }
-}
 
 class Weapon extends createjs.Container {
   /**
@@ -1043,7 +952,10 @@ class MoveManage {
         if (dist < circle.hit + this.avoidBuffer && projection.length < feeler.length) {
           //计算出一个转90度的力
           let force = Vector.mul(heading, actor.maxSpeed);
-          force.angle += difference.sign(actor.speed) * Math.PI / 2;
+
+          let a=difference.crossProd(actor.speed)>0?1:-1;
+          force.angle += a* Math.PI / 2;
+          // force.angle += difference.sign(actor.speed) * Math.PI / 2;
           // 通过离障碍物的距离，调整力度大小，使之足够小但又能避开 
           force.mul(1 - projection.length / feeler.length);
           //叠加于转向力上
@@ -1120,4 +1032,4 @@ class MoveManage {
     return centerPos.dist(targetcenterPos) < this.tooCloseDist;
   }
 }
-export { Vector, Actor, CirActor, BounceActor, SteeredActor, JumpActor, BoxActor, BoxBall, Weapon, MoveManage };
+export { Vector, Actor, CirActor, BounceActor, SteeredActor, JumpActor, Weapon, MoveManage };

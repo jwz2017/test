@@ -4,7 +4,7 @@ import { Node } from "./Game.js";
  * astar寻路
  */
 export class AStar {
-  constructor(parent, nodes, step) {
+  constructor(shapeParent, nodes, step) {
     // this._heuristic=this._manhattan;
     // this._heuristic=this._euclidian;
     this._heuristic = this._diagonal;
@@ -15,8 +15,8 @@ export class AStar {
     this.numRows = this.nodes[0].length;
     this.step = step;
     this._shape = new createjs.Shape();
-    if (parent) {
-      parent.addChild(this._shape);
+    if (shapeParent) {
+      shapeParent.addChild(this._shape);
       this._shape.cache(0,0,this.numCols*step,this.numRows*step)
     }
   }
@@ -69,7 +69,7 @@ export class AStar {
   }
 
   _getColor(node) {
-    if (node.type != Node.WALKABLE) return "#000";
+    if (node.type == Node.NOWALKABLE) return "#000";
     else if (node == this._startNode) return "#666666";
     else if (node == this._endNode) return "#666666";
     else return "#ffffff";
@@ -85,7 +85,7 @@ export class AStar {
       for (let i = startX; i <= endX; i++) {
         for (let j = startY; j <= endY; j++) {
           let test = this.nodes[i][j];
-          if (test === node || test.type != Node.WALKABLE || this.nodes[node.x][test.y].type != Node.WALKABLE || this.nodes[test.x][node.y].type != Node.WALKABLE) {
+          if (test === node || test.type == Node.NOWALKABLE || this.nodes[node.x][test.y].type == Node.NOWALKABLE || this.nodes[test.x][node.y].type == Node.NOWALKABLE) {
             continue;
           }
           let cost = this._straightCost;

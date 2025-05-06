@@ -1,4 +1,4 @@
-import { BodyToSlice } from "../../classes/Clipper-help.js";
+import { BodyToSlice } from "../../classes/box2d/Clipper-help.js";
 import { Box2dGame } from "../../classes/Game.js";
 export class IceBreaker extends Box2dGame {
     constructor() {
@@ -12,6 +12,8 @@ export class IceBreaker extends Box2dGame {
         this.drawMouseMove(()=>{
             this.rayCast.rayCast(this.mouseStart,this.mouseEnd);
         });
+
+
     }
     containerDebugDraw(){
         super.containerDebugDraw();

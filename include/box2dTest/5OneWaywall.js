@@ -1,6 +1,8 @@
-import { stage, keys } from "../../classes/gframe.js";
+import { stage, keys, pressed } from "../../classes/gframe.js";
 import { Box2dGame} from "../../classes/Game.js";
-import {BoxBall } from "../../classes/actor.js";
+import { CirActor } from "../../classes/actor.js";
+import { Box2DBall } from "../../classes/box2d/actor/box2dBall.js";
+import { BallMoveContactListener } from "../../classes/box2d/ContactListener.js";
 var player, ground, platform, contactListener;
 export class OneWayWall extends Box2dGame {
     static codes={
@@ -16,9 +18,12 @@ export class OneWayWall extends Box2dGame {
         ground.SetUserData(USER_DATA_GROUND);
         ground.GetFixtureList().SetRestitution(0);
 
-        player = new BoxBall(15,10);
-        player.drawSpriteData(40)
-        this.addChild(player);
+        let b=EasyBody.createCircle(20,22,20);
+        let a=new CirActor();
+        a.drawSpriteData(40);
+        this.addToPlayer(a);
+        player=new Box2DBall(b,a);
+
 
         platform = EasyBody.createPlatform(150, 545, 100, 10);
         platform.SetUserData(USER_DATA_PLANET);

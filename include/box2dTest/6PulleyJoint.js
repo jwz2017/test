@@ -1,6 +1,8 @@
 import { keys } from "../../classes/gframe.js";
 import { Box2dGame } from "../../classes/Game.js";
-import { BoxBall } from "../../classes/actor.js";
+import { CirActor } from "../../classes/actor.js";
+import { BallMoveContactListener } from "../../classes/box2d/ContactListener.js";
+import { Box2DBall } from "../../classes/box2d/actor/box2dBall.js";
 //游戏变量;
 var contactListener;
 var player;
@@ -39,19 +41,26 @@ export class PulleyJoint extends Box2dGame {
         groundA=new b2Vec2(200/PTM,100/PTM),
         groundB=new b2Vec2(300/PTM,100/PTM);
 
-        let jointDef=new b2PulleyJointDef();
-        jointDef.Initialize(bodyA,bodyB,groundA,groundB,anchorA,anchorB,1);
-
-        world.CreateJoint(jointDef);
+        EasyWorld.createPulleyJoint({
+            bodyA:bodyA,
+            bodyB:bodyB,
+            groundAnchorA:groundA,
+            groundAnchorB:groundB,
+            anchorA:anchorA,
+            anchorB:anchorB,
+            
+        })
     }
     createBodies(){
         EasyBody.createRectangle(0,0,this.width,this.height,false,true)
         EasyBody.createBox(50,350,100,20,0).SetUserData(USER_DATA_GROUND);
         EasyBody.createBox(500,150,100,20,0).SetUserData(USER_DATA_GROUND);
 
-        player=new BoxBall(50,100);
-        player.drawSpriteData(40)
-        this.addChild(player);
+        let b=EasyBody.createCircle(50,100,20);
+        let a=new CirActor();
+        a.drawSpriteData(40);
+        this.addToBox2D();
+        player=new Box2DBall(b);
     }
 
 }

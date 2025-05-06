@@ -36,17 +36,9 @@ export class StageGL extends Box2dGame {
     }
     createTitleScreen(){
         this.titleScreen=new lib.Title();
-    }
-    createInstructionScreen() {
-        this.instructionScreen=new BasicScreen();
-        let t=this.instructionScreen.createText(this.instructionText);
-        t.x=stage.width-t.getBounds().width>>1;
-        t.y=100;
-        let btn=new PushButton(this.instructionScreen,"返回",()=>{
-            this.instructionScreen.dispatchEvent(gframe.OKBUTTON,true)
-        },0,0,250,60,new mc.RoundRect(30));
-        btn.x=stage.width-btn.getBounds().width>>1;
-        btn.y=stage.height*2/3;
+        this.titleScreen.btn2.on("click",()=>{
+            stage.addChild(this.instructionScreen)
+        })
     }
     waitComplete() {
         let f = this.player.body.GetFixtureList();

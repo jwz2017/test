@@ -1,75 +1,135 @@
-import { stage, keys } from "../../classes/gframe.js";
-import { Box2dGame } from "../../classes/Game.js";
-import {  BoxBall} from "../../classes/actor.js";
-//游戏变量;
-var ball, closeBody;
-var point1, point2, closePoint=new createjs.Point(), rayAngle = Math.PI / 2, rayLength = 500 / PTM;
-var ANGLE_MAX = Math.PI * 8 / 9;
-var ANGLE_MIN = Math.PI / 9;
-var angle_speed = Math.PI / 200;
-var contactListener;
-var raycastCallback;
-export class RayCast extends Box2dGame {
-    static codes={
-        65: "left",
-        87: "up",
-        68: "right",
-        32: "pause",
-    }
+import { BodyDef } from "./3BodyDef.js";
+
+export class RayCastDef extends BodyDef {
     constructor() {
-        super("RayCast");
-        EasyBody.createRectangle(0, 0, stage.width, stage.height);
-
-        ball = new BoxBall(200, 400);
-        ball.drawSpriteData(50)
-        
-        ball.body.GetFixtureList().SetRestitution(0);
-        // ball.body.SetAwake(false)
-        this.addToPlayer(ball);
-
-        
-
-        var ground = EasyBody.createBox(380, 650, 550, 100, 0,);
-        ground.SetUserData(USER_DATA_GROUND);
-
-        point1 = new b2Vec2(stage.width / 2 / PTM, stage.height / 2 / PTM);
-        point2 = new b2Vec2();
-        contactListener = new BallMoveContactListener();
-
-        raycastCallback = new Box2D.JSRayCastCallback();
-        raycastCallback.ReportFixture = function (fixture, point, normal, fraction) {
-            var p = Box2D.wrapPointer(point, b2Vec2)
-            var f = Box2D.wrapPointer(fixture, b2Fixture)
-            closePoint.setValues(p.x,p.y);
-            closeBody = f.GetBody();
-            return fraction
-        }
-    }
-    runGame(e) {
-        super.runGame(e)
-
-        this.moveRay();
-        world.RayCast(raycastCallback, point1, point2);
-        ball.act(keys);
-    }
-    moveRay() {
-        if (rayAngle < ANGLE_MIN) {
-            angle_speed *= -1;
-            rayAngle = ANGLE_MIN;
-        } else if (rayAngle > ANGLE_MAX) {
-            angle_speed *= -1;
-            rayAngle = ANGLE_MAX;
-        }
-        rayAngle += angle_speed;
-        point2.x = point1.x + rayLength * Math.cos(rayAngle);
-        point2.y = point1.y + rayLength * Math.sin(rayAngle);
-    }
-    containerDebugDraw() {
-        super.containerDebugDraw();
-        drawSegment1(point1,closePoint);
-        if (closeBody != null && closeBody.GetUserData() == USER_DATA_BALL) {
-            drawCircle1(closeBody.GetPosition(),50/PTM,false,"255,255,255")
-        }
+        super();
+        this.demoList=[
+            RayCast1
+        ]
     }
 }
 
+
+
+import { game, stage } from "../../classes/gframe.js";
+import { AbstractDemo } from "./3BodyDef/AbstractDemo.js";
+var p1, p2, tipArray, callBack, pointArray, normalArray, callIndex = 0;
+var callBackString = ["0", "1", "fraction", "-1"];
+export class RayCast1 extends AbstractDemo {
+    constructor() {
+        super("what is raycast", 0);
+        p1 = p1 || new b2Vec2();
+        p2 = p2 || new b2Vec2();
+        callBack = new Box2D.JSRayCastCallback();
+    }
+    ready() {
+        tipArray = [];
+        pointArray = [];
+        normalArray = [];
+        callIndex=0;
+        this.createBodies();
+        this.createTip();
+
+        this.switchCallBack(0);
+        
+
+        p2.Set(600 / PTM, 200 / PTM);
+        p1.Set(100 / PTM, 200 / PTM);
+
+        world.RayCast(callBack, p1, p2);
+    }
+    
+    createBodies() {
+        let i = 0, px, py, size, random, b;
+        while (++i < 40) {
+            px = Math.random() * 450 + 25;
+            py = Math.random() * 350 + 25;
+            size = Math.random() * 20 + 20;
+            random = Math.random();
+            if (random < 0.3) {
+                b = EasyBody.createBox(px, py, size, size);
+            } else if (random < 0.6) {
+                b = EasyBody.createRegular(px, py, size, 3);
+            } else {
+                b = EasyBody.createCircle(px, py, size / 2);
+            }
+            b.SetTransform(b.GetPosition(), Math.random() * Math.PI);
+
+        }
+
+    }
+    createTip() {
+        let l;
+        for (let i = 1; i < 20; i++) {
+            l = new createjs.Text(i,"16px Arial");
+            l.textAlign="center";
+            l.textBaseline="middle"
+            // game.container.addChild(l);
+            game.playerLayer.addChild(l)
+            tipArray.push(l);
+        }
+    }
+    switchCallBack(i) {
+        callBack.ReportFixture = this.callBackNormal;
+        if (i == 3) callBack.ReportFixture = this.callBackNegative;
+        game.editValue("callBack:" + callBackString[i])
+    }
+    callBackNormal(f1, p1, n1, fraction) {
+        var p = Box2D.wrapPointer(p1, b2Vec2)
+        var f = Box2D.wrapPointer(f1, b2Fixture)
+        var n = Box2D.wrapPointer(n1, b2Vec2)
+        pointArray.push(new createjs.Point(p.x, p.y));
+        normalArray.push(new createjs.Point(n.x, n.y));
+
+        if (callIndex == 0) return 0;
+        if (callIndex == 1) return 1;
+        return fraction;
+    }
+    callBackNegative(f1, p1, n1, fraction) {
+        var p = Box2D.wrapPointer(p1, b2Vec2)
+        var f = Box2D.wrapPointer(f1, b2Fixture)
+        var n = Box2D.wrapPointer(n1, b2Vec2)
+        if(f.GetShape().GetType()==2){
+            return -1
+        }else{
+            pointArray[0]=new createjs.Point(p.x,p.y);
+            normalArray[0]=new createjs.Point(n.x,n.y);
+        }
+        return fraction;
+    }
+    mouseEventHandle(e) {
+        if (e.type == "stagemousedown") {
+            p2.x = stage.mouseX / PTM;
+            p2.y = stage.mouseY / PTM;
+
+            pointArray = [];
+            normalArray = [];
+            tipArray.forEach(element => {
+                element.alpha = 0;
+            });
+            world.RayCast(callBack, p1, p2);
+        }
+    }
+    onKeyDown(c){
+        if(c=="reset"){
+            if(++callIndex>3) callIndex=0;
+            this.switchCallBack(callIndex); 
+        }
+    }
+    debugDraw() {
+        drawCircle1(p1, 5 / PTM)
+        drawSegment1(p1, p2)
+
+        for (let i = 0; i < pointArray.length; i++) {
+            const tmpPoint = pointArray[i];
+            const tmpNormal = normalArray[i];
+
+            drawCircle1(tmpPoint, 10/ PTM, false, "0,0,0")
+            drawSegment1(tmpPoint,new createjs.Point(tmpPoint.x+tmpNormal.x,tmpPoint.y+tmpNormal.y));
+
+            tipArray[i].x=tmpPoint.x*PTM;
+            tipArray[i].y=tmpPoint.y*PTM;
+            tipArray[i].alpha=1;
+        }
+    }
+}

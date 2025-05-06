@@ -28,6 +28,7 @@ export class GetMass extends Box2dGame {
         super.runGame(e);
         if(isApplyForce){
             bird.ApplyForce(force,bird.GetPosition());
+            
         }
 
     }

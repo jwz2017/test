@@ -30,6 +30,7 @@ export class SoftBody1 extends Box2dGame {
         anchor.Set(p2.x-p1.x,p2.y-p1.y);
         anchor.op_mul(0.5);
         anchor.op_add(p1);
+        
         this.weldJointDef.Initialize(ba, bb, anchor);
         this.weldJointDef.set_frequencyHz(frequencyHz);
         this.weldJointDef.set_dampingRatio(dampingRatio);

@@ -1,4 +1,4 @@
-import { Vector } from "./actor.js";
+import { Vector } from "../actor.js";
 //图形交集
 class Clipper {
     static pathToVec(path) {

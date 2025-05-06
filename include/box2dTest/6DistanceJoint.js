@@ -1,6 +1,8 @@
 import { stage, keys } from "../../classes/gframe.js";
 import { Box2dGame } from "../../classes/Game.js";
-import { BoxBall } from "../../classes/actor.js";
+import { CirActor } from "../../classes/actor.js";
+import { BallMoveContactListener } from "../../classes/box2d/ContactListener.js";
+import { Box2DBall } from "../../classes/box2d/actor/box2dBall.js";
 
 //游戏变量;
 var player,contactListener;
@@ -30,23 +32,28 @@ export class DistanceJoint extends Box2dGame {
         //连杆关节
         let anchorA=new b2Vec2(250/PTM,210/PTM);
         let anchorB=new b2Vec2(250/PTM,110/PTM);
-        let jointDef=new b2DistanceJointDef();
-        jointDef.Initialize(bodyA,bodyB,anchorA,anchorB);
-        world.CreateJoint(jointDef);
+        EasyWorld.createDistanceJoint({
+            bodyA:bodyA,
+            bodyB:bodyB,
+            anchorA:anchorA,
+            anchorB:anchorB,
+        })
+        
         //位移关节
-        let anchor=bodyB.GetPosition();
-        bodyA=EasyBody.getEmptyBody(anchor.x*PTM,anchor.y*PTM);
-        let verticalAxis=new b2Vec2(0,1);
-        let verticalJointDef=new b2PrismaticJointDef();
-        verticalJointDef.Initialize(bodyA,bodyB,anchor,verticalAxis);
-        world.CreateJoint(verticalJointDef);
+        EasyWorld.createPrismaticJoint({
+            bodyB:bodyB,
+            axis:setTempV(0,1)
+        })
     }
     createBodies(){
         EasyBody.createRectangle(0,0,stage.width,stage.height);
-        player=new BoxBall(50,100);
-        player.drawSpriteData(30)
-        this.addChild(player);
-
+        
+        let b=EasyBody.createCircle(50,100,25);
+        let a=new CirActor();
+        a.drawSpriteData(50);
+        this.addToBox2D(a);
+        player=new Box2DBall(b,a);
+        
         EasyBody.createBox(50,200,100,20,0).SetUserData(USER_DATA_GROUND);
         EasyBody.createBox(500,200,100,20,0).SetUserData(USER_DATA_GROUND);
 

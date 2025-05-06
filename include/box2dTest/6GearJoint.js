@@ -1,6 +1,7 @@
 import { stage, keys } from "../../classes/gframe.js";
 import { Box2dGame } from "../../classes/Game.js";
-import { BoxBall } from "../../classes/actor.js";
+import { BallMoveContactListener } from "../../classes/box2d/ContactListener.js";
+import { Box2DBall } from "../../classes/box2d/actor/box2dBall.js";
 //游戏变量;
 var player;
 var contactListener;
@@ -28,43 +29,42 @@ export class GearJoint extends Box2dGame {
         EasyBody.createBox(180,200,100,20,0).SetUserData(USER_DATA_GROUND);
         EasyBody.createBox(stage.width-50,200,200,20,0).SetUserData(USER_DATA_GROUND);
 
-        player=new BoxBall(30,100);
-        player.drawSpriteData(40)
-        this.addToPlayer(player);
+        let b=EasyBody.createCircle(20,100,20);
+        player=new Box2DBall(b);
     }
     createGearJoint(){
         let joint1=this.getRevoluteJoint(90,200);
         let joint2=this.getPrismaticJoint(500,200);
 
-        let jointDef=new b2GearJointDef();
-        jointDef.joint1=joint1;
-        jointDef.joint2=joint2;
-        jointDef.bodyA=EasyBody.getEmptyBody();
-        world.CreateJoint(jointDef);
+        EasyWorld.createGearJoint({
+            joint1:joint1,
+            joint2:joint2,
+        });
     }
     getRevoluteJoint(x,y){
-        let bodyA=EasyBody.getEmptyBody(x,y);
         let bodyB=EasyBody.createBox(x,y,70,10);
         bodyB.CreateFixture(EasyShape.createBox(10,70),3);      
-        let anchor=bodyB.GetPosition();
 
-        let revoluteJointDef=new b2RevoluteJointDef();
-        revoluteJointDef.Initialize(bodyA,bodyB,anchor);
-        revoluteJointDef.set_enableMotor(true);
-        revoluteJointDef.set_motorSpeed(0);
-        revoluteJointDef.set_maxMotorTorque(10);
-        return world.CreateJoint(revoluteJointDef);
+        return EasyWorld.createRevoluteJoint({
+            bodyB:bodyB,
+            bodyAX:x,
+            bodyAY:y,
+            enableMoter:true,
+            maxMototorTorque:5
+        });
     }
     getPrismaticJoint(x,y){
-        let bodyA=EasyBody.getEmptyBody(x,y);
         let bodyB=EasyBody.createBox(x,y,100,10);
         bodyB.CreateFixture(EasyShape.createBox(10,30,-50,-10),3);
         bodyB.CreateFixture(EasyShape.createBox(10,30,50,-10),3);
-        let anchor=new b2Vec2(x/PTM,(y-50)/PTM);
         let axis=new b2Vec2(1,0);
 
-        let jointDef=new b2PrismaticJointDef();
-        jointDef.Initialize(bodyA,bodyB,anchor,axis);
-        return world.CreateJoint(jointDef);
+        return EasyWorld.createPrismaticJoint({
+            bodyB:bodyB,
+            bodyAX:x,
+            bodyAY:y,
+            axis:axis,
+            
+        });
     }
 }

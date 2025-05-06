@@ -11,13 +11,7 @@ export class AstarMove extends Game {
         super("AstarMove", numCols * step, numRows * step, step, step);
         this.x = stage.width - this.width >> 1;
         this.y = stage.height - this.height >> 1;
-        for (let i = 0; i < numCols; i++) {
-            this.nodes[i] = [];
-            for (let j = 0; j < numRows; j++) {
-                let n = this.nodes[i][j] = new Node(i, j);
-                n.type = Node.WALKABLE;
-            }
-        }
+        this.createGrid(step)
         astar = new AStar(this,this.nodes,step);
     }
     waitComplete() {

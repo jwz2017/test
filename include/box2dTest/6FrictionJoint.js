@@ -1,5 +1,6 @@
 import { stage } from "../../classes/gframe.js";
 import { Box2dGame } from "../../classes/Game.js";
+import { ContactListener } from "../../classes/box2d/ContactListener.js";
 
 //游戏变量;
 var player, contactListener1;
@@ -49,8 +50,6 @@ class FrictionJointContactListener extends ContactListener {
         super();
         this.bodyB = null;
         this.bodyC = null;
-        this.jointDef=new b2FrictionJointDef();
-        this.jointDef.collideConnected=true;
     }
     PreSolve(contact) {
         let result = this.sortByTwoBody(contact, USER_DATA_PLAYER, USER_DATA_BALL);
@@ -72,10 +71,12 @@ class FrictionJointContactListener extends ContactListener {
     }
     createFrictionJoint(bodyB) {
         let anchor = bodyB.GetPosition();
-        this.jointDef.maxForce = bodyB.GetMass() * 60;
-        this.jointDef.maxTorque = 10;
-        this.jointDef.Initialize(player, bodyB, anchor);
-        world.CreateJoint(this.jointDef);
+
+        EasyWorld.createFrictionJoint({
+            bodyA:player,
+            bodyB:bodyB,
+            anchor:anchor
+        });
     }
     destroyFrictionJointWith(bodyB) {
         let tempJointEdge = bodyB.GetJointList();

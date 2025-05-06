@@ -6,6 +6,7 @@ import { Fps, ScoreBoard } from "../../classes/screen.js";
 window.onload = function () {
     gframe.buildStage('canvas',false,true);
     gframe.preload(SpaceShip);
+    gframe.fps=new Fps
 };
 var ROCK_TIME = 500,
     SUB_ROCK_COUNT = 3,
@@ -26,7 +27,6 @@ class SpaceShip extends Game {
     constructor() {
         super("飞机游戏");
         ship = new Ship();
-        this.fps=new Fps();
     }
     createScoreBoard() {
         this.scoreboard = new ScoreBoard();
@@ -40,14 +40,10 @@ class SpaceShip extends Game {
         nextRock = 0;
         timeToRock = ROCK_TIME;
         ship.speed = new Vector(0, 0);
-    }
-    waitComplete() {
-        stage.addChild(this.fps)
-        this.addToPlayer(ship);
         ship.x = stage.width / 2;
         ship.y = stage.height / 2;
-        
         ship.updateRect();
+        this.addToPlayer(ship);
     }
     runGame() {
         // 控制飞船
@@ -180,7 +176,7 @@ class SpaceRock extends Actor {
         this.edgeBehavior = Actor.WRAP;
     }
     init(size) {
-        this.drawSpriteData(size)
+        this.drawSpriteData(size,size)
         let angle = Math.random() * (Math.PI * 2);
         this.speed.length = Math.sin(angle) * (2 + 20 / this.hit);
         this.speed.angle = angle;
@@ -207,7 +203,6 @@ class SpaceRock extends Actor {
             this._hit = (this._hit + radius) / 2;
         }
         this.image.graphics.closePath();
-        this.image.setBounds(-width / 2, -width / 2, width, width);
     }
     floatOnScreen(width, height) {
         let rect = this.rect;

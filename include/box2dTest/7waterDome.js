@@ -1,5 +1,6 @@
 import { Box2dGame } from "../../classes/Game.js";
-import { WaterManager } from "../../classes/Clipper-help.js";
+import { WaterManager } from "../../classes/box2d/Clipper-help.js";
+import { ContactListener } from "../../classes/box2d/ContactListener.js";
 var waterManager;
 export class WaterDome extends Box2dGame {
     static WATER=100;

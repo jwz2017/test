@@ -1,5 +1,6 @@
 import { stage } from "../../classes/gframe.js";
 import { Box2dGame } from "../../classes/Game.js";
+import { Trail } from "../../classes/box2d/Trail.js";
 //游戏变量;
 var bird, impulse;
 export class ApplyImpulse extends Box2dGame {
@@ -17,7 +18,7 @@ export class ApplyImpulse extends Box2dGame {
 
         stage.on("stagemousedown", () => {
             bird.ApplyLinearImpulse(impulse, bird.GetPosition());
-            var bullet = EasyBody.createCircle(bird.GetPosition().x * PTM, bird.GetPosition().y * PTM + 20, 5);
+            var bullet = EasyBody.createCircle(bird.GetPosition().x * PTM, bird.GetPosition().y * PTM + 20,5);
             var bulletImpulse = new b2Vec2(0, bullet.GetMass() * 20);
             bullet.ApplyLinearImpulse(bulletImpulse, bullet.GetPosition());
         })

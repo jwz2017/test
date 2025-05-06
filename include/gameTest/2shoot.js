@@ -6,6 +6,7 @@ import { Fps, ScoreBoard } from "../../classes/screen.js";
 window.onload = function () {
     gframe.buildStage('canvas');
     gframe.preload(Shoot);
+    gframe.fps=new Fps(0,50)
 };
 const NUMENEMY = "plane",
     SHOTS = "shots";
@@ -29,32 +30,29 @@ class Shoot extends Game {
     static backgroundColor="rgb(0, 67, 171)";
     constructor() {
         super("射击游戏");
-        this.fps=new Fps();
         spriteSheet = new createjs.SpriteSheet(queue.getResult("shoot"));
         //十字光标
         crosshairs = new lib.Cross();
         crosshairs.scale = 0.7;
         this.maxLevel = 50;
-        // enemys = [];
     }
     createScoreBoard() {
-        this.scoreboard = new ScoreBoard();
-        this.scoreboard.createTextElement("score");
-        this.scoreboard.createTextElement("level");
+        this.scoreboard = new ScoreBoard({rowNum:4});
+        this.scoreboard.createTextElement(Shoot.SCORE);
+        this.scoreboard.createTextElement(Shoot.LEVEL);
         this.scoreboard.createTextElement(NUMENEMY);
         this.scoreboard.createTextElement(SHOTS);
     }
     newGame() {
         //初始化船只仓库
         shipStore=3;
+        this.updateScore("score",this.score);
         this.level=20;
     }
     newLevel() {
-        stage.addChild(this.fps);
-        this.scoreboard.update("score",this.score);
-        this.scoreboard.update("level",this.level);
+        this.updateScore("level",this.level);
         numPlayerBullets = 10 + this.level * 6;
-        this.scoreboard.update(SHOTS, numPlayerBullets);
+        this.updateScore(SHOTS, numPlayerBullets);
         //初始化出场船只
         for (let i = 0; i <shipStore; i++) {
             Ship.getActor();
@@ -107,9 +105,6 @@ class Shoot extends Game {
         //创建敌机
         this.createEnemy()
         //渲染敌机
-        // for (const enemy of enemys) {
-        //     if(enemy.active) enemy.act();
-        // }
         this.moveActors(this.enemyLayer);
         //爆炸
         for (const exploy of Exploy.array) {

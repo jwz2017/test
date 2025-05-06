@@ -1,6 +1,8 @@
 import { stage } from "../../classes/gframe.js";
 import { Box2dGame } from "../../classes/Game.js";
 import { Vector } from "../../classes/actor.js";
+import { ContactListener } from "../../classes/box2d/ContactListener.js";
+import { Trail } from "../../classes/box2d/Trail.js";
 //游戏变量;
 var planetRadius = 60, playerSize = 20;
 var planet1, planet2, player, trail;
@@ -24,7 +26,6 @@ export class WeldJoint extends Box2dGame {
 
         trail = new Trail(this.container, player);
         this.tempV = new b2Vec2();
-        this.jointDef = new b2WeldJointDef();
 
         stage.on("stagemousedown", () => {
             if (contactListener.contactPlanet) {
@@ -64,9 +65,11 @@ export class WeldJoint extends Box2dGame {
         this.tempV.Set(distancePlayerToPlanet.x, distancePlayerToPlanet.y)
         player.SetTransform(this.tempV, angle);
 
-        let anchor = player.GetPosition();
-        this.jointDef.Initialize(contactListener.contactPlanet, player, anchor);
-        weldJoint = world.CreateJoint(this.jointDef);
+        weldJoint=EasyWorld.createWeldJoint({
+            bodyA:contactListener.contactPlanet,
+            bodyB:player,
+            anchor:this.tempV,
+        })
     }
     checkBoundary() {
         let p = player.GetPosition();

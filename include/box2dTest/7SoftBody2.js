@@ -1,6 +1,8 @@
 import { keys } from "../../classes/gframe.js";
 import { Box2dGame } from "../../classes/Game.js";
-import { BoxBall } from "../../classes/actor.js";
+import { Box2DBall } from "../../classes/box2d/actor/box2dBall.js";
+import { BallMoveContactListener } from "../../classes/box2d/ContactListener.js";
+import { CirActor } from "../../classes/actor.js";
 var contactListener;
 var anchor;
 export class SoftBody2 extends Box2dGame {
@@ -14,9 +16,12 @@ export class SoftBody2 extends Box2dGame {
         super("SoftBody2");
         EasyBody.createRectangle(0, 0, this.width, this.height);
         EasyBody.createBox(250, 250, 300, 20, 0).SetUserData(USER_DATA_GROUND);
-        this.ball = new BoxBall(120, 100);
-        this.ball.drawSpriteData(40)
-        this.addToPlayer(this.ball);
+        let b=EasyBody.createCircle(120,100,20);
+        let a=new CirActor();
+        a.drawSpriteData(40);
+        this.addToBox2D(a);
+        this.ball=new Box2DBall(b,a);
+
         contactListener = new BallMoveContactListener();
         
         this.weldJointDef=new b2WeldJointDef();

@@ -1,20 +1,17 @@
-import { ShapeBackground } from "./other.js";
 import { PushButton, mc } from "./mc.js";
 import { gframe, stage } from "./gframe.js";
 /*****************************************游戏界面**************************** */
 class BasicScreen extends createjs.Container {
-    //style
-    static style = {
-        textFont: "40px regul,Arial,宋体",
-        titleFont: "bold 60px regul,Arial,宋体",
-        scoreFont: "30px regul,Arial,宋体",
-        levelInFont: "bold 40px 宋体",
-        color: "#fff",
-    };
-    static setFont(obj, font = BasicScreen.style.textFont) {
+    static setFont(obj, font = gframe.style.textFont) {
         let ele = obj.htmlElement;
         ele.style.font = font;
         obj.setBounds(0, 0, ele.clientWidth, ele.clientHeight);
+    };
+    static setDomSize(obj,width,height){
+        let ele=obj.htmlElement;
+        ele.style.width=width+"px";
+        ele.style.height=height+"px";
+        obj.setBounds(0,0,width,height);
     }
     constructor() {
         super();
@@ -63,7 +60,7 @@ class BasicScreen extends createjs.Container {
      * @param {parentDiv} domParent =gameScaleDom
      * @returns 
      */
-    createText(text, font = BasicScreen.style.textFont, color = BasicScreen.style.color, domParent) {
+    createText(text, font, color = gframe.style.color, domParent) {
         let txt = this.createDom("span", domParent);
         let ele = txt.htmlElement;
         ele.innerHTML = text;
@@ -80,7 +77,7 @@ class TitleScreen extends BasicScreen {
             this.title = titleText;
             this.addChild(this.title);
         } else if (titleText) {
-            this.title = this.createText(titleText, BasicScreen.style.titleFont);
+            this.title = this.createText(titleText, gframe.style.titleFont);
         }
         this.title.x = canvas.width - this.title.getBounds().width >> 1;
         this.title.y = canvas.height / 3 + 20;
@@ -99,9 +96,8 @@ class TitleScreen extends BasicScreen {
     /**
      * dom按钮
      * @param {*} label 
-     * @param {*} nextState 
-     * @param {"game-button"} className 
      * @param {*} onClick 
+     * @param {"game-button"} className 
      * @returns 
      */
     createDOMbutton(label, onClick, className = "game-button") {
@@ -114,6 +110,7 @@ class TitleScreen extends BasicScreen {
         return button;
     }
 }
+
 class ScoreBoard extends BasicScreen {
     static HMODE = "hmodescore";
     static VMODE = "vmodescore"
@@ -126,7 +123,7 @@ class ScoreBoard extends BasicScreen {
         this.offX = offX;
         this.offY = offY;
     }
-    createTextElement(key, val, xpos = 0, ypos = 0, { titleImg, font = BasicScreen.style.scoreFont, color = BasicScreen.style.color, borderFont, offX = 0, valueType = "span", width = 150, height = 50, max = 5 } = {}) {
+    createTextElement(key, val, xpos = 0, ypos = 0, { titleImg, font = gframe.style.scoreFont, color = gframe.style.color, borderFont, offX = 0, valueType = "span", width = 150, height = 50, max = 5 } = {}) {
         let c = this.createDom('div');
         let style = c.htmlElement.style;
         style.font = font;
@@ -220,37 +217,6 @@ class InstructionScreen extends BasicScreen {
         BasicScreen.setFont(modal);
     }
 }
-class LevelInScreen extends ScoreBoard {
-    constructor() {
-        super();
-        let div = this.createTextElement(gframe.LevelInLevel, 0, 0, 0, { font: BasicScreen.style.levelInFont });
-        let b = div.getBounds();
-        div.x = stage.width - b.width >> 1;
-        div.y = stage.height - b.height >> 1;
-
-        if (!stage.isWebGL) {
-            this.bg = new ShapeBackground(stage.width / 2, stage.height / 2);
-            this.addChild(this.bg);
-        }
-    }
-    onRemove() {
-        super.onRemove();
-        if (!stage.isWebGL) {
-            this.bg.clearBg();
-            stage.autoClear = true;
-            createjs.Ticker.off("tick", this.t)
-        }
-    }
-    onAdded() {
-        super.onAdded();
-        if (!stage.isWebGL) {
-            stage.autoClear = false;
-            this.t = createjs.Ticker.on("tick", (e) => {
-                this.bg.updateWaitBg()
-            })
-        }
-    }
-}
 //--------------------------------------------------进度条----------------------------------------------------------------------
 class LoaderBar extends BasicScreen {
     constructor(titleText = "loading...", width = 500, height = 30) {
@@ -272,7 +238,7 @@ class LoaderBar extends BasicScreen {
         return bar;
     }
     createTitle(titleText, width) {
-        this.title = this.createText(titleText, BasicScreen.style.titleFont);
+        this.title = this.createText(titleText, gframe.style.titleFont);
         this.title.x = width - this.title.getBounds().width >> 1;
     }
     createValue(width, height) {
@@ -280,18 +246,17 @@ class LoaderBar extends BasicScreen {
         this.value.x = width - this.value.getBounds().width >> 1;
         this.value.y = this.bar.y + height;
     }
-    onRemove() {
-        super.onRemove();
-    }
     startLoad(e) {
         this.bar.htmlElement.value = e.progress * 100;
         this.value.htmlElement.innerHTML = Math.floor(e.progress * 100).toString() + "%";
     }
 }
 class Fps extends BasicScreen {
-    constructor(parentDom) {
+    constructor(x=10,y=10) {
         super();
-        this.fps = this.createText("", Fps.style.scoreFont, "#f00", parentDom)
+        this.fps = this.createText("", gframe.style.scoreFont, "#f00")
+        this.x=x;
+        this.y=y;
     }
     onAdded() {
         this.fps.visible = true;
@@ -305,4 +270,4 @@ class Fps extends BasicScreen {
     }
 
 }
-export { BasicScreen, TitleScreen, InstructionScreen, ScoreBoard, LevelInScreen, LoaderBar, Fps }
+export { BasicScreen, TitleScreen, InstructionScreen, ScoreBoard, LoaderBar, Fps }

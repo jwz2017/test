@@ -1,5 +1,6 @@
 import { stage, keys } from "../../classes/gframe.js";
 import { Box2dGame } from "../../classes/Game.js";
+import { Actor } from "../../classes/actor.js";
 //游戏变量;
 var ground,body;
 var torque=0,TORQUE=80,SPEEDMAX=5*PTM*Math.PI/180;
@@ -16,7 +17,14 @@ export class ApplyTorque extends Box2dGame {
         ground.GetFixtureList().SetFriction(1);
         
         body=EasyBody.createBox(stage.width/2,500,50,50);
-        body.SetSleepingAllowed(false)
+        
+        body.SetSleepingAllowed(false);
+        //皮肤
+        let actor=new Actor();
+        actor.drawSpriteData(50,50,"rgb(255,0,0)");
+        this.addToBox2D(actor);
+        body.actor=actor;
+
     }
     runGame(e) {
         super.runGame(e);
@@ -25,6 +33,8 @@ export class ApplyTorque extends Box2dGame {
         if(keys.right)torque=TORQUE;
         body.ApplyTorque(torque);
         this.limitAngularVelocity(body,SPEEDMAX);
+
+
     }
     limitAngularVelocity(body,speedMax){
         var av=body.GetAngularVelocity();

@@ -1,13 +1,14 @@
 import { ScrollMapGame, Node } from "../../classes/Game.js";
-import { Actor, MoveManage, SteeredActor } from "../../classes/actor.js";
+import { Actor, MoveManage } from "../../classes/actor.js";
 import { game, gframe, keys, queue, stage } from "../../classes/gframe.js";
-import { ScoreBoard } from "../../classes/screen.js";
+import { Fps, ScoreBoard } from "../../classes/screen.js";
 
 window.onload = function () {
     /*************游戏入口*****/
     gframe.buildStage('canvas', true);
     // stage.setClearColor(0x000000ff);
     gframe.preload(DriveCar);
+    gframe.fps = new Fps
 };
 //游戏变量;
 var step = 32;
@@ -47,66 +48,68 @@ class DriveCar extends ScrollMapGame {
         this.scoreboard.createTextElement(DriveCar.SCORE);
         this.scoreboard.createTextElement(DriveCar.LEVEL);
         this.scoreboard.createTextElement(DriveCar.LIVES);
-        let h = this.scoreboard.getBounds().height;
-        this.setSize(stage.width, stage.height - h);
-        this.y = h;
+        let h = this.scoreboard.getBounds();
+        this.scoreboard.x = stage.width - h.width >> 1;
+        this.setSize(stage.width, stage.height - h.height);
+        this.y = h.height;
     }
     newLevel() {
         this.scoreboard.update(DriveCar.SCORE, this.score);
         this.scoreboard.update(DriveCar.LEVEL, this.level);
         this.scoreboard.update(DriveCar.LIVES, this.lives);
         let plan = levels[this.level - 1];
-        this.createGridMap(plan,step,step, (ch, x, y) => {
-            let actor, node;
+        this.createGridMap(plan, step, step, (ch, node) => {
+            let actor;
             switch (ch) {
                 case 2:
-                    node=this.createNode(x, y, Node.DEATH);
-                    actor = new Actor(x * step, y * step, step, step);
+                    actor = new Actor(node.x * step, node.y * step, step, step);
                     actor.setSpriteData(queue.getResult("drivecar"), "death");
                     this.addToFloor(actor);
+                    node.type = Node.DEATH;
                     node.actor = actor;
                     break;
                 case 7:
-                    node=this.createNode(x,y,Node.NOWALKABLE);
-                    actor = new Actor(x * step, y * step, step, step);
+                    actor = new Actor(node.x * step, node.y * step, step, step);
                     actor.setSpriteData(queue.getResult("drivecar"), "block5");
                     this.addToFloor(actor);
+                    node.type = Node.NOWALKABLE;
                     node.actor = actor;
                     break;
                 case 8:
-                    node=this.createNode(x,y,Node.NOWALKABLE);
-                    actor = new Actor(x * step,y * step, step, step);
+                    actor = new Actor(node.x * step, node.y * step, step, step);
                     actor.setSpriteData(queue.getResult("drivecar"), "block4");
                     this.addToFloor(actor);
+                    node.type = Node.NOWALKABLE;
                     node.actor = actor;
                     break;
                 case 9:
-                    node=this.createNode(x,y,Node.NOWALKABLE);
-                    actor = new Actor(x * step,y * step, step, step);
+                    actor = new Actor(node.x * step, node.y * step, step, step);
                     actor.setSpriteData(queue.getResult("drivecar"), "block3");
                     this.addToFloor(actor);
+                    node.type = Node.NOWALKABLE;
                     node.actor = actor;
                     break;
                 case 10:
-                    node=this.createNode(x,y,Node.NOWALKABLE);
                     actor = sprite.clone();
                     actor.gotoAndStop("block1");
-                    actor.x = x * step;
-                    actor.y = y * step;
+                    actor.x = node.x * step;
+                    actor.y = node.y * step;
                     this.addToFloor(actor);
+                    node.type = Node.NOWALKABLE;
                     break;
                 case 11:
-                    node=this.createNode(x,y,Node.NOWALKABLE);
-                    actor = new Actor(x * step,y * step, step, step);
+                    actor = new Actor(node.x * step, node.y * step, step, step);
                     actor.setSpriteData(queue.getResult("drivecar"), "block2");
                     this.addToFloor(actor);
                     node.actor = actor;
+                    node.type = Node.NOWALKABLE;
                     break;
                 default:
                     break;
             }
         })
         this.setActorScroll(this.player, this.width / 3, this.height / 3);
+        this.scrollView()
     }
     runGame() {
         this.moveActors(this.playerLayer);
@@ -139,7 +142,7 @@ class Car extends Actor {
         this.velocity = 0.2;
     }
     act() {
-        let node = game.hitMap(this.rect, this.image, 0.5, this.hitflooractor);
+        let node = game.hitMap(this.rect, this.hitflooractor, this.image, 0.9);
 
         if (node) {
             if (node.type == Node.DEATH) {
@@ -147,9 +150,9 @@ class Car extends Actor {
                 return;
             }
             this.speed.normalize();
-            this.speed.mul(-8);
+            this.speed.mul(-10);
             super.act();
-            this.speed.length = -0.2;
+            this.speed.length = -0.1;
 
         } else {
             moveManage.driveCar(this, keys);
@@ -160,9 +163,8 @@ class Car extends Actor {
     }
     hitflooractor(node) {
         let actor = node.actor;
-        game.clearNode(node.x,node.y);
-        actor.parent.removeChild(node.actor);
-        node.actor = null;
+        node.type = null;
+        actor.parent.removeChild(actor);
         if (actor.type == "hart") {
             game.score += 20;
             game.scoreboard.update(DriveCar.SCORE, game.score);

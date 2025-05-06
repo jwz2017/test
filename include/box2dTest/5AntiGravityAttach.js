@@ -1,6 +1,8 @@
 import { stage } from "../../classes/gframe.js";
 import { Box2dGame } from "../../classes/Game.js";
 import { Vector } from "../../classes/actor.js";
+import { ContactListener } from "../../classes/box2d/ContactListener.js";
+import { Trail } from "../../classes/box2d/Trail.js";
 var planet1, planet2, player, planetRadius = 60, playerSize = 20;
 var isPlayerJumping = false;
 var localVectorPlayerOnPlant;
@@ -53,12 +55,9 @@ export class AniGravityAttach extends Box2dGame {
         localVectorPlayerOnPlant.Normalize();
         localVectorPlayerOnPlant.op_mul(localDistanceToAttach);
 
-        var v = new Vector(0, 0);
-        v.setValues(localVectorPlayerOnPlant.x, localVectorPlayerOnPlant.y);
-        let shape = EasyShape.createBox(20, 20, v.x, v.y, v.angle)
+        let shape = EasyShape.createBox(20, 20, localVectorPlayerOnPlant.x, localVectorPlayerOnPlant.y, Math.atan2(localVectorPlayerOnPlant.y,localVectorPlayerOnPlant.x))
         plant.CreateFixture(shape, 3);
         plant.GetFixtureList().SetUserData(AniGravityAttach.PLANET);
-
         player.SetActive(false);
         player.SetTransform(new b2Vec2(-2, -2), 0);
     }

@@ -34,7 +34,7 @@ ol {
   position: relative;
   /* overflow: hidden; */
   margin: 0 auto;
-  background-color: #333;
+  /* background-color: #333; */
 }
 
 #gameDiv {

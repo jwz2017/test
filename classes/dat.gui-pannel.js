@@ -9,12 +9,11 @@ export class Pannel extends BasicScreen {
         背景音量: 0.5,
         fps: false,
     };
-    constructor(game,xpos=70,ypos=15){
+    constructor(xpos=70,ypos=15){
         super();
-        this.createPannel(game);
+        this.createPannel();
         this.x=xpos;
         this.y=ypos;
-        this.game=game;
     }
     createPannel() {
         let fps = new Fps();

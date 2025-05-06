@@ -1,11 +1,12 @@
 import { Game,Node} from "../../classes/Game.js";
 import { Actor, CirActor, MoveManage, Weapon } from "../../classes/actor.js";
 import { game, gframe, keys, pressed, queue, stage } from "../../classes/gframe.js";
-import { ScoreBoard } from "../../classes/screen.js";
+import { Fps, ScoreBoard } from "../../classes/screen.js";
 
 window.onload = function () {
     gframe.buildStage('canvas',false);
     gframe.preload(Tanke);
+    gframe.fps=new Fps;
 };
 var spriteData, spriteSheet;
 var moveManage = new MoveManage();
@@ -91,22 +92,23 @@ class Tanke extends Game {
         this.scoreboard = new ScoreBoard();
         this.scoreboard.createTextElement("score");
         this.scoreboard.createTextElement("level");
+        this.scoreboard.x=stage.width-this.scoreboard.getBounds().width>>1;
     }
     newLevel() {
         this.scoreboard.update("score", this.score);
         this.scoreboard.update("level", this.level);
         //创建网格
         let plan = plans[this.level - 1];
-        this.createGridMap(plan,step,step, (ch, x,y) => {
+        this.createGridMap(plan,step,step, (ch, node) => {
             var tile = new createjs.Sprite(spriteSheet).set({
-                x: x * step + step / 2,
-                y: y * step + step / 2
+                x: node.x * step + step / 2,
+                y: node.y * step + step / 2
             });
             if (this.playerChars[ch] || this.propChars[ch] || this.enemyChars[ch] || ch == 0) {
                 tile.gotoAndStop(0);
             } else {
-                this.createNode(x,y,Node.NOWALKABLE);
                 tile.gotoAndStop(ch);
+                node.type=Node.NOWALKABLE;
             }
             this.addToFloor(tile);
         });
@@ -174,11 +176,12 @@ class Player extends Actor {
         let rect = this.rect.clone();
         rect.x += this.speed.x;
         rect.y += this.speed.y;
-        let node = game.hitMap(rect,null,0,(node)=>{
-            game.clearNode(node.x,node.y)
+        let node = game.hitMap(rect,(node)=>{
+            node.type=null;
             switch (node.actor.type) {
                 case "live":
                     console.log("live");
+                    node.actor.parent.removeChild(node.actor)
                     break;
                 case "tank":
                     console.log("tank");
@@ -189,7 +192,7 @@ class Player extends Actor {
                 default:
                     break;
             }
-        });
+        },this.image);
         var actor = game.hitActors(this,game.enemyLayer.children, rect);
         if (!node && !actor) super.act();
     }

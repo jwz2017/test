@@ -9,7 +9,7 @@ export class Particle extends Game {
     constructor() {
         super("Particle");
         grid = new GridCollision(stage.width, stage.height, gridSize);
-        grid.drawGrid();
+        grid.drawGrid(this);
         particles = [];
         for (let i = 0; i < numParticles; i++) {
             let size = Math.random() * 25 + 5;

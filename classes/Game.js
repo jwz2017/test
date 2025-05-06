@@ -1,22 +1,25 @@
 import { gframe, stage } from "./gframe.js";
 import { ScrollContainer } from "./mc.js";
 import { checkPixelCollision } from "./hitTest.js";
-import { BasicScreen, TitleScreen, LevelInScreen, LoaderBar, InstructionScreen } from "./screen.js";
+import { BasicScreen, TitleScreen, LoaderBar, InstructionScreen, ScoreBoard } from "./screen.js";
 
 /**
  * 网格节点
  */
 class Node {
-    static WALKABLE = "walkable";
     static NOWALKABLE = "nowalkable";
     static PROP = "prop";
     static DEATH = "death";
-    constructor(xpos, ypos, { type, actor, costMultiplier = 1 } = {}) {
+    constructor(xpos, ypos, { type = 0, actor, costMultiplier = 1 } = {}) {
         this.x = xpos;
         this.y = ypos;
         this.type = type;
         this.actor = actor;
         this.costMultiplier = costMultiplier;
+    }
+    init() {
+        this.type = null;
+        this.actor = null;
     }
 }
 
@@ -24,14 +27,12 @@ class Node {
 class Game extends ScrollContainer {
     static backgroundColor = "#000";//游戏背景颜色
     static LoaderBar = LoaderBar;
-    // static loadBarItem = null;
     static loadItem = null;
     static loadId = null;
     static loadBarItem = [{
         src: "fonts/regul-book.woff",
         type: "font",
-    },
-    {
+    }, {
         src: "fonts/pf_ronda_seven.ttf",
         type: "font"
     }, {
@@ -40,20 +41,19 @@ class Game extends ScrollContainer {
     }];
 
     //键盘按键
-    static codes = null;
-    // static codes = {
-    //     65: "left",
-    //     87: "up",
-    //     68: "right",
-    //     83: "down",
-    //     32: "pause",
-    //     100: "attack",
-    //     101: "jump",
-    //     102: "skill1",
-    //     103: "fire",
-    //     16: "shift",
-    //     17: "ctrl"
-    // };
+    static codes = {
+        //     65: "left",
+        //     87: "up",
+        //     68: "right",
+        //     83: "down",
+        32: "pause",
+        //     100: "attack",
+        //     101: "jump",
+        //     102: "skill1",
+        //     103: "fire",
+        //     16: "shift",
+        //     17: "ctrl"
+    };
 
     static SCORE = "score";
     static LEVEL = "level";
@@ -75,11 +75,10 @@ class Game extends ScrollContainer {
         this.enemyLayer = gframe.createrContainer(this.container);
         this.propLayer = gframe.createrContainer(this.container);
         //网格
-        this.nodes = [];
         this._tempNode = new Node(-1, -1);
-        this.playerChars=Object.create(null);
-        this.propChars=Object.create(null);
-        this.enemyChars=Object.create(null);
+        this.playerChars = Object.create(null);
+        this.propChars = Object.create(null);
+        this.enemyChars = Object.create(null);
         //游戏属性
         this.gameOver = false;
         this.levelUp = false;
@@ -116,7 +115,11 @@ class Game extends ScrollContainer {
         this.instructionScreen.y = stage.height - b.height >> 1;
     }
     createLevelInScreen() {
-        this.levelInScreen = new LevelInScreen();
+        this.levelInScreen = new ScoreBoard();
+        this.levelInScreen.createTextElement(gframe.LevelInLevel, 1, 0, 0, { font: gframe.style.levelInFont })
+        let b = this.levelInScreen.getBounds();
+        this.levelInScreen.x = stage.width - b.width >> 1;
+        this.levelInScreen.y = stage.height - b.height >> 1;
     }
     createGameOverScreen() {
         this.gameOverScreen = new TitleScreen("game over");
@@ -131,8 +134,16 @@ class Game extends ScrollContainer {
         btn1.y = canvas.height * 0.6;
     }
     createPauseScreen() {
-        this.pauseScreen = new TitleScreen("pause");
-        this.pauseScreen.title.y = stage.height - this.pauseScreen.title.getBounds().height >> 1;
+        this.pauseScreen = new BasicScreen();
+        let bg = this.pauseScreen.createDom("div");
+        BasicScreen.setDomSize(bg, this.width, this.height);
+        bg.htmlElement.style.backgroundColor = "rgba(255,255,255,0.001)";
+
+        let text = this.pauseScreen.createText("pause", gframe.style.titleFont);
+        let b = text.getBounds();
+        text.x = this.width - b.width >> 1;
+        text.y = this.height - b.height >> 1;
+
     }
     /***************************游戏开始状态************************ */
     createScoreBoard() { }
@@ -140,29 +151,46 @@ class Game extends ScrollContainer {
     newLevel() { }
     waitComplete() { }
     runGame() { }
-    onTitleKeydown() { }
-    onRunGameKeydown() { }
-    clear() { }
+    onRunGameKeydown(c) { }
+    runLevelUp() {
+        stage.alpha -= 0.01;
+        if (stage.alpha < 0.1) this.levelUp = true;
+    }
+    runLevelOut() {
+        stage.alpha -= 0.01;
+        if (stage.alpha < 0.1) this.levelUp = true;
+    }
+    runGameOver() {
+        stage.alpha -= 0.01;
+        if (stage.alpha < 0.1) this.gameOver = true;
+    }
     /***************************游戏运行时相关方法************* */
+    updateScore(key, val) {
+        this.scoreboard.update(key, val);
+    }
     //结束时立即清除
-    _clearBefore() {
+    clearBefore() {
         if (this.backSound) this.backSound.stop();
         this.removeAllEventListeners("mousedown");
         stage.removeAllEventListeners("stagemousedown");
         stage.removeAllEventListeners("stagemouseup");
         stage.removeAllEventListeners("stagemousemove");
-        this.clear();
         createjs.Tween.removeAllTweens();
     };
     //过场过后清理
-    _clearAfter() {
+    clearAfter() {
         stage.alpha = 1;
         //清除游戏内容元素
         gframe.clearContainer(this.container);
         //清除舞台元素
         gframe.clearContainer(stage);
     }
-    //检查层内是否还有相关类型元素
+    /**
+     * 检查层内是否还有相关类型元素
+     * @param {*} actorType 元素类型
+     * @param {*} container 
+     * @returns 
+     */
     hasTypeOnContainer(actorType, container) {
         return container.children.some(function (actor) {
             return actor.type == actorType;
@@ -318,28 +346,39 @@ class Game extends ScrollContainer {
         }
     }
     /***************************网格相关************************ */
-    createNode(x, y, type) {
-        return this.nodes[x][y] = new Node(x, y, { type: type });
-    }
-    clearNode(x, y) {
-        this.nodes[x][y] = null;
+    createGrid(step, Actor, cols, rows) {
+        this.nodes = [];
+        let col = cols || this.width / step,
+            row = rows || this.height / step;
+        for (let i = 0; i < col; i++) {
+            this.nodes[i] = [];
+            for (let j = 0; j < row; j++) {
+                let node = this.nodes[i][j] = new Node(i, j);
+                if (Actor) {
+                    node.actor = new Actor(i * step, j * step);
+                    this.container.addChild(node.actor);
+                }
+            }
+        }
     }
     /**
      * 创建网格地图
      * @param {*} plan 关卡地图
+     * @param {*} stepWidth 步长
+     * @param {*} stepHeight 步高
      * @param {*} drawGrid 背景地图函数
      * @param {false} isIso 是否为二等角地图
      */
-    createGridMap(plan,stepWidth,stepHeight, drawGrid,isIso = false) {
+    createGridMap(plan, stepWidth, stepHeight, drawGrid, isIso = false) {
         this.nodes = [];
-        this.stepWidth=stepWidth;
-        this.stepHeight=stepHeight;
-        let numCols=plan[0].length,
-        numRows=plan.length;
+        this.stepWidth = stepWidth;
+        this.stepHeight = stepHeight;
+        let numCols = plan[0].length,
+            numRows = plan.length;
         for (let x = 0; x < numCols; x++) {
             this.nodes[x] = [];
             for (let y = 0; y < numRows; y++) {
-                this.nodes[x].length++;
+                let node = this.nodes[x][y] = new Node(x, y);
                 const ch = plan[y][x],
                     Act = this.playerChars[ch] || this.propChars[ch] || this.enemyChars[ch];
                 if (Act) {
@@ -353,7 +392,7 @@ class Game extends ScrollContainer {
                             break;
                         case this.propChars[ch]:
                             this.propLayer.addChild(a);
-                            let node = this.createNode(x, y, Node.PROP);
+                            node.type = Node.PROP;
                             node.actor = a;
                             break;
                         case this.enemyChars[ch]:
@@ -361,7 +400,7 @@ class Game extends ScrollContainer {
                             break;
                     }
                 }
-                drawGrid(ch, x, y);
+                if (drawGrid) drawGrid(ch, node);
             }
         }
         if (isIso) {
@@ -388,12 +427,12 @@ class Game extends ScrollContainer {
     /**
      * 检测地图元素碰撞
      * @param {*} rect1 
+     * @param {null} hitPropNode 与道具碰撞函数
      * @param {null} image 
      * @param {0} alphaThreshold 
-     * @param {null} hitPropNode 
      * @returns node
      */
-    hitMap(rect1, image, alphaThreshold = 0, hitPropNode) {
+    hitMap(rect1, hitPropNode, image, alphaThreshold = 0) {
         let x1 = rect1.x / this.stepWidth,
             y1 = rect1.y / this.stepHeight,
             w1 = rect1.width / this.stepWidth,
@@ -405,39 +444,35 @@ class Game extends ScrollContainer {
         if (xStart < 0 || xEnd > this.nodes.length || yStart < 0) {
             this._tempNode.type = Node.NOWALKABLE;
             return this._tempNode;
-        } else if (yEnd > this.nodes[0].length) {
+        }
+        if (yEnd > this.nodes[0].length) {
             this._tempNode.type = Node.DEATH;
             return this._tempNode;
         }
         for (var y = yStart; y < yEnd; y++) {
             for (var x = xStart; x < xEnd; x++) {
                 let node = this.nodes[x][y];
-                // if (node) {
-                if (node && node.type != Node.WALKABLE) {
-                    if (!node.actor) {
-                        return node
-                    } else {
-                        if (!image || (node.actor.image instanceof createjs.Shape)) {
-                            if (rect1.intersects(node.actor.rect)) {
-                                if (node.type == Node.PROP) {
-                                    if (hitPropNode) { hitPropNode(node); }
-                                } else {
-                                    return node;
-                                }
-                            }
+                if (!node.type) continue;
+                if (!node.actor) return node;
+                if (!image || (node.actor.image instanceof createjs.Shape)) {
+                    if (rect1.intersects(node.actor.rect)) {
+                        if (node.type == Node.PROP) {
+                            if (hitPropNode) { hitPropNode(node); }
                         } else {
-                            let r = rect1.intersection(node.actor.rect);
-                            if (r) {
-                                let p = this.container.localToGlobal(r.x, r.y);
-                                r.x = p.x;
-                                r.y = p.y;
-                                if (checkPixelCollision(image, node.actor.image, r, alphaThreshold)) {
-                                    if (node.type == Node.PROP) {
-                                        if (hitPropNode) hitPropNode(node);
-                                    } else {
-                                        return node;
-                                    }
-                                }
+                            return node;
+                        }
+                    }
+                } else {
+                    let r = rect1.intersection(node.actor.rect);
+                    if (r) {
+                        let p = this.container.localToGlobal(r.x, r.y);
+                        r.x = p.x;
+                        r.y = p.y;
+                        if (checkPixelCollision(image, node.actor.image, r, alphaThreshold)) {
+                            if (node.type == Node.PROP) {
+                                if (hitPropNode) hitPropNode(node);
+                            } else {
+                                return node;
                             }
                         }
                     }
@@ -518,7 +553,6 @@ class Game extends ScrollContainer {
     addToEnemy(child) {
         this.enemyLayer.addChild(child);
     }
-
 };
 
 /**
@@ -533,8 +567,8 @@ class ScrollMapGame extends Game {
         this.mapright = this.width;
         this.mapbottom = this.height;
         this._scrollActor = this.player;
-        this._marginw = this.width / 2;
-        this._marginh = this.height / 2;
+        this._marginw = this.width / 3;
+        this._marginh = this.height / 3;
     }
     //屏幕滚动默认焦点游戏玩家
     scrollView() {
@@ -562,8 +596,8 @@ class ScrollMapGame extends Game {
     /**
      * 设置焦点参数
      * @param {*} actor null不改变
-     * @param {*} marginWidth null不改变
-     * @param {*} marginHeight null不改变
+     * @param {this.width/2} marginWidth 
+     * @param {this.height/2} marginHeight 
      */
     setActorScroll(actor, marginWidth, marginHeight) {
         if (actor) this._scrollActor = actor;
@@ -587,7 +621,8 @@ class Box2dGame extends ScrollMapGame {
         drawShapes: true,
         drawJoints: true,
         drawAABBs: false,
-        drawTransforms: false
+        drawTransforms: false,
+        // drawPairs:true
     };
     static updateWorldFromDebugDrawCheckboxes = function () {
         var flags = 0;
@@ -601,13 +636,25 @@ class Box2dGame extends ScrollMapGame {
         //     flags |= e_pairBit;
         if (Box2dGame.guiProps.drawTransforms)
             flags |= e_centerOfMassBit;
-        if (window.debugDraw) debugDraw.SetFlags(flags);
+        if (debugDraw) debugDraw.SetFlags(flags);
     };
+
+    /**
+     * box2dGame
+     * @param {*} titleText 
+     * @param {true} isDebug 
+     * @param {10} gravity 
+     * @param {stage.width} width 
+     * @param {stage.height} height 
+     */
     constructor(titleText, isDebug = true, gravity = 10, width, height) {
         super(titleText, width, height);
         this._buildWorld(isDebug, gravity);
-        this.mouseStart = new b2Vec2();
-        this.mouseEnd = new b2Vec2();
+        tempVec = tempVec || new b2Vec2();
+        mouseTempVec=mouseTempVec||new b2Vec2();
+        bodyDef = bodyDef || new b2BodyDef();
+        fixtureDef = fixtureDef || new b2FixtureDef();
+        this.box2DLayer = gframe.createrContainer(this.container)
     }
 
     containerDebugDraw() {
@@ -635,15 +682,13 @@ class Box2dGame extends ScrollMapGame {
             this.container.draw = this.containerDebugDraw
 
             debugDraw = getCanvasDebugDraw();
-            // debugDraw.SetFlags(e_shapeBit);
             Box2dGame.updateWorldFromDebugDrawCheckboxes();
             world.SetDebugDraw(debugDraw);
-
         }
     };
 
-    _clearAfter() {
-        super._clearAfter();
+    clearAfter() {
+        super.clearAfter();
         var list = world.GetJointList();
         while (list.a) {
             world.DestroyJoint(list);
@@ -660,9 +705,24 @@ class Box2dGame extends ScrollMapGame {
     runGame(e) {
         world.Step(e.delta / 1000, 10, 10);
         world.ClearForces();
-
+        let list = world.GetBodyList();
+        while (list.a) {
+            if (list.GetType() && list.actor && list.IsActive() && list.IsAwake()) {
+                list.actor.rotation = list.GetAngle() * (180 / Math.PI);
+                let p = list.GetPosition();
+                // let p=list.GetWorldCenter();
+                list.actor.x = p.x * PTM;
+                list.actor.y = p.y * PTM;
+            }
+            list = list.GetNext();
+        }
     }
-
+    /**
+     * 拖动物体
+     * @param {null} userData 默认拖动所有物体
+     * @param {20} maxForce 拖动力度
+     * @param {false} isStrictDrag 是否鼠标跟随
+     */
     dragBody(userData, maxForce = 20, isStrictDrag = false) {
         let mouseMove;
         stage.on("stagemousedown", (e) => {
@@ -692,9 +752,18 @@ class Box2dGame extends ScrollMapGame {
             }
         })
     }
-
+    /**
+     * 鼠标画线
+     * @param {*} mouseStart 
+     * @param {*} mouseEnd 
+     * @param {*} onMouseUp 
+     */
     drawMouseMove(onMouseUp) {
         let mouseMove;
+        this.mouseStart=new b2Vec2();
+        this.mouseEnd=new b2Vec2();
+        this.isDrawing=false;
+
         stage.on("stagemousedown", (e) => {
             let p = this.container.globalToLocal(e.stageX, e.stageY)
             this.isDrawing = true;
@@ -713,6 +782,10 @@ class Box2dGame extends ScrollMapGame {
             this.isDrawing = false;
             if (onMouseUp) onMouseUp();
         })
+    }
+
+    addToBox2D(child) {
+        this.box2DLayer.addChild(child);
     }
 }
 export { Node, Game, ScrollMapGame, Box2dGame };

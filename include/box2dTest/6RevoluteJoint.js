@@ -1,6 +1,8 @@
 import { keys } from "../../classes/gframe.js";
 import { Box2dGame } from "../../classes/Game.js";
-import {  BoxBall } from "../../classes/actor.js";
+import { CirActor } from "../../classes/actor.js";
+import { BallMoveContactListener } from "../../classes/box2d/ContactListener.js";
+import { Box2DBall } from "../../classes/box2d/actor/box2dBall.js";
 
 export class RevoluteJoint extends Box2dGame {
     static codes={
@@ -18,18 +20,15 @@ export class RevoluteJoint extends Box2dGame {
     createJoint(){
         let bodyB=EasyBody.createBox(250,600,250,10);
         bodyB.SetUserData(USER_DATA_GROUND);
+        EasyWorld.createRevoluteJoint({
+            bodyB:bodyB,
+            bodyAX:250,
+            bodyAY:500,
+            enableMoter:true,
+            enableLimit:true,
+            // localAnchorA:new b2Vec2(-2,0)
+        });
 
-        let anchor=new b2Vec2(250/PTM,500/PTM);
-        let jointDef=new b2RevoluteJointDef();
-        jointDef.Initialize(EasyBody.getEmptyBody(anchor.x*PTM,anchor.y*PTM),bodyB,anchor);
-        jointDef.enableLimit=true;
-        jointDef.lowerAngle=-Math.PI/6;
-        jointDef.upperAngle=Math.PI/6;
-        jointDef.enableMotor=true;
-        jointDef.maxMotorTorque=150;
-        jointDef.motorSpeed=0;
-
-        world.CreateJoint(jointDef)
     }
     createBodies(){
         EasyBody.createBox(0,this.height/2,10,this.height,0);
@@ -39,9 +38,11 @@ export class RevoluteJoint extends Box2dGame {
         EasyBody.createBox(50,500,100,20,0).SetUserData(USER_DATA_GROUND);
         EasyBody.createBox(this.width-50,500,100,20,0).SetUserData(USER_DATA_GROUND);
 
-        this.p=new BoxBall();
-        this.p.drawSpriteData(50)
-        this.addChild(this.p)
+        let b=EasyBody.createCircle(5,5,25)
+        let a=new CirActor();
+        a.drawSpriteData(50);
+        this.addToBox2D(a);
+        this.p=new Box2DBall(b,a);
     }
     runGame(e) {
         super.runGame(e)
