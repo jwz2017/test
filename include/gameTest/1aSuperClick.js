@@ -1,7 +1,7 @@
 import { Actor } from "../../classes/actor.js";
 import { Game } from "../../classes/Game.js";
 import { gframe, stage } from "../../classes/gframe.js";
-import { Fps, ScoreBoard } from "../../classes/screen.js";
+import { Fps, ScoreBoard } from "../../classes/zujian/screen.js";
 window.onload = function () {
     gframe.buildStage('canvas');
     gframe.preload(SuperClick);

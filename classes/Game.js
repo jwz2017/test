@@ -1,7 +1,7 @@
 import { gframe, stage } from "./gframe.js";
-import { ScrollContainer } from "./mc.js";
-import { checkPixelCollision } from "./hitTest.js";
-import { BasicScreen, TitleScreen, LoaderBar, InstructionScreen, ScoreBoard } from "./screen.js";
+import { ScrollContainer } from "./zujian/mc.js";
+import { checkPixelCollision } from "./hit/hitTest.js";
+import { BasicScreen, TitleScreen, LoaderBar, InstructionScreen, ScoreBoard } from "./zujian/screen.js";
 
 /**
  * 网格节点
@@ -218,7 +218,7 @@ class Game extends ScrollContainer {
         let rect = actorRect || actor.rect;
         for (var i = 0; i < actors.length; i++) {
             var other = actors[i];
-            if ((other == actor) || !other.active) {
+            if (other == actor||!other.parent) {
                 continue;
             }
             let hit = this.hitActor(actor, other, rect, pixl, alphaThreshold);

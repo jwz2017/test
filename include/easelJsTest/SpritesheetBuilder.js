@@ -1,4 +1,4 @@
-import { stage,gframe } from "../../classes/gframe.js";
+import { stage } from "../../classes/gframe.js";
 import {Game } from "../../classes/Game.js";
 
 export class SpritesheetBuilder extends Game {

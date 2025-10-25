@@ -1,6 +1,6 @@
 import { Game } from "../../classes/Game.js";
 import { keys, stage } from "../../classes/gframe.js";
-import { Tree } from "../../classes/shape.js";
+import { Tree } from "../../classes/zujian/shape.js";
 
 var trees, vpX, vpY,
     numTrees = 100, fl = 250, floor = 50, friction = 0.98,

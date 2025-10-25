@@ -1,6 +1,7 @@
 import { Game } from "../../classes/Game.js";
-import { Actor, CirActor, MoveManage, SteeredActor } from "../../classes/actor.js";
+import { Actor, CirActor, SteeredActor } from "../../classes/actor.js";
 import { stage } from "../../classes/gframe.js";
+import { MoveManage } from "../../classes/moveManage/move.js";
 
 var seeker, pursuer, target;
 var moveManage=new MoveManage();

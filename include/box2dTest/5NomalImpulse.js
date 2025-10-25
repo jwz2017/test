@@ -1,7 +1,7 @@
 import { stage } from "../../classes/gframe.js";
 import { Box2dGame } from "../../classes/Game.js";
 import { Actor, Vector } from "../../classes/actor.js";
-import { ScoreBoard } from "../../classes/screen.js";
+import { ScoreBoard } from "../../classes/zujian/screen.js";
 import { ContactListener } from "../../classes/box2d/ContactListener.js";
 import { BirdThrower } from "../../classes/box2d/actor/BirdThrower.js";
 //游戏变量;

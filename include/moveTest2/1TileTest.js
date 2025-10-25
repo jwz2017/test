@@ -1,7 +1,7 @@
-import { DrawnIsoBox, DrawnIsoTile, IsoUtils, Point3D } from "../../classes/3DClass.js";
+import { DrawnIsoBox, DrawnIsoTile, IsoUtils, Point3D } from "../../classes/3d/3DClass.js";
 import { Game } from "../../classes/Game.js";
 import { stage } from "../../classes/gframe.js";
-import { mc } from "../../classes/mc.js";
+import { mc } from "../../classes/zujian/mc.js";
 
 export class TileTest extends Game {
     constructor() {

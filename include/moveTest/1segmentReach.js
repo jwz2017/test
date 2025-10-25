@@ -1,7 +1,7 @@
 import { Game } from "../../classes/Game.js";
 import { Actor, CirActor, Vector } from "../../classes/actor.js";
 import { stage } from "../../classes/gframe.js";
-import { Segment } from "../../classes/shape.js";
+import { Segment } from "../../classes/zujian/shape.js";
 
 var segments, ball, numSegments = 6, gravity = 0.5;
 export class SegmentReach extends Game{

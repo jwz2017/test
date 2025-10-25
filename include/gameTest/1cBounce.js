@@ -1,7 +1,7 @@
 import { Actor, BounceActor, CirActor } from "../../classes/actor.js";
 import { game, gframe, pressed, stage } from "../../classes/gframe.js";
 import { Game, Node } from "../../classes/Game.js";
-import { Fps, ScoreBoard } from "../../classes/screen.js";
+import { Fps, ScoreBoard } from "../../classes/zujian/screen.js";
 
 window.onload = function () {
     gframe.buildStage('canvas');

@@ -305,14 +305,11 @@ var gframe = {
     let l = container.numChildren - 1;
     for (let i = l; i >= 0; i--) {
       const element = container.children[i];
-      if (element.active) {
-        element.active = false;
-        container.removeChild(element);
+      if (element.name == "gameLayer") {
+        this.clearContainer(element);
       } else if (element.htmlElement) {
         element.visible = false;
         container.removeChild(element);
-      } else if (element.name == "gameLayer") {
-        this.clearContainer(element);
       } else {
         container.removeChild(element);
       }

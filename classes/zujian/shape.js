@@ -1,4 +1,4 @@
-import { Actor, Vector } from "./actor.js";
+import { Actor, Vector } from "../actor.js";
 //画个笑脸
 function drawSmile(g, x, y, bounds) {
     //Head

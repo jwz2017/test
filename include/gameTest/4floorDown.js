@@ -1,7 +1,7 @@
-import { stage, gframe, queue, game, pressed, keys } from "../../classes/gframe.js";
+import { gframe, queue, game, pressed, keys } from "../../classes/gframe.js";
 import { Actor, JumpActor } from "../../classes/actor.js";
 import { Game } from "../../classes/Game.js";
-import { ScoreBoard } from "../../classes/screen.js";
+import { BackgroundV, ScoreBoard } from "../../classes/zujian/screen.js";
 window.onload = function () {
     /*************游戏入口*****/
     gframe.buildStage('canvas');
@@ -28,7 +28,8 @@ export class FloorDown extends Game {
     constructor() {
         super("是男人就下100层");
         this.instructionText="ad:左右方向";
-        this.background = new Background("back", this);
+        let bitmap=new createjs.Bitmap(queue.getResult("back"));
+        this.background=new BackgroundV(this,bitmap,2);
         player = new Player();
     }
     createScoreBoard() {
@@ -54,7 +55,7 @@ export class FloorDown extends Game {
     }
     runGame() {
         //移动背景
-        this.background.run();
+        this.background.update();
         //加入floor
         if (stepindex-- < 0) {
             stepindex = step;
@@ -85,29 +86,7 @@ export class FloorDown extends Game {
     }
 
 }
-class Background {
-    constructor(urlId, parent) {
-        this.bitmap1 = new createjs.Bitmap(queue.getResult(urlId));
-        this.bitmap2 = this.bitmap1.clone();
-        this.bitmap2.regY = stage.height / 2;
-        this.bitmap2.y = stage.height * 3 / 2;
-        this.bitmap2.scaleY = -1;
-        parent.addChildAt(this.bitmap1, 0);
-        parent.addChildAt(this.bitmap2, 0);
-    }
-    run() {
-        this.bitmap1.y += stagestep;
-        this.bitmap2.y += stagestep;
-        if (this.bitmap1.y < -stage.height) {
-            this.bitmap1.y = this.bitmap2.y - stage.height / 2;
-            this.bitmap2.y = this.bitmap1.y + stage.height * 3 / 2;
-            game.level++;
-            game.scoreboard.update(FloorDown.LEVEL, game.level);
-            stagestep -= 0.1;
-        }
-    }
 
-}
 //普通地板
 class Floor extends Actor {
     constructor(xpos, ypos) {

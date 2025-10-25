@@ -1,6 +1,6 @@
-import { GraphicTile, IsoUtils, Point3D } from "../../classes/3DClass.js";
+import { GraphicTile, IsoUtils, Point3D } from "../../classes/3d/3DClass.js";
 import { Game } from "../../classes/Game.js";
-import { gframe, queue, stage } from "../../classes/gframe.js";
+import { queue, stage } from "../../classes/gframe.js";
 
 export class GraphicsTileTest extends Game {
     static loadItem = [{

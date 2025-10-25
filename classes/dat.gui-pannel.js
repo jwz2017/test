@@ -1,5 +1,5 @@
 import { Box2dGame } from "./Game.js";
-import { BasicScreen, Fps } from "./screen.js";
+import { BasicScreen, Fps } from "./zujian/screen.js";
 
 export class Pannel extends BasicScreen {
     static guiProps={

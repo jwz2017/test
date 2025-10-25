@@ -1,7 +1,9 @@
 import { Game } from "../../classes/Game.js";
-import { Actor, MoveManage, SteeredActor, Vector, Weapon } from "../../classes/actor.js";
+import { Actor, SteeredActor, Vector} from "../../classes/actor.js";
 import { gframe, keys, stage } from "../../classes/gframe.js";
-import { Fps, ScoreBoard } from "../../classes/screen.js";
+import { MoveManage } from "../../classes/moveManage/move.js";
+import { Fps, ScoreBoard } from "../../classes/zujian/screen.js";
+import { Weapon } from "../../classes/weapon/weapon.js";
 
 window.onload = function () {
     gframe.buildStage('canvas',false,true);
@@ -63,7 +65,7 @@ class SpaceShip extends Game {
         }
         //石块移动
         for (const o of SpaceRock.array) {
-            if (!o.active) {
+            if (!o.parent) {
                 continue;
             }
             o.act();
@@ -114,7 +116,7 @@ class SpaceShip extends Game {
         }
         //检测子弹
         for (const bullet of Bullet.array) {
-            if (bullet.active) {
+            if (bullet.parent) {
                 bullet.act();
             }
         }
@@ -142,7 +144,7 @@ class Ship extends SteeredActor {
         this.weapon = new Weapon(this,Bullet, 30);
     }
     act() {
-        moveManage.driveShip(this,keys);
+        moveManage.driveShip(this,keys,5,0.05);
         super.act();
         if (this.thrust > 0) {
             this.timeout++;

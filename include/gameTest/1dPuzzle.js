@@ -1,6 +1,6 @@
 import { Game } from "../../classes/Game.js";
 import { gframe, queue, stage } from "../../classes/gframe.js";
-import { ScoreBoard } from "../../classes/screen.js";
+import { ScoreBoard } from "../../classes/zujian/screen.js";
 
 window.onload = function () {
     gframe.buildStage('canvas');

@@ -1,8 +1,10 @@
 import { Game } from "../../classes/Game.js";
-import { Actor, MoveManage, Weapon } from "../../classes/actor.js";
+import { Actor} from "../../classes/actor.js";
 import { game, gframe, keys, queue, stage } from "../../classes/gframe.js";
-import { BackgroundV } from "../../classes/other.js";
-import { Fps, ScoreBoard } from "../../classes/screen.js";
+import { planeMove } from "../../classes/moveManage/move.js";
+import { BackgroundV } from "../../classes/zujian/screen.js";
+import { Fps, ScoreBoard } from "../../classes/zujian/screen.js";
+import { Weapon } from "../../classes/weapon/weapon.js";
 
 window.onload = function () {
     gframe.buildStage('canvas', true);
@@ -12,7 +14,6 @@ window.onload = function () {
 var spriteSheet;
 var timeToEnemy, enemyIdex;
 var DIFFICULTY = 2;
-var moveManage = new MoveManage();
 class SpaceHero extends Game {
     static loadItem = [{
         id: "all",
@@ -44,9 +45,6 @@ class SpaceHero extends Game {
         //player
         this.player = new Ship();
     }
-    onTitleKeydown() {
-        console.log(keys.up);
-    }
     createScoreBoard() {
         this.scoreboard = new ScoreBoard(this.width);
         this.scoreboard.x = this.x;
@@ -58,7 +56,7 @@ class SpaceHero extends Game {
     newGame() {
         timeToEnemy = 120;
         enemyIdex = 0;
-        this.lives = 3;
+        this.lives = 1;
         this.scoreboard.update(SpaceHero.LIVES, this.getLives())
     }
     newLevel() {
@@ -99,8 +97,7 @@ class Ship extends Actor {
         this.setSpriteData(queue.getResult("all"), "heroIdle", { imageScale: 0.7, rotation: 90 });
         this.setRotation(-90);
         this.hp = 3;
-        this.velocity = 3;
-        this.weapon = new Weapon(this, PlayerBullet, 20, 3);
+        this.weapon = new Weapon(this,PlayerBullet, 20, 3);
     }
     init() {
         this.image.gotoAndPlay("herohit");
@@ -110,7 +107,7 @@ class Ship extends Actor {
         this.updateRect();
     }
     act() {
-        moveManage.planeMove(this, keys);
+        planeMove(this,3,keys)
         this.weapon.fire(keys.attack);
         super.act();
         //检测碰撞
@@ -119,7 +116,7 @@ class Ship extends Actor {
             if (actor) {
                 if (actor.type == "enemy") {
                     actor.recycle();
-                    let explode = Explode.getActor(game);
+                    let explode = Explode.getActor(game.container);
                     explode.x = actor.x;
                     explode.y = actor.y;
                 } else if (actor.type == "enemybullet") {
@@ -128,7 +125,7 @@ class Ship extends Actor {
                 this.image.gotoAndPlay("heroHit");
                 this.hp--;
                 if (this.hp <= 0) {
-                    let ex = Explode.getActor(game);
+                    let ex = Explode.getActor(game.container);
                     ex.x = this.x;
                     ex.y = this.y;
                     game.lives--
@@ -180,7 +177,7 @@ class Enemy extends Actor {
                 if (this.hp <= 0) {
                     game.score += 10;
                     game.scoreboard.update(SpaceHero.SCORE, game.score);
-                    let explode = Explode.getActor(game);
+                    let explode = Explode.getActor(game.container);
                     explode.x = this.x;
                     explode.y = this.y;
                     this.recycle();
@@ -221,20 +218,5 @@ class Explode extends Actor{
         this.image.on("animationend",()=>{
             this.recycle();
         })
-
-
-        // super(spriteSheet, "explosion");
-        // let b = this.getBounds();
-        // this.regX = b.width / 2 + b.x;
-        // this.regY = b.height / 2 + b.y;
-        // this.on("animationend", () => {
-        //     this.recycle();
-        // })
-    }
-    recycle() {
-        if (this.parent) {
-            this.parent.removeChild(this);
-            this.active = false;
-        }
     }
 }

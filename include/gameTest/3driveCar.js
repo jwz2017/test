@@ -1,7 +1,8 @@
 import { ScrollMapGame, Node } from "../../classes/Game.js";
-import { Actor, MoveManage } from "../../classes/actor.js";
+import { Actor} from "../../classes/actor.js";
 import { game, gframe, keys, queue, stage } from "../../classes/gframe.js";
-import { Fps, ScoreBoard } from "../../classes/screen.js";
+import { MoveManage } from "../../classes/moveManage/move.js";
+import { Fps, ScoreBoard } from "../../classes/zujian/screen.js";
 
 window.onload = function () {
     /*************游戏入口*****/
@@ -139,7 +140,7 @@ class Car extends Actor {
         this.setSpriteData(queue.getResult("drivecar"), "car", { imageScale: 2, rotation: 90 });
         this.image.paused = true;
         this.friction = 0.96;
-        this.velocity = 0.2;
+        moveManage.maxForce=0.2;
     }
     act() {
         let node = game.hitMap(this.rect, this.hitflooractor, this.image, 0.9);

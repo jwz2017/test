@@ -1,4 +1,4 @@
-import { BasicScreen } from "../../classes/screen.js";
+import { BasicScreen } from "../../classes/zujian/screen.js";
 import {Game} from "../../classes/Game.js";
 import { stage, queue, lib } from "../../classes/gframe.js";
 export class LoadBitmap extends Game {

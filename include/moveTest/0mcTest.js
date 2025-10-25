@@ -1,6 +1,6 @@
 import { Game } from "../../classes/Game.js";
 import { stage } from "../../classes/gframe.js";
-import { mc,PushButton,CheckBox,RadioButton,Slider,ScrollContainer } from "../../classes/mc.js";
+import { mc,PushButton,CheckBox,RadioButton,Slider,ScrollContainer } from "../../classes/zujian/mc.js";
 import { Slider as Cslider } from "../../classes/zujian/slider.js";
 export class Mctest extends Game {
     static backgroundColor="#fff"

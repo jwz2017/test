@@ -1,6 +1,6 @@
 import { Game } from "../../classes/Game.js";
 import { stage } from "../../classes/gframe.js";
-import { BarGraph,drawSmile} from "../../classes/shape.js";
+import { BarGraph,drawSmile} from "../../classes/zujian/shape.js";
 export class Graphics extends Game {
 
     constructor() {

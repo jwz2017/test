@@ -1,6 +1,6 @@
-import { stage, gframe, queue } from "../../classes/gframe.js";
+import { stage, queue } from "../../classes/gframe.js";
 import { Game } from "../../classes/Game.js";
-import { getFXBitmap } from "../../classes/other.js";
+import { getFXBitmap } from "../../classes/tool/getFXBitmap.js";
 
 
 export class FilterAnimated extends Game {

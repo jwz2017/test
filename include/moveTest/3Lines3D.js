@@ -1,4 +1,4 @@
-import { Point3D } from "../../classes/3DClass.js";
+import { Point3D } from "../../classes/3d/3DClass.js";
 import { Game } from "../../classes/Game.js";
 import { stage } from "../../classes/gframe.js";
 

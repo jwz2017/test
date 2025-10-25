@@ -1,6 +1,6 @@
 import { Game } from "../../classes/Game.js";
 import { stage, queue } from "../../classes/gframe.js";
-import { PushButton } from "../../classes/mc.js";
+import { PushButton } from "../../classes/zujian/mc.js";
 var button;
 export class RandomDice extends Game {
     static loadItem = [{

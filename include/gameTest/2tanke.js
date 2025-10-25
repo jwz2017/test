@@ -1,7 +1,9 @@
 import { Game,Node} from "../../classes/Game.js";
-import { Actor, CirActor, MoveManage, Weapon } from "../../classes/actor.js";
+import { Actor, CirActor} from "../../classes/actor.js";
 import { game, gframe, keys, pressed, queue, stage } from "../../classes/gframe.js";
-import { Fps, ScoreBoard } from "../../classes/screen.js";
+import { tankMove } from "../../classes/moveManage/move.js";
+import { Fps, ScoreBoard } from "../../classes/zujian/screen.js";
+import { Weapon } from "../../classes/weapon/weapon.js";
 
 window.onload = function () {
     gframe.buildStage('canvas',false);
@@ -9,7 +11,6 @@ window.onload = function () {
     gframe.fps=new Fps;
 };
 var spriteData, spriteSheet;
-var moveManage = new MoveManage();
 var step = 32,
     plans = [
         [
@@ -169,7 +170,7 @@ class Player extends Actor {
     }
     act() {
         //移动
-        moveManage.tankMove(this, pressed[pressed.length - 1])
+        tankMove(this,1, pressed[pressed.length - 1])
         //开火
         this.weapon.fire(keys.attack,game.playerBulletLayer);
         //与地图碰撞
@@ -221,7 +222,7 @@ class Enemy extends Actor {
         else if (this.key > 40 && this.key <= 65) this.key = "right";
         else if (this.key > 65) this.key = "left";
 
-        moveManage.tankMove(this, this.key)
+        tankMove(this,1, this.key)
         let rect = this.rect.clone();
         rect.x += this.speed.x;
         rect.y += this.speed.y;

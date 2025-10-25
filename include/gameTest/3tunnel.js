@@ -2,7 +2,7 @@ import { stage, gframe, keys, game } from "../../classes/gframe.js";
 import { Actor, SteeredActor } from "../../classes/actor.js";
 import { mc } from "../../classes/mc.js";
 import { Game } from "../../classes/Game.js";
-import { Fps, ScoreBoard } from "../../classes/screen.js";
+import { Fps, ScoreBoard } from "../../classes/zujian/screen.js";
 window.onload = function () {
     /*************游戏入口*****/
     gframe.buildStage('canvas');

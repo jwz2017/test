@@ -1,6 +1,6 @@
 import { Game } from "../../classes/Game.js";
 import { stage } from "../../classes/gframe.js";
-import { Segment } from "../../classes/shape.js";
+import { Segment } from "../../classes/zujian/shape.js";
 
 var segments, numSegments = 30;
 export class SegmentDrag extends Game {

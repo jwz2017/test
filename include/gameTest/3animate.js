@@ -2,8 +2,6 @@ import { gframe, lib, stage } from "../../classes/gframe.js";
 import {Box2dGame} from "../../classes/Game.js";
 import { BoxActor } from "../../classes/actor.js";
 import { Clipper } from "../../classes/Clipper-help.js";
-import { PushButton, mc } from "../../classes/mc.js";
-import { BasicScreen } from "../../classes/screen.js";
 window.onload = function () {
     Box2D().then(function (r) {
         Box2D = r;

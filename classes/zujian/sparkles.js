@@ -1,4 +1,4 @@
-import { stage } from "./gframe.js";
+import { stage } from "../gframe.js";
 
 export class Sparkles extends createjs.Container {
     constructor(spriteSheet, width = 200, height = 100, autoClear = true) {

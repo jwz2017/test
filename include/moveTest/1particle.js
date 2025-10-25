@@ -1,6 +1,6 @@
 import { stage } from "../../classes/gframe.js";
 import { Actor,CirActor } from "../../classes/actor.js";
-import { GridCollision } from "../../classes/GridCollision.js";
+import { GridCollision } from "../../classes/hit/GridCollision.js";
 import { Game } from "../../classes/Game.js";
 var particles, gridSize = 80, grid,
     numParticles = 100;

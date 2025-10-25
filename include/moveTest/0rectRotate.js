@@ -1,6 +1,6 @@
 import { stage } from "../../classes/gframe.js";
 import {Vector,Actor } from "../../classes/actor.js";
-import { OBB, detectorOBBvsOBB } from "../../classes/hitTest.js";
+import { OBB, detectorOBBvsOBB } from "../../classes/hit/hitTest.js";
 import { Game } from "../../classes/Game.js";
 var rect0, rect1;
 export class RectRotate extends Game {

@@ -1,6 +1,6 @@
 import { Game} from "../../classes/Game.js";
 import { queue } from "../../classes/gframe.js";
-import { ScoreBoard } from "../../classes/screen.js";
+import { ScoreBoard } from "../../classes/zujian/screen.js";
 
 //游戏变量;
 

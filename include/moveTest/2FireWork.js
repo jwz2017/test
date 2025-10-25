@@ -1,7 +1,7 @@
 import { Game } from "../../classes/Game.js";
 import { CirActor } from "../../classes/actor.js";
 import { stage } from "../../classes/gframe.js";
-import { mc } from "../../classes/mc.js";
+import { mc } from "../../classes/zujian/mc.js";
 
 var balls, vpX, vpY,
     numBalls = 100,

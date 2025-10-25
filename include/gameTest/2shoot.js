@@ -1,7 +1,7 @@
 import { Game } from "../../classes/Game.js";
 import { Actor, CirActor, Vector } from "../../classes/actor.js";
 import { game, gframe, lib, queue, stage } from "../../classes/gframe.js";
-import { Fps, ScoreBoard } from "../../classes/screen.js";
+import { Fps, ScoreBoard } from "../../classes/zujian/screen.js";
 
 window.onload = function () {
     gframe.buildStage('canvas');
@@ -108,30 +108,26 @@ class Shoot extends Game {
         this.moveActors(this.enemyLayer);
         //爆炸
         for (const exploy of Exploy.array) {
-            if (exploy.active) exploy.act();
+            if (exploy.parent) exploy.act();
         }
         //检测是否过关
         let isenemy = Enemy.array.some(function (enemy) {
-            return enemy.active == true;
+            return enemy.parent;
         });
+        
         if (numEnemy == maxEnemys && !isenemy) {
             this.levelUp=true;
         }
     }
     
     placeShip() {
-        let l = Ship.array.length;
-        let spacing = stage.width / shipStore;
-        let j=0;
-        for (let i = 0; i < l; i++) {
-            const ship = Ship.array[i];
-            if(ship.active){
-                ship.x = spacing * (j + 1) - spacing / 2;
-                ship.y = stage.height - ship.rect.height / 2;
-                ship.updateRect();
-                stage.addChild(ship);
-                j++;
-            }
+        let spacing=stage.width/shipStore;
+        for (let i = 0,j=0; i < shipStore; i++) {
+            const ship = Ship.getActor(stage);
+            ship.x=spacing*(j+1)-spacing/2;
+            ship.y=stage.height-ship.rect.height/2;
+            ship.updateRect();
+            j++;
         }
     }
     createEnemy() {

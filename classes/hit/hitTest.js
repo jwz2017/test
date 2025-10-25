@@ -1,4 +1,4 @@
-import { Vector } from "./actor.js";
+import { Vector } from "../actor.js";
 //旋转矩形碰撞
 export class OBB {
   constructor(centerPoint, width, height, rotation) {

@@ -1,4 +1,4 @@
-import { AStar } from "../../classes/Astar.js";
+import { AStar } from "../../classes/hit/Astar.js";
 import { Node, Game } from "../../classes/Game.js";
 import { CirActor } from "../../classes/actor.js";
 import { stage } from "../../classes/gframe.js";

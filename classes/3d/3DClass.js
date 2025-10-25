@@ -1,4 +1,4 @@
-import { mc } from "./mc.js";
+import { mc } from "../zujian/mc.js";
 
 /**
  * 3d相关以及等角游戏类

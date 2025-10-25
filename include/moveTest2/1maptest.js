@@ -1,7 +1,7 @@
-import { DrawnIsoBox, DrawnIsoTile, GraphicTile } from "../../classes/3DClass.js";
+import { DrawnIsoBox, DrawnIsoTile, GraphicTile } from "../../classes/3d/3DClass.js";
 import { Node,Game } from "../../classes/Game.js";
 import { queue } from "../../classes/gframe.js";
-import { mc } from "../../classes/mc.js";
+import { mc } from "../../classes/zujian/mc.js";
 
 var size = 20,
     plan = [
