@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        div{
+            width: 200px;
+            height: 200px;
+            background-color: red;
+            animation: identifier 2s ease-in-out 0s infinite alternate ;
+        }
+        div:hover{
+            animation-play-state: paused;
+        }
+        /* animation: name duration timing-function delay
+        name:设置动画的名称
+        duration:设置动画的持续时间
+        timing-function:设置动画效果的速率ease(逐渐变慢，默认)
+        delay:设置动画的开始时间（延时执行）
+        iteration-count:设置动画循环次数，infinite为无限循环
+        direction:设置动画播放的方向
+        animation-play-state:控制动画的播放状态，running代表播放，paused暂停 
+        
+        timing-function值
+        ease : 逐渐变慢（默认）
+        linear: 匀速
+        ease-in:加速
+        ease-out:减速
+        ease-in-out:先加速后减速
+
+        direction值
+        normal: 默认值为normal表示向前播放
+        alternate：动画播放在第偶数次向前播放，第奇数次向反方向播放
+        */
+        @keyframes identifier {
+            /* from */
+            0%{
+                width: 200px;
+                opacity: .1;
+                background-color: brown;
+            }
+            50%{
+                width: 400px;
+                opacity: .5;
+                background-color: blue;
+            }
+            /* to */
+            100%{
+                width: 200px;
+                opacity: 1;
+                background-color: rgb(58, 211, 96);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div></div>
+</body>
+</html>

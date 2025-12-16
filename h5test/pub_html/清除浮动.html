@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .container{
+            width: 500px;
+            /* 设置高度清除浮动 */
+            /* height: 500px; */
+            background-color: #333;
+            /* 父元素清除浮动 */
+            /* overflow: hidden;
+            clear: both; */
+        }
+        /* 伪对象清除浮动 */
+        .container::after{
+            content: "";
+            display: block;
+            clear: both;
+        }
+        .box{
+            width: 100px;
+            height: 100px;
+            background-color: blue;
+            margin: 5px;
+            float: left;
+        }
+        .text{
+            width: 100px;
+            height: 100px;
+            background-color: aquamarine;
+            /* 受影响的元素清除浮动 */
+            /* clear: both; */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="box"></div>
+        <div class="box"></div>
+        <div class="box"></div>
+        
+    </div>
+    <div class="text"></div>
+</body>
+</html>

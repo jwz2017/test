@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .box{
+            width: 200px;
+            height: 200px;
+            /* background-color: brown; */
+        }
+        @media screen and (max-width:768px) {
+            .box{
+                background-color: aqua;
+            }
+        }
+        @media screen and (min-width:768px) and (max-width:996px) {
+            .box{
+                background-color: bisque;
+            }
+        }
+        @media screen and (min-width:996px){
+            .box{
+                background-color: blueviolet;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+
+    </div>
+</body>
+</html>

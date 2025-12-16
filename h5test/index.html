@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1, user-scalable=no" />
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <link rel="stylesheet" href="assets/fonts/font_1wu1p0cqtoj/iconfont.css">
+  <link rel="stylesheet" href="css/normlize.css">
+  <link rel="stylesheet" href="css/index.css">
+  <link rel="stylesheet" href="css/game.css">
+  <!-- <link rel="Preload" href="assets/fonts/regul-book.woff" as="font" type="font/woff" crossorigin="anonymous">
+  <link rel="Preload" href="assets/fonts/pf_ronda_seven.ttf" as="font" type="font/ttf" crossorigin="anonymous"> -->
+  <title>h5Test</title>
+  <script src="classes/createjs.min.js"></script>
+  <script src="classes/dat.gui.min.js"></script>
+  <script src="classes/box2d/Box2D_v2.3.1_min.js"></script>
+  <script src="classes/box2d/embox2d-helpers.js"></script>
+  <script src="classes/box2d/embox2d-html5canvas-debugDraw.js"></script>
+  <script src="classes/box2d/clipper.js"></script>
+
+  <script src="assets/lib.js"></script>
+  <!--04-->
+  <script src="include/index.js" type="module"></script>
+</head>
+
+<body>
+  <div class="container">
+    <main id="main">
+      <!-- 搜索栏 -->
+      <header class="search">
+        <div class="search_box">
+          <a href="#" class="icon_logo"></a>
+          <form action="#">
+            <span class="icon_search"></span>
+            <input type="search" placeholder="基础">
+          </form>
+          <a href="#" class="login">登入</a>
+        </div>
+      </header>
+      <!-- banner轮播图 -->
+      <div class="banner">
+        <ul class="clearfix">
+          <li><a href="#"><img src="assets/main/banner.jpg" alt=""></a></li>
+          <li><a href="#"><img src="assets/main/banner.jpg" alt=""></a></li>
+          <li><a href="#"><img src="assets/main/banner.jpg" alt=""></a></li>
+          <li><a href="#"><img src="assets/main/banner.jpg" alt=""></a></li>
+          <li><a href="#"><img src="assets/main/banner.jpg" alt=""></a></li>
+          <li><a href="#"><img src="assets/main/banner.jpg" alt=""></a></li>
+          <li><a href="#"><img src="assets/main/banner.jpg" alt=""></a></li>
+          <li><a href="#"><img src="assets/main/banner.jpg" alt=""></a></li>
+          <li><a href="#"><img src="assets/main/banner.jpg" alt=""></a></li>
+          <li><a href="#"><img src="assets/main/banner.jpg" alt=""></a></li>
+        </ul>
+        <ul>
+          <li class="now"></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+          <li></li>
+        </ul>
+      </div>
+      <!-- 导航栏 -->
+      <nav>
+        <ul class="clearfix">
+          <li><a href="#"><img src="assets/main/qq13.png" alt="">
+              <p>主页</p>
+            </a></li>
+          <li><a href="#"><img src="assets/main/qq10.png" alt="">
+              <p>分类</p>
+            </a></li>
+          <li><a href="#"><img src="assets/main/qq1.png" alt="">
+              <p>分类</p>
+            </a></li>
+          <li><a href="#"><img src="assets/main/qq7.png" alt="">
+              <p>简介</p>
+            </a></li>
+        </ul>
+      </nav>
+
+      <!-- 商品区域 -->
+      <div class="product">
+        <!-- 第一个 -->
+        <section class="probox">
+          <div class="protitle nb">
+            <span class="sk_ico"></span>
+            <span class="sk_text">基础测试</span>
+            <div class="sk_time">
+              <span>0</span>
+              <span>0</span>
+              <span>:</span>
+              <span>0</span>
+              <span>0</span>
+              <span>:</span>
+              <span>0</span>
+              <span>0</span>
+            </div>
+            <div class="f_right"><a href="javascript:void(0)" class="m_r10" id="genduo1">更多></a></div>
+          </div>
+          <div class="procontant clearfix">
+            <ul class="sk_product">
+              <li>
+                <h4>测试</h4>
+                <p>hitTest测试</p>
+                <a href="#" title="hitTest" onclick="productClick(this)">hitTest</a>
+                <p>dom测试</p>
+                <a href="#" title="DomElement" onclick="productClick(this)">DomElement</a>
+                <p>图形工具</p>
+                <a href="#" title="Graphics" onclick="productClick(this)">Graphics</a>
+                <p>资源加载 </p>
+                <a href="#" title="LoadBitmap" onclick="productClick(this)">LoadBitmap</a>
+                <p>矢量组件</p>
+                <a href="#" title="Mctest" onclick="productClick(this)">Mctest</a>
+                <p>旋转矩形碰撞</p>
+                <a href="#" title="RectRotate" onclick="productClick(this)">RectRotate</a>
+                <p>随机骰子</p>
+                <a href="#" title="RandomDice" onclick="productClick(this)">RandomDice</a>
+                <p>分数板测试</p>
+                <a href="#" title="ScoreTest" onclick="productClick(this)">ScoreTest</a>
+              </li>
+              <li>
+                <h4>box2d属性</h4>
+                <select class="box2dSelect">
+                  <!-- <option value="reset" disabled selected hidden>请选择。。。</option> -->
+                  <option value="reset"  selected >请选择。。。</option>
+                  <option title="BodyDef">bodyDef属性</option>
+                  <option title="FixtureDef">fixture属性</option>
+                  <option title="CircleShape">圆形属性</option>
+                </select>
+                <h4>刚体操作</h4>
+                <select class="box2dSelect">
+                  <option value="reset"  selected >请选择。。。</option>
+                  <option title="CreateFixture">fixture创建</option>
+                  <option title="RayCastDef">rayCast属性</option>
+                </select>
+                <h4>box2d碰撞</h4>
+                <select class="box2dSelect">
+                  <option value="reset" selected >请选择。。。</option>
+                  <option title="DestroyFixture">删除fixture</option>
+                  <option title="ApplyForce">作用力</option>
+                  <option title="ApplyImpulse">冲量</option>
+                  <option title="ApplyTorque">旋转扭力</option>
+                  <option title="GetMass">抵消重力</option>
+                  <option title="SetMassData">不倒翁</option>
+                  <option title="QueryAABB">鼠标点击</option>
+                  <option title="RayCast">射线检测</option>
+                  <option title="Filter">碰撞删选</option>
+                  <option title="Gravition">引力作用</option>
+                  <option title="NomalImpulse">法向冲量</option>
+                  <option title="OneWayWall">单边通过</option>
+                  <option title="AniGravityAttach">粘贴效果</option>
+                </select>
+                <h4>box2d关节</h4>
+                <select class="box2dSelect">
+                  <option value="reset" selected >请选择。。。</option>
+                  <option title="MouseJoint">鼠标关节</option>
+                  <option title="PrismaticJoint">位移关节</option>
+                  <option title="RevoluteJoint">旋转关节</option>
+                  <option title="DistanceJoint">距离关节</option>
+                  <option title="WeldJoint">粘贴关节</option>
+                  <option title="PulleyJoint">滑轮关节</option>
+                  <option title="FrictionJoint">摩擦关节</option>
+                  <option title="GearJoint">齿轮关节</option>
+                  <option title="WheelJoint">中轴关节</option>
+                  <option title="RopeJoint">绳索关节</option>
+                  <option title="MotorJoint">马达关节</option>
+                </select>
+                <h4>box2d应用</h4>
+                <select class="box2dSelect">
+                  <option value="reset" selected >请选择。。。</option>
+                  <option title="SoftBody1">柔体1</option>
+                  <option title="SoftBody2">柔体2</option>
+                  <option title="ClipperDemo">clipper使用</option>
+                  <option title="WaterDome">水中浮力</option>
+                  <option title="IceBreaker">刚体切割</option>
+                  <option title="Swindler">关节碰撞todo</option>
+                </select>
+              </li>
+              <li>
+              </li>
+            </ul>
+            <!-- 扩展 -->
+            <ul id="pro_con1" class="sk_product" style="display: none;">
+              <li>
+                <hr>
+                <h4>动量运动</h4>
+                <p>链式运动</p>
+                <a href="#" title="Chain" onclick="productClick(this)">Chain</a>
+                <p>单轴碰撞</p>
+                <a href="#" title="Billiard" onclick="productClick(this)">Billiard</a>
+                <p>动量碰撞</p>
+                <a href="#" title="Billiard2" onclick="productClick(this)">Billiard2</a>
+                <p>网格检查</p>
+                <a href="#" title="Particle" onclick="productClick(this)">Particle</a>
+                <p>节点花园</p>
+                <a href="#" title="NodeGarden" onclick="productClick(this)">NodeGarden</a>
+                <hr />
+                <h4>关节</h4>
+                <p>关节运动</p>
+                <a href="#" title="SingleSegment" onclick="productClick(this)">SingleSegment</a>
+                <p>关节行走</p>
+                <a href="#" title="SegmentWalk" onclick="productClick(this)">segmentWalk</a>
+                <p>关节拖拽</p>
+                <a href="#" title="SegmentDrag" onclick="productClick(this)">segmentDrag</a>
+                <p>关节伸展</p>
+                <a href="#" title="SegmentReach" onclick="productClick(this)">SegmentReach</a>
+                <p>余弦定理</p>
+                <a href="#" title="SegmentCosines" onclick="productClick(this)">SegmentCosines</a>
+              </li>
+              <li>
+                <hr />
+                <h4>3D透视</h4>
+                <p>透视</p>
+                <a href="#" title="Perspective1" onclick="productClick(this)">Perspective1</a>
+                <p>3d速度及反弹</p>
+                <a href="#" title="Velocity3D" onclick="productClick(this)">Velocity3D</a>
+                <p>多球反弹</p>
+                <a href="#" title="MultiBounce3D" onclick="productClick(this)">MultiBounce3D</a>
+                <p>3d重力</p>
+                <a href="#" title="FireWork" onclick="productClick(this)">FireWork</a>
+                <p>3d屏幕环绕</p>
+                <a href="#" title="Trees" onclick="productClick(this)">Trees</a>
+                <p>3d缓动</p>
+                <a href="#" title="Easing3d" onclick="productClick(this)">Easing3d</a>
+                <p>3d弹性运动</p>
+                <a href="#" title="Spring3D" onclick="productClick(this)">Spring3D</a>
+                <p>绕Y轴旋转</p>
+                <a href="#" title="RotateY" onclick="productClick(this)">RotateY</a>
+                <p>3D碰撞检测</p>
+                <a href="#" title="Collision3D" onclick="productClick(this)">Collision3D</a>
+              </li>
+              <li>
+                <hr />
+                <h4>3D物体</h4>
+                <p>3D线条</p>
+                <a href="#" title="Lines3D" onclick="productClick(this)">Lines3D</a>
+                <p>3D正方形</p>
+                <a href="#" title="Square3D" onclick="productClick(this)">Square3D</a>
+                <p>3D三角绘制</p>
+                <a href="#" title="Triangles" onclick="productClick(this)">Triangles</a>
+                <p>正方体</p>
+                <a href="#" title="Cube" onclick="productClick(this)">Cube</a>
+                <hr>
+                <h4>分布</h4>
+                <p>布朗运动</p>
+                <a href="#" title="Brownian" onclick="productClick(this)">Brownian</a>
+                <p>平均圆形分布</p>
+                <a href="#" title="Random" onclick="productClick(this)">Random</a>
+                <p>偏向分布</p>
+                <a href="#" title="Random2" onclick="productClick(this)">Random2</a>
+              </li>
+              <li>
+                <hr />
+                <h4>转向行为</h4>
+                <p>机车追寻</p>
+                <a href="#" title="VehiclSeek" onclick="productClick(this)">VehiclSeek</a>
+                <p>机车逃离</p>
+                <a href="#" title="VehiclFlee" onclick="productClick(this)">VehiclFlee</a>
+                <p>机车逃离测试1</p>
+                <a href="#" title="FleeTest1" onclick="productClick(this)">FleeTest1</a>
+                <p>机车逃离测试2</p>
+                <a href="#" title="FleeTest2" onclick="productClick(this)">FleeTest2</a>
+                <p>机车到达</p>
+                <a href="#" title="VehiclArrive" onclick="productClick(this)">VehiclArrive</a>
+                <p>机车追捕</p>
+                <a href="#" title="VehiclPursue" onclick="productClick(this)">VehiclPursue</a>
+                <p>追捕和躲避测试</p>
+                <a href="#" title="PursueEvade" onclick="productClick(this)">PursueEvade</a>
+                <p>漫游测试</p>
+                <a href="#" title="WanderTest" onclick="productClick(this)">WanderTest</a>
+                <p>回避绕路测试</p>
+                <a href="#" title="AvoidTest" onclick="productClick(this)">AvoidTest</a>
+                <p>路径跟随</p>
+                <a href="#" title="PathTest" onclick="productClick(this)">PathTest</a>
+                <p>群落测试</p>
+                <a href="#" title="FlockTest" onclick="productClick(this)">FlockTest</a>
+              </li>
+              <li>
+                <hr />
+                <h4>二等角游戏</h4>
+                <p>坐标转换测试</p>
+                <a href="#" title="isoTransformTest" onclick="productClick(this)">isoTransformTest</a>
+                <p>Tile测试</p>
+                <a href="#" title="TileTest" onclick="productClick(this)">TileTest</a>
+                <p>移动测试</p>
+                <a href="#" title="MotionTest" onclick="productClick(this)">MotionTest</a>
+                <p>移动测试2</p>
+                <a href="#" title="MotionTest2" onclick="productClick(this)">MotionTest2</a>
+                <p>碰撞测试</p>
+                <a href="#" title="Collision" onclick="productClick(this)">Collision</a>
+                <p>图片tile测试</p>
+                <a href="#" title="GraphicsTileTest" onclick="productClick(this)">GraphicsTileTest</a>
+                <p>地图编辑器测试</p>
+                <a href="#" title="MapTest" onclick="productClick(this)">MapTest</a>
+              </li>
+              <li>
+                <hr>
+                <h4>AStar</h4>
+                <p>a-star测试</p>
+                <a href="#" title="AStarTest" onclick="productClick(this)">AStarTest</a>
+                <p>a-star智能寻路</p>
+                <a href="#" title="AstarMove" onclick="productClick(this)">AstarMove</a>
+              </li>
+            </ul>
+          </div>
+        </section>
+        <!-- createjs Dome -->
+        <section class="probox">
+          <div class="protitle nb">
+            <span class="sk_ico"></span>
+            <span class="sk_text">createjs</span>
+            <div class="f_right"><a href="javascript:void(0)" class="m_r10" id="genduo2">更多></a></div>
+          </div>
+          <div class="procontant clearfix">
+            <ul class="sk_product">
+              <li>
+                <p>透明遮罩</p>
+                <a href="#" title="AlphaMaskFilter" onclick="productClick(this)">AlphaMaskFilter</a>
+                <p>按钮创建</p>
+                <a href="#" title="ButtonHelp" onclick="productClick(this)">ButtonHelp</a>
+              </li>
+              <li>
+                <p>滤镜</p>
+                <a href="#" title="FilterAnimated" onclick="productClick(this)">FilterAnimated</a>
+                <p>滤镜输入</p>
+                <a href="#" title="FiltersInput" onclick="productClick(this)">FiltersInput</a>
+              </li>
+              <li>
+                <p>矢量雪碧图</p>
+                <a href="#" title="SpritesheetBuilder" onclick="productClick(this)">SpritesheetBuilder</a>
+                <p>movie雪碧图</p>
+                <a href="#" title="SpriteSheetMovie" onclick="productClick(this)">SpriteSheetMovie</a>
+              </li>
+              <li>
+                <p>文字链接</p>
+                <a href="#" title="TextLinkTest" onclick="productClick(this)">TextLinkTest</a>
+                <p>九宫格</p>
+                <a href="#" title="ScaleBitmapTest" onclick="productClick(this)">ScaleBitmapTest</a>
+              </li>
+            </ul>
+            <ul id="pro_con2" class="sk_product" style="display: none;">
+
+            </ul>
+          </div>
+        </section>
+        <!-- 游戏测试 -->
+        <section class="probox">
+          <div class="protitle nb">
+            <span class="sk_ico"></span>
+            <span class="sk_text">游戏测试</span>
+            <div class="f_right"><a href="javascript:void(0)" class="m_r10" id="genduo3">更多></a></div>
+          </div>
+          <div class="procontant clearfix">
+            <ul class="sk_product">
+              <li>
+                <a href="pub_gameHtml/superClick.html"><img src="assets/main/superclick.jpg" alt=""></a>
+                <p>超级点击</p>
+              </li>
+              <li>
+                <a href="pub_gameHtml/colordrop.html"><img src="assets/main/colordrop.jpg" alt=""></a>
+                <p>图像拖拽</p>
+              </li>
+              <li>
+                <a href="pub_gameHtml/bounce.html"><img src="assets/main/bounce.jpg" alt=""></a>
+                <p>弹球游戏</p>
+              </li>
+              <li>
+                <a href="pub_gameHtml/puzzle.html"><img src="assets/main/puzzle.jpg" alt=""></a>
+                <p>拼图游戏</p>
+              </li>
+              <li>
+                <a href="pub_gameHtml/match.html"><img src="assets/main/match.jpg" alt=""></a>
+                <p>记忆游戏</p>
+              </li>
+              <li>
+                <a href="pub_gameHtml/jump.html"><img src="assets/main/jump.png" alt=""></a>
+                <p>横板跳跃</p>
+              </li>
+              <li>
+                <a href="pub_gameHtml/tanke.html"><img src="assets/main/tanke.png" alt=""></a>
+                <p>坦克大战</p>
+              </li>
+              <li>
+                <a href="pub_gameHtml/spaceGame.html"><img src="assets/main/spacegame.jpg " alt="太空游戏"></a>
+                <p>太空飞机</p>
+              </li>
+              <li>
+                <a href="pub_gameHtml/spaceHero.html"><img src="assets/main/spacehero.jpg" alt="太空英雄"></a>
+                <p>像素级碰撞检测</p>
+              </li>
+              <li>
+                <hr>
+                <h5>功能测试</h5>
+                <a href="pub_gameHtml/shoot.html">射击游戏</a>
+                <a href="pub_gameHtml/colordrop1.html">魔法方块</a>
+                <a href="pub_gameHtml/animate.html">animat界面制作</a>
+                <a href="pub_gameHtml/driveCar.html">DriveCar</a>
+                <a href="pub_gameHtml/tunnel.html">隧道惊魂</a>
+                <a href="pub_gameHtml/worldGame.html">文字游戏</a>
+                <a href="pub_gameHtml/eluos.html">俄罗斯方块</a>
+              </li>
+            </ul>
+            <ul id="pro_con3" class="sk_product" style="display: none;">
+              <hr>
+              <h5>小游戏</h5>
+              <li>
+                <p>floorDown</p>
+                <a href="pub_gameHtml/floordown.html">下100层</a>
+              </li>
+            </ul>
+          </div>
+        </section>
+        <!-- 第4个 -->
+        <!-- html Dome -->
+        <section class="probox">
+          <div class="protitle nb">
+            <span class="sk_ico"></span>
+            <span class="sk_text">htmlDome</span>
+            <div class="f_right"><a href="javascript:void(0)" class="m_r10" id="genduo4">更多></a></div>
+          </div>
+          <div class="procontant clearfix">
+            <ul class="sk_product">
+              <li>
+                <h4>基础</h4>
+                <a href="pub_html/弹性盒子.html">弹性盒子</a>
+                <a href="pub_html/动画.html">动画</a>
+                <a href="pub_html/基础.html">基础</a>
+                <a href="pub_html/媒体查询.html">媒体查询</a>
+                <a href="pub_html/清除浮动.html">清除浮动</a>
+                <a href="pub_html/文档流问题.html">文档流问题</a>
+                <a href="pub_html/新特性css3.html">新特性css3</a>
+                <a href="pub_html/雪碧图.html">雪碧图</a>
+                <a href="pub_html/字体图标.html">字体图标</a>
+                <a href="pub_html/字体图标.html">字体图标</a>
+                <a href="pub_html/字体图标.html">字体图标</a>
+                <a href="pub_html/字体图标.html">字体图标</a>
+                <a href="pub_html/字体图标.html">字体图标</a>
+                <a href="pub_html/字体图标.html">字体图标</a>
+                <a href="pub_html/字体图标.html">字体图标</a>
+                <a href="pub_html/字体图标.html">字体图标</a>
+                <a href="pub_html/字体图标.html">字体图标</a>
+              </li>
+            </ul>
+            <ul id="pro_con4" class="sk_product" style="display: none;">
+              <li>
+
+              </li>
+            </ul>
+          </div>
+        </section>
+        <!-- 第五个 -->
+        <section class="probox">
+          <div class="protitle"></div>
+          <div class="procontant"></div>
+        </section>
+      </div>
+    </main>
+    <!-- 弹窗界面-->
+    <div id="containerDiv" style="position: absolute;width:100%;z-index:1000;display: none;top:0;left: 0;">
+      <!-- 游戏界面 -->
+      <div id="gameDiv">
+        <!-- <input type="text" id="inputText" placeholder="请输入姓名" style="position: absolute;visibility: hidden;"> -->
+        <div id="gameScaleDom">
+          <!-- 随舞台缩放 -->
+          <!-- <div id="testbed-play" type="button">button</div> -->
+        </div>
+        <canvas id="canvas" width="750" height="1334">
+        </canvas>
+      </div>
+      <div id="gameDom">
+        <!-- 不随舞台缩放 dom -->
+
+      </div>
+      <!-- 关闭按钮 -->
+      <a href="#" class="iconfont icon-cancel-square" id="closeGame"
+        style="color: #e5e5e5;font-size: 50px;position: absolute;right: 0px;top: 0px;"></a>
+    </div>
+  </div>
+</body>
+
+</html>
