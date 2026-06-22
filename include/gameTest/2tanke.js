@@ -218,8 +218,8 @@ class Enemy extends Actor {
         this.weapon = new Weapon(this, EnemyBullet);
     }
     init(xpos, ypos) {
-        // super.init(xpos, ypos);
-        super.init(xpos, ypos,{rotation:90});
+        super.init(xpos, ypos);
+        // super.init(xpos, ypos,{rotation:90});
         this.rotation = 90;
         this.image.paused = true;
         this.tick = 0;

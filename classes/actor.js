@@ -177,7 +177,7 @@ class Actor extends createjs.Container {
     this.mass = 1;
     this.bounce = -1;
     this.maxSpeed = 5;
-    this._maxHp = 1;//=0不被检测
+    this._maxHp = 1;
     this.hp = this._maxHp;
     this._color = "rgb(64,64,64)";
   }

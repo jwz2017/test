@@ -13,7 +13,7 @@ import { LinearDamping } from "./3BodyDef/LinearDamping.js";
 import { linearVelocity } from "./3BodyDef/LinearVelocity.js";
 import { position } from "./3BodyDef/Position.js";
 import { Type } from "./3BodyDef/Type.js";
-var gravity;
+var gravity,textFont="40px regul"
 export class BodyDef extends Box2dGame {
     static backgroundColor = "#555"
     static codes = {
@@ -54,13 +54,13 @@ export class BodyDef extends Box2dGame {
         gravity.Set(0, this.demo.gravity);
         world.SetGravity(gravity);
         //Text
-        this.demoCounter = new createjs.Text("1/" + this.demoList.length, "40px regul", "#fff");
+        this.demoCounter = new createjs.Text("1/" + this.demoList.length, textFont, "#fff");
         this.demoCounter.set({
             x: this.width - this.demoCounter.getMeasuredWidth() - 15,
             y: this.height - this.demoCounter.getMeasuredHeight() - 15
         })
 
-        this.title = new createjs.Text(this.demoList[0].name, gframe.style.scoreFont, "#fff");
+        this.title = new createjs.Text(this.demoList[0].name, textFont, "#fff");
         this.title.x = 50;
         this.title.y = 20;
 
@@ -80,7 +80,7 @@ export class BodyDef extends Box2dGame {
             lineHeight: 20
         });
 
-        this.value = new createjs.Text("", gframe.style.textFont, "#f00");
+        this.value = new createjs.Text("", textFont, "#f00");
         this.value.set({
             x: 50,
             y: 60
