@@ -47,7 +47,7 @@ class Tanke extends Game {
         32: "pause"
     }
     constructor() {
-        super("坦克大战", plans[0][0].length * step, plans[0].length * step);
+        super("坦克大战01", plans[0][0].length * step, plans[0].length * step);
         this.x = stage.width - this.width >> 1;
         this.y = stage.height - this.height >> 1;
         this.instructionText = "方向w,a,s,d小键盘4开火攻击";
