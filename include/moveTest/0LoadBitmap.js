@@ -1,12 +1,15 @@
 import { BasicScreen } from "../../classes/zujian/screen.js";
 import {Game} from "../../classes/Game.js";
 import { stage, queue, lib } from "../../classes/gframe.js";
+
 export class LoadBitmap extends Game {
     static backgroundColor="#555";
     static loadItem = [
         {
             id: "spritesheet_button",
-            src: "easelJs/spritesheet_button.png",
+            // src: "easelJs/spritesheet_button.png",
+            // src: "https://bee-reg-ab.imagency.cn/e/1bca5311e244083df376ea8e9b766485.png",
+            src: "https://s41.ax1x.com/2026/06/26/pmN42md.png",
             type: "image"
         }, 
         {
@@ -21,7 +24,7 @@ export class LoadBitmap extends Game {
     ];
     static loadId = 'A81D833FE7C7754FB5395FF7A6EFA6E1';
     constructor() {
-        super("资源加载01");
+        super("资源加载02");
 
         /** *****************************************************************************************
          * 滤镜
