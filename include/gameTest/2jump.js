@@ -89,7 +89,7 @@ export class Jump extends ScrollMapGame {
         17: "ctrl"
     };
     constructor() {
-        super("Jump02", 750, 400);
+        super("Jump03", 750, 400);
         plans = queue.getResult("levels");
         this.instructionText = "方向:w,a,s,d <br>小键盘4567:普通攻击，跳跃，技能";
         // this.backSound = createjs.Sound.createInstance("titlesound");
