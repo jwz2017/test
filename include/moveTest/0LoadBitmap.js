@@ -8,8 +8,8 @@ export class LoadBitmap extends Game {
         {
             id: "spritesheet_button",
             // src: "easelJs/spritesheet_button.png",
-            // src: "https://bee-reg-ab.imagency.cn/e/1bca5311e244083df376ea8e9b766485.png",
-            src: "https://s41.ax1x.com/2026/06/26/pmN42md.png",
+            src: "https://bee-reg-ab.imagency.cn/e/1bca5311e244083df376ea8e9b766485.png",
+            // src: "https://s41.ax1x.com/2026/06/26/pmN42md.png",
             type: "image"
         }, 
         {
